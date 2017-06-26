@@ -1,6 +1,11 @@
 # jrlscript
 An Erlang -> ES6 transpiler written in Erlang.
 
+## Contributing
+Just do a clone and pull. I'll review changes and merge anything good.
+Snippets of functions for translation can be found at the following repo, let's keep these seperate:
+[JS high level function snippets](https://github.com/Vereis/jrlscript-arr-fns)
+
 ## Goals:
 - Be able to transpile non-trivial Erlang code to ES6 to run in both Node and Browser
 - Fake concurrency via Web Workers, falling back to co-processing and faux context switching where neccessary
