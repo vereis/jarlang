@@ -33,3 +33,8 @@ An Erlang -> ES6 transpiler written in Erlang.
       4) Because functions should be pure, we can possibly assume each function call in a process is isolate and thus all the information we will need to store will be present in the current stack frame?
     ```
 - We're targeting ES6 so we can integrate something like BabelJS to transpile down to lower and more supported ES specifications
+
+## Recommended Reading
+I'm personally going through [Crafting Interpreters](http://www.craftinginterpreters.com/) and [Build Your Own Lisp](http://www.buildyourownlisp.com/) for learning and the material is quite good, I recommend following it.
+
+Crafting Interpreters is a much higher level overview and gives us more insight into how to model a language with more complex syntax than a Lisp though the low level implementation of the language in it is incomplete.
