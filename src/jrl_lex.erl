@@ -15,21 +15,30 @@ lex(Input) ->
 
 % Scanner Functions:
 % Scans a list in the form [<<char>...] and generates Lexemes which will be returned 
+tokenize({Literal, Text, LineNo, ColNo}) ->
+	[{Literal, {text, Text}, {line_no, LineNo}, {col_no, ColNo}}].  
+
 scan(Input) ->
-	[Head|Tail] = Input,
-	scan(Tail, []).
+	scan(Input, [], []).
 
 scan([], Lexemes) ->
-	Lexemes;
+	Lexemes.
 
-scan([<<"(">>|Tail], Lexemes) ->
-	scan(Tail, Lexemes ++ [paren_l]);
+scan([], Lexemes, CharBuffer) ->
+	Text = CharBuffer,
+	scan([], Lexemes ++ tokenize({eof, Text, null, null}));
 
-scan([<<")">>|Tail], Lexemes) ->
-	scan(Tail, Lexemes ++ [paren_r]);
+scan([Head = <<"(">> | Tail], Lexemes, CharBuffer) ->
+	Text = CharBuffer ++ [Head],
+	scan(Tail, Lexemes ++ tokenize({paren_l, Text, null, null}), []);
 
-scan([_|Tail], Lexemes) ->
-	scan(Tail, Lexemes).
+scan([Head = <<")">> | Tail], Lexemes, CharBuffer) ->
+	Text = CharBuffer ++ [Head],
+	scan(Tail, Lexemes ++ tokenize({paren_r, Text, null, null}), []);
+
+scan([Head|Tail], Lexemes, CharBuffer) ->
+	Text = CharBuffer ++ [Head],
+	scan(Tail, Lexemes, Text).
 
 
 
