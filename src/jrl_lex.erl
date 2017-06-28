@@ -36,5 +36,4 @@ scan([_|Tail], Lexemes) ->
 
 % Lexical Error Reporting
 err({Emsg, Eline}) ->
-	io:format("Error: ~s~nOn line ~s ~n", [Emsg, Eline]),
-	io.format("TiiEST");
+	io:format("Error: ~s~nOn line ~s ~n", [Emsg, Eline]).
