@@ -36,9 +36,24 @@ scan([Head = <<")">> | Tail], Lexemes, CharBuffer) ->
 	Text = CharBuffer ++ [Head],
 	scan(Tail, Lexemes ++ tokenize({paren_r, Text, null, null}), []);
 
-scan([Head|Tail], Lexemes, CharBuffer) ->
-	Text = CharBuffer ++ [Head],
-	scan(Tail, Lexemes, Text).
+scan([_Head | Tail], Lexemes, CharBuffer) ->
+	err({"Unknown symbol", null}),
+	scan(Tail, Lexemes, CharBuffer).
+
+
+
+
+% Looks ahead until lambda passed in is truthy. Returns all characters until then.
+lookahead(Input, Lambda) ->
+	lookahead(Input, Lambda, [], []).
+
+lookahead([], _WhilePredicate, Buffer, Remainder) ->
+	{Buffer,  Remainder};
+lookahead(List = [Head | Tail], WhilePredicate, Buffer, _Remainder) ->
+	case WhilePredicate(Head) of
+		true  -> lookahead([], WhilePredicate, Buffer, List);
+		false -> lookahead(Tail, WhilePredicate, Buffer ++ [Head], [])
+	end.
 
 
 
