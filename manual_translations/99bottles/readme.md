@@ -8,17 +8,17 @@ Essentially, each module is saved to an object based on the modules name
 so given the line:
 
 ```erlang
-    -module(test).
+-module(test).
 ```
 
 We create an object via the following form:
 
 ```javascript
-    const test = (function(){ 
-        const exports = { ... };
-        ... 
-        return exports;
-    })();
+const test = (function(){ 
+    const exports = { ... };
+    ... 
+    return exports;
+})();
 ```
 
 This pattern in JavaScript creates a closure where we define functions. 
@@ -29,24 +29,24 @@ Public methods are exposed via the exports object which again is based off
 Erlang's export line:
 
 ```erlang
-    -export([funcone/1, functwo/3]).
+-export([funcone/1, functwo/3]).
 ```
 
 Which may generate something which looks like this:
 
 ```javascript
-    const exports = {
-        funcone: function() {
-            switch(arguments.length) {
-                case 0 : ...
-                case 1 : ...
-                ...
-                default :
-                    throw ("** exception error: undefined function 
-                            test:funcone/arguments.length);
-            }
+const exports = {
+    funcone: function() {
+        switch(arguments.length) {
+            case 0 : ...
+            case 1 : ...
+            ...
+            default :
+                throw ("** exception error: undefined function 
+                        test:funcone/arguments.length");
         }
     }
+}
 ```
 
 We do it in the form above because JavaScript doesn't support function
@@ -66,13 +66,13 @@ it, the exports module should expose otherwise private functions in
 a datastructure stored within our closure which should look like:
 
 ```javascript
-    const functions = {
-        functionname: {
-            1: function(A) { ... },
-            2: function(A, B) { ... },
-            5: function(A, B, C, D, E) { ... },
-        }
+const functions = {
+    functionname: {
+        1: function(A) { ... },
+        2: function(A, B) { ... },
+        5: function(A, B, C, D, E) { ... },
     }
+}
 ```
 
 Each entry in the functions object is keyed by function name, which itself
@@ -84,7 +84,7 @@ via simply calling them manually via the reference to the functions object
 like this:
 
 ```javascript
-    functions[functwo][2](arg1, arg2);
+functions[functwo][2](arg1, arg2);
 ```
 
 Lastly, for any additional information which isn't clear, raise an issue
@@ -101,12 +101,14 @@ with a loop cleanly at the moment but we can leave optimisations until later.
 Anyhow, run the test program via:
 
     Erlang:
+
 ```erlang 
     c("nnbottles.erl").
     nnbottles:sing().
 ```
 
     JavaScript:
+
 ```javascript
     *run closure*
     nnbottles.sing();
