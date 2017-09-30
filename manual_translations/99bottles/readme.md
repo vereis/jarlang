@@ -42,8 +42,8 @@ const exports = {
             case 1 : ...
             ...
             default :
-                throw ("** exception error: undefined function 
-                        test:funcone/arguments.length");
+                throw ("** exception error: undefined function" + 
+                        "test:funcone/arguments.length");
         }
     }
 }
@@ -98,19 +98,19 @@ I'm unsure how we would logically manually remove the recursion and replace
 with a loop cleanly at the moment but we can leave optimisations until later.
 
 
-Anyhow, run the test program via:
-
-    Erlang:
+Anyhow, run the test program via the following for Erlang (in the shell):
 
 ```erlang 
-    c("nnbottles.erl").
-    nnbottles:sing().
+c("nnbottles.erl").
+nnbottles:sing().
 ```
 
-    JavaScript:
+Or for JavaScript (in the console):
 
 ```javascript
-    *run closure*
-    nnbottles.sing();
+*run closure*
+nnbottles.sing();
 ```
+
+Thanks :)
 Chris.
