@@ -1,6 +1,8 @@
 #Sample Erlang
 Sample Erlang files and programs that should test the capabilities and accuracy of jrlscript.
 
+ChallengeErlang is a set of code samples taken from StackExchange's code-golf library. Guaranteed to trip up the transpiler at least once.
+
 ##Notes
 Notes about how erlang handles particular examples of data, syntax, etc.
 
