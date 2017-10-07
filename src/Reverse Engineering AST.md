@@ -6,7 +6,7 @@ Each 'node' of the AST is in the form:
 ```
 {$NODE_TYPE, [], $ADDITIONAL}
 ```
-Where each `$ADDITIONAL` is dependant on the `$NODE_TYPE`. Definitions for the node type seem to be defined in the `cerl.erl` module which you can find on [erldocs](http://erldocs.com/R16A/compiler/cerl.htm).
+Where each `$ADDITIONAL` is dependant on the `$NODE_TYPE`. Definitions for the node type seem to be defined in the `cerl.erl` module which you can find on [erldocs](http://erldocs.com/R16A/compiler/cerl.htm?i=94).
 
 While I haven't proven this yet, just from hacking around, the empty list in the example is almost always empty. The list seems to store additional metadata but I've only seen it contain the atom `compiler_generated` to denote compiler generated code. As far as I know, the second index of all nodes contain this empty list.
 
