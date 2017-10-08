@@ -1,4 +1,4 @@
-# Jrlscript Compiler Readme & Toolchain
+# Jrlscript Toolchain
 
 ## Coregen
 ### Essentially out lexer, syntax and semantic analyser and intermediate code generator + optimiser
