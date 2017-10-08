@@ -4,29 +4,54 @@
 
 -module(coregen).
 -export([er2ce/1,
+         er2ce/2,
          er2ast/1,
          er2ast/2]).
 
 % Compiles a given Erlang source file to a CoreErlang file
 er2ce(Module) ->
-    ModuleName = strip_extensions(Module, [".erl", ".beam", ".core", ".ast"]),
-    compile:file(ModuleName ++ ".erl", to_core).
+    code:add_path("../lib/"),
+    er2ce(Module, filepath:path(Module)).
+
+er2ce(Module, OutputDirectory) ->
+    case re:run(OutputDirectory, ".*/$") of
+        nomatch ->
+            {error, output_directory_not_valid};
+        _ ->
+            code:add_path("../lib/"),
+            compile:file(Module, to_core),
+
+            % Compiling always generates output in working directory so lets
+            % move it into the directory where source code exists
+            FileName = filepath:name(Module),
+            filepath:move(FileName ++ ".core", OutputDirectory ++ FileName ++ ".core"),
+            {ok, core_compiled}
+    end.
 
 % Compiles a given Erlang source file to a CoreErlang AST file
 er2ast(Module) ->
-    ModuleName = strip_extensions(Module, [".erl", ".beam", ".core", ".ast"]),
-    er2ce(ModuleName),
+    code:add_path("../lib/"),
+    er2ast(Module, filepath:path(Module)).
+
+er2ast(Module, OutputDirectory) ->
+    code:add_path("../lib/"),
+    er2ce(Module, "./"),
 
     % Parse core erlang and generate AST, credits to
     % http://www.robertjakob.de/posts/ceast.html :)
     % for general method to generate AST
+    ModuleName = filepath:name(Module),
     case file:read_file(ModuleName ++ ".core") of
         {ok, Bin} ->
             case core_scan:string(binary_to_list(Bin)) of
                 {ok, Toks, _} ->
                     case core_parse:parse(Toks) of
                         {ok, AST} ->
-                            file:write_file(ModuleName ++ ".ast", tuple_to_string(AST));
+                            % Move file to wherever user specified. This has an aftereffect of ensuring dir exists
+                            % so we can write the AST straight to directory
+                            filepath:move(ModuleName ++ ".core", OutputDirectory ++ ModuleName ++ ".core"),
+                            file:write_file(OutputDirectory ++ ModuleName ++ ".ast", tuple_to_string(AST)),
+                            {ok, ast_compiled};
                         {error, E} ->
                             {error, {parse, E}}
                     end;
@@ -36,37 +61,6 @@ er2ast(Module) ->
         {error, E} ->          
             {error, {read, E}}
     end.
-
-% When the argument to er2ast/2 is true, we delete the resulting .core file
-% generated during AST compilation. Otherwise, behaves the same as erast(Module)
-% or errors upon receiving an unknown argument.
-er2ast(Module, false) ->
-    er2ast(Module);
-er2ast(Module, true) ->
-    er2ast(Module),
-    ModuleName = strip_extensions(Module, [".erl", ".beam", ".core", ".ast"]),
-    file:delete(ModuleName ++ ".core");
-er2ast(_Module, _OtherOption) ->
-    {error, lists:flatten(
-              io_lib:format("Unknown argument provided to func ~s:ce2ast/2", [?MODULE]))}.
-
-% Strips given extensions from a given modulename
-strip_extensions(ModuleName, Extensions) ->
-    case re:replace(ModuleName, build_sanitation_regex(Extensions), "") of
-        [Module,_Extension] ->
-            binary_to_list(Module);
-        Result ->
-            Result
-    end.
-
-% Internally used by strip_extensions
-build_sanitation_regex([Head | Tails]) ->
-    build_sanitation_regex(Tails, "(" ++ Head ++ ")"). 
-
-build_sanitation_regex([], ExtRegStr) ->
-    ExtRegStr;
-build_sanitation_regex([Head | Tails], ExtRegStr) ->
-    build_sanitation_regex(Tails, ExtRegStr ++ "|(" ++ Head ++ ")"). 
 
 % Surprisingly, no tuple_to_string functions exist as a BIF
 tuple_to_string(T) ->
