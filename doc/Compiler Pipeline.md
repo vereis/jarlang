@@ -1,21 +1,21 @@
-# Jrlscript Toolchain
+# Jrlscript Transpiler Pipeline
 
 ## Coregen
-### Essentially out lexer, syntax and semantic analyser and intermediate code generator + optimiser
+### Essentially our lexer, syntax and semantic analyser and intermediate code generator + optimiser
 Coregen is an Erlang module which can compile normal Erlang source code files into both CoreErlang and a CoreErlang AST. This can be simply done via:
 
 1) Compiling the `coregen.erl` file in Erlang (i.e via `c("coregen").` in the Erlang Shell)
-2) Running either the `coregen:er2ce(...)` function or the `coregen:er2ast(...)` function, both of
-   which take a module name as per the BIF `c(...)`, i.e
-```erlang
-coregen:er2ce("somemodule").
-```
-or
-```erlang
-coregen:er2ast("somemodule").
-```
-   Which will generate the files `somemodule.core` and `somemodule.ast` respectively
-3) Feeding the atom `true` to the er2ast function will delete any resultant core files, effectively only creating an ast file.
+2) Running either the `coregen:er2ce(...)` function or the `coregen:er2ast(...)` function, both of which take a module name as per the BIF `c(...)`, i.e
+   ```erlang
+   coregen:er2ce("somemodule").
+   ```
+   or
+   ```erlang
+   coregen:er2ast("somemodule").
+   ```
+   Which will generate the files `somemodule.core` and `somemodule.ast` respectively. The default output directory is the directory containing the source files awaiting compilation.
+ 
+3) Both `coregen:er2ce(...)` and `coregen:er2ast(...)` take a filepath as a second argument to specify output directory. Both `coregen:er2ce/2` and `coregen:er2ast/2` will create the specified directory if it doesn't already exist. Do note that any files in the directory will be overwritten if they already exist.
 
 ## ASTtrans
 ### Intermediate code translator
