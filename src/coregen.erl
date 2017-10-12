@@ -33,7 +33,7 @@ er2ast(Module) ->
     code:add_path("../lib/"),
     er2ast(Module, filepath:path(Module)).
 
-er2ast(Module, OutputDirectory) ->
+er2ast(Module, return_AST) ->
     code:add_path("../lib/"),
     er2ce(Module, "./"),
 
@@ -45,22 +45,29 @@ er2ast(Module, OutputDirectory) ->
         {ok, Bin} ->
             case core_scan:string(binary_to_list(Bin)) of
                 {ok, Toks, _} ->
-                    case core_parse:parse(Toks) of
-                        {ok, AST} ->
-                            % Move file to wherever user specified. This has an aftereffect of ensuring dir exists
-                            % so we can write the AST straight to directory
-                            filepath:move(ModuleName ++ ".core", OutputDirectory ++ ModuleName ++ ".core"),
-                            file:write_file(OutputDirectory ++ ModuleName ++ ".ast", tuple_to_string(AST)),
-                            {ok, ast_compiled};
-                        {error, E} ->
-                            {error, {parse, E}}
-                    end;
+                    core_parse:parse(Toks);
                 {error, E, _} ->
                     {error, {scan, E}}
             end; 
         {error, E} ->          
             {error, {read, E}}
-    end.
+    end;
+
+
+er2ast(Module, OutputDirectory) ->
+    code:add_path("../lib/"),
+    ModuleName = filepath:name(Module),
+	case er2ast(Module, return_AST) of
+		{ok, AST} ->
+			% Move file to wherever user specified. This has an aftereffect of ensuring dir exists
+			% so we can write the AST straight to directory
+			filepath:move(ModuleName ++ ".core", OutputDirectory ++ ModuleName ++ ".core"),
+			file:write_file(OutputDirectory ++ ModuleName ++ ".ast", tuple_to_string(AST)),
+			{ok, ast_compiled};
+		{error, E} ->
+			{error, E}
+	end.
+
 
 % Surprisingly, no tuple_to_string functions exist as a BIF
 tuple_to_string(T) ->
