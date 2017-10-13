@@ -11,7 +11,9 @@
     all/1,
     extension/1,
 
-    move/2
+    move/2,
+    write/2,
+    delete/1
 ]).
 
 % Shortcut functions
@@ -37,16 +39,23 @@ extension(FilePath) ->
 
 % Move a file to a specific directory, if directory doesn't exist, create it.
 move(Origin, Target) ->
-    Path = path(Target),
+    assertDir(path(Target)),
+    file:rename(Origin, Target).
 
+delete(Target) ->
+    file:delete(Target).    
+
+write(Data, Target) ->
+    assertDir(path(Target)),
+    file:write_file(Target, Data).
+
+assertDir(Path) ->
     % We generally don't care what happens here, both cases ensure dir exists
     try file:make_dir(Path) of
         _ -> ok
     catch
         _ -> ok
-    end,
-    
-    file:rename(Origin, Target).
+    end.
 
 % Parses a filepath and extracts information from it
 parse(FilePath) ->

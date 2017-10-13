@@ -10,7 +10,7 @@ erast2esast(AST) ->
 
 erTok2esTok({c_module,A,{_,_,ModName},Exports,Attributes,Functions})->
 	io:format("module:~s~n",[ModName]),
-	io:format("exports:~p ~n",[tupleList_getVars_3(Exports)]),
+	io:format("    exports:~p ~n",[tupleList_getVars_3(Exports)]),
 	fnsTok2esTok(Functions);
 	
 	
@@ -26,8 +26,8 @@ fnsTok2esTok([])->
 	ok.
 
 fnTok2esTok({{_,_,{FName,ParamCount}},{_,_,ParamNames,Body}})->
-	io:format("function:~s/~w ~n",[FName,ParamCount]),
-	io:format("parameters:~p ~n",[tupleList_getVars_3(ParamNames)]).
+	io:format("    function:~s/~w ~n",[FName,ParamCount]),
+	io:format("        parameters:~p ~n",[tupleList_getVars_3(ParamNames)]).
 
 
 
