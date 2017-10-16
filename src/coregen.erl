@@ -1,12 +1,17 @@
-% Author: Chris Bailey
+% Author: Chris Bailey & Andrew Johnson
 % Has the ability to compile Erlang into CoreErlang and also compile
 % from Erlang straight to a CoreErlang AST.
 
 -module(coregen).
--export([er2ce/1,
+-export([er2best/1,
+		 er2ce/1,
          er2ce/2,
          er2ast/1,
          er2ast/2]).
+
+er2best(Module) ->
+	{ok,AST}=er2ast(Module, return_AST),
+	asttrans:erast2esast(AST).
 
 % Compiles a given Erlang source file to a CoreErlang file
 er2ce(Module) ->
