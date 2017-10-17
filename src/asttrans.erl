@@ -60,9 +60,11 @@ toksCaseCond({c_values,_,Values})->
 toksCaseCond({c_call,_,{_,_,Module},{_,_,FName},Params})->
 	io:format("Call function ~s:~s(",[Module,FName]),
 	io:format("~p)~n",[tupleList_getVars_3(Params)]).
-toksCaseCond({c_apply,_,A,B})->
-	io:format("Call function ~s:~s(",[Module,FName]),
-	io:format("~p)~n",[tupleList_getVars_3(Params)]).
+
+% This breaks compilation - whats this meant to be?
+%toksCaseCond({c_apply,_,A,B})->
+%	io:format("Call function ~s:~s(",[Module,FName]),
+%	io:format("~p)~n",[tupleList_getVars_3(Params)]).
 
 
 tupleList_getVars_3([])->

@@ -1,4 +1,4 @@
--module(test_compiles).
+-module(test).
 -export([hello/1]).
 
 hello(Var) ->
