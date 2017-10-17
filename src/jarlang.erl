@@ -8,25 +8,27 @@
 
 % Transpiles a module through the pipeline as far as is implemented
 er2(best,Module) ->
-	er2(core_erlang,Module),
 	AST=er2(core_AST,Module),
 	asttrans:erast2esast(AST);
 
-
 er2(core_erlang,Module)->
-	coregen:er2ce(Module);
-
+	{ok,_,CE}=coregen:er2ce(Module,return_CE),
+	CE;
 
 er2(core_AST,Module)->
 	{ok,AST}=coregen:er2ast(Module,return_AST),
-	AST.
+	AST;
+
+er2(estree,Module)->
+	AST=er2(core_AST,Module),
+	asttrans:erast2esast(AST).
+
 
 %############################################
 
 er2file(Task,Module)->
 	code:add_path("../lib/"),
 	OutputDirectory=filepath:path(Module),
-	io:format(OutputDirectory++"~n",[]),
 	er2file(Task,Module,OutputDirectory).
 er2file(Task,Module,OutputDirectory)->
 	toFile(Task,OutputDirectory,Module).

@@ -18,6 +18,9 @@ er2ce(Module) ->
     code:add_path("../lib/"),
     er2ce(Module, filepath:path(Module)).
 
+er2ce(Module,return_CE)->
+	compile:file(Module, [to_core,binary]);
+
 er2ce(Module, OutputDirectory) ->
     case re:run(OutputDirectory, ".*/$") of
         nomatch ->
@@ -57,6 +60,7 @@ er2ast(Module, return_AST) ->
         {error, E} ->          
             {error, {read, E}}
     end;
+
 
 
 er2ast(Module, OutputDirectory) ->
