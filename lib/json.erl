@@ -1,36 +1,121 @@
 -module(json).
 -compile(export_all).
 
+% Takes a Erlang Map and outputs a JSON String representation of it
 obj() ->
     {err, no_object}.
 
 obj(Object) when is_map(Object) ->
-   print("{~n", [], 0),
-   obj(Object, 1),
-   print("}~n", [], 0).
+    Buffer = print("{~n", [], 0, []),
+    Json = lists:flatten(print("}~n", [], 0, consumeObj(Object, 1, Buffer))),
+    Json;
 
-obj(Object, Depth) when is_map(Object), map_size(Object) > 1 ->
+obj(Array) when is_list(Array) ->
+    Buffer = print("[~n", [], 0, []),
+    Json = lists:flatten(print("]~n", [], 0, consumeArr(Array, 1, Buffer))),
+    Json;
+
+obj([]) ->
+    "\[\]~n";
+
+obj(#{}) ->
+    "\{\}~n".
+
+
+% Reads each node of a list and builds JSON String
+consumeArr([], _Depth, Buffer) ->
+    Buffer;
+
+consumeArr([Value], Depth, Buffer) ->
+   consumeArrIndex(Value, Depth, Buffer);
+
+consumeArr([Value | Tail], Depth, Buffer) ->
+    consumeArr(Tail, Depth, consumeArrIndex(Value, Depth, Buffer)).
+
+
+% Consumes a given array index and performs different string manipulations based on type
+consumeArrIndex(Value, Depth, Buffer) when is_map(Value) ->
+    case maps:size(Value) > 0 of
+        true ->
+            [{Key, Val}] = maps:to_list(Value),
+            AfterOpenBrace = print("{~n", [], Depth, Buffer),
+            AfterNodeContents = consumeNode(Key, Val, Depth + 1, AfterOpenBrace),
+            AfterCloseBrace = print("},~n", [], Depth, AfterNodeContents),
+            AfterCloseBrace; 
+        false ->
+            print("{},~n", [], Depth, Buffer)
+    end;
+
+consumeArrIndex(Value, Depth, Buffer) when is_list(Value) ->
+    case length(Value) > 0 of
+        true ->
+            AfterOpenBrace = print("[~n", [], Depth, Buffer),
+            AfterNodeContents = consumeArr(Value, Depth + 1, AfterOpenBrace),
+            AfterCloseBrace = print("],~n", [], Depth, AfterNodeContents),
+            AfterCloseBrace; 
+        false ->
+            print("[],~n", [], Depth, Buffer)
+    end;
+
+consumeArrIndex(Value, Depth, Buffer) when is_integer(Value); is_float(Value) ->
+    print("~w,~n", [Value], Depth, Buffer);
+
+consumeArrIndex(Value, Depth, Buffer) when is_bitstring(Value) ->
+    print("\"~s\",~n", [bitstring_to_list(Value)], Depth, Buffer);
+
+consumeArrIndex(Value, Depth, Buffer) ->
+    print("\"~w\", // Unsupported datatype converted to string to try and not break JSON~n", [Value], Depth, Buffer).
+
+
+% Reads each node of a map and builds JSON String
+consumeObj(Object, Depth, Buffer) when map_size(Object) > 1 ->
     [{Key, Value} | Tail] = maps:to_list(Object),
-    consumeNode(Key, Value, Depth),
-    obj(maps:from_list(Tail), Depth);
-obj(Object, Depth) when is_map(Object) ->
+    consumeObj(maps:from_list(Tail), Depth, consumeNode(Key, Value, Depth, Buffer));
+
+consumeObj(Object, Depth, Buffer) ->
     [{Key, Value}] = maps:to_list(Object),
-    consumeNode(Key, Value, Depth).
+    consumeNode(Key, Value, Depth, Buffer).
 
-consumeNode(Key, Value, Depth) when is_map(Value) ->
-    print("\"~s\": {~n", [Key], Depth),
-    obj(Value, Depth+1),
-    print("},~n", [], Depth);
-consumeNode(Key, Value, Depth) when is_list(Value) ->
-    print("\"~s\": ~w,~n", [Key, Value], Depth); % TODO: iterate through value and print strings as strings
-consumeNode(Key, Value, Depth) when is_integer(Value); is_float(Value) ->
-    print("\"~s\": ~w,~n", [Key, Value], Depth);
-consumeNode(Key, Value, Depth) when is_bitstring(Value) ->
-    print("\"~s\": \"~s\",~n", [Key, bitstring_to_list(Value)], Depth);
-consumeNode(Key, Value, Depth) ->
-    print("\"~s\": \"~w\", // Unsupported datatype converted to string to try and not break JSON~n", [Key, Value], Depth).
 
-print(String, Vars, 0) ->
-    io:format(String, Vars);
-print(String, Vars, Depth) ->
-    io:format((lists:flatten(lists:map(fun(_) -> "\t" end, lists:seq(1, Depth)))) ++ String, Vars).
+% Consumes a given node and performs different string manipulations based on type
+consumeNode(Key, Value, Depth, Buffer) when is_map(Value) ->
+    case maps:size(Value) > 0 of
+        true ->
+            AfterOpenBrace = print("\"~s\": {~n", [Key], Depth, Buffer),
+            AfterNodeContents = consumeObj(Value, Depth + 1, AfterOpenBrace),
+            AfterCloseBrace = print("},~n", [], Depth, AfterNodeContents),
+            AfterCloseBrace;
+        false ->
+            print("\"~s\": {}~n", [Key], Depth, Buffer)
+    end;
+
+consumeNode(Key, Value, Depth, Buffer) when is_list(Value) ->
+    case length(Value) > 0 of
+        true ->
+            AfterOpenBrace = print("\"~s\": [~n", [Key], Depth, Buffer),
+            AfterNodeContents = consumeArr(Value, Depth + 1, AfterOpenBrace),
+            AfterCloseBrace = print("],~n", [], Depth, AfterNodeContents),
+            AfterCloseBrace;
+        false ->
+            print("\"~s\": []~n", [Key], Depth, Buffer)
+    end;
+
+consumeNode(Key, Value, Depth, Buffer) when is_integer(Value); is_float(Value) ->
+    print("\"~s\": ~w,~n", [Key, Value], Depth, Buffer);
+
+consumeNode(Key, Value, Depth, Buffer) when is_bitstring(Value) ->
+    print("\"~s\": \"~s\",~n", [Key, bitstring_to_list(Value)], Depth, Buffer);
+
+consumeNode(Key, Value, Depth, Buffer) ->
+    print("\"~s\": \"~w\", // Unsupported datatype converted to string to try and not break JSON~n", [Key, Value], Depth, Buffer).
+
+
+% Functions which indents and prints
+print(String, Vars, 0, Buffer) ->
+    % io:format(String, Vars),
+    NewBuffer = io_lib:format("~s" ++ String, [Buffer] ++ Vars),
+    NewBuffer;
+print(String, Vars, Depth, Buffer) ->
+    % io:format((lists:flatten(lists:map(fun(_) -> "\t" end, lists:seq(1, Depth)))) ++ String, Vars),
+    NewBuffer = io_lib:format("~s" ++ (lists:flatten(lists:map(fun(_) -> "\t" end, lists:seq(1, Depth)))) ++ String, [Buffer] ++ Vars),
+    NewBuffer.
