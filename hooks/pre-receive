@@ -6,6 +6,7 @@ do
     if [[ $refname = "refs/heads/master" ]] ; then
         echo "Ensuring a release build can be successfully compiled..."
         make prepush && echo "Release builds ok." || echo "Release builds failed. Please ensure build succeeds before pushing to Master on Github"
+    fi
 done
 
 # All is well, lets return 0 to push to github
