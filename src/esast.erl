@@ -42,7 +42,7 @@ node(Type, Data) ->
     Node = io_lib:format("~s", [node(Type, Data, ["{\n", "\"type\": ", Type, ",\n"])]),
     lists:flatten(erlang:iolist_to_binary(Node)).
 
-node(_Type, [], Node) ->
+node(Type, [], Node) ->
     Node ++ "\n}";
 node(Type, [{Key, Value} | Tails], Node) ->
     node(Type, Tails, Node ++ "\"" ++ Key ++ "\": " ++ Value ++ ",\n").
