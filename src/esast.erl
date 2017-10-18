@@ -1,7 +1,7 @@
 -module(esast).
 -compile(export_all).
 
-module(ModuleName, Contents) ->
+module(ModuleName, _Contents) ->
     io_lib:format(
 "{
     \"type\": \"Program\",
@@ -42,7 +42,7 @@ node(Type, Data) ->
     Node = io_lib:format("~s", [node(Type, Data, ["{\n", "\"type\": ", Type, ",\n"])]),
     lists:flatten(erlang:iolist_to_binary(Node)).
 
-node(Type, [], Node) ->
+node(_Type, [], Node) ->
     Node ++ "\n}";
 node(Type, [{Key, Value} | Tails], Node) ->
     node(Type, Tails, Node ++ "\"" ++ Key ++ "\": " ++ Value ++ ",\n").
