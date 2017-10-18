@@ -9,21 +9,24 @@ toJson() ->
     {err, no_object}.
 
 toJson(Object) when is_map(Object) ->
-    Buffer = print("{~n", [], 0, []),
-    Json = lists:flatten(print("}~n", [], 0, consumeObj(Object, 1, Buffer))),
-    Json;
+    case maps:size(Object) > 0 of
+        true ->
+            Buffer = print("{~n", [], 0, []),
+            Json = lists:flatten(print("}~n", [], 0, consumeObj(Object, 1, Buffer))),
+            Json;
+        false ->
+            "\{\}~n"
+    end;
 
 toJson(Array) when is_list(Array) ->
-    Buffer = print("[~n", [], 0, []),
-    Json = lists:flatten(print("]~n", [], 0, consumeArr(Array, 1, Buffer))),
-    Json;
-
-toJson([]) ->
-    "\[\]~n";
-
-toJson(#{}) ->
-    "\{\}~n".
-
+    case length(Array) > 0 of
+        true ->
+            Buffer = print("[~n", [], 0, []),
+            Json = lists:flatten(print("]~n", [], 0, consumeArr(Array, 1, Buffer))),
+            Json;
+        false ->
+            "\[\]~n"
+    end.
 
 % Reads each node of a list and builds JSON String
 consumeArr([], _Depth, Buffer) ->
@@ -40,9 +43,8 @@ consumeArr([Value | Tail], Depth, Buffer) ->
 consumeArrIndex(Value, Depth, Buffer) when is_map(Value) ->
     case maps:size(Value) > 0 of
         true ->
-            [{Key, Val}] = maps:to_list(Value),
             AfterOpenBrace = print("{~n", [], Depth, Buffer),
-            AfterNodeContents = consumeNode(Key, Val, Depth + 1, AfterOpenBrace),
+            AfterNodeContents = consumeObj(Value, Depth + 1, AfterOpenBrace),
             AfterCloseBrace = print("},~n", [], Depth, AfterNodeContents),
             AfterCloseBrace; 
         false ->
