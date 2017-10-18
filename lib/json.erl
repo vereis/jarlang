@@ -1,24 +1,27 @@
 -module(json).
--compile(export_all).
+-export([
+            toJson/0,
+            toJson/1
+        ]).
 
 % Takes a Erlang Map and outputs a JSON String representation of it
-obj() ->
+toJson() ->
     {err, no_object}.
 
-obj(Object) when is_map(Object) ->
+toJson(Object) when is_map(Object) ->
     Buffer = print("{~n", [], 0, []),
     Json = lists:flatten(print("}~n", [], 0, consumeObj(Object, 1, Buffer))),
     Json;
 
-obj(Array) when is_list(Array) ->
+toJson(Array) when is_list(Array) ->
     Buffer = print("[~n", [], 0, []),
     Json = lists:flatten(print("]~n", [], 0, consumeArr(Array, 1, Buffer))),
     Json;
 
-obj([]) ->
+toJson([]) ->
     "\[\]~n";
 
-obj(#{}) ->
+toJson(#{}) ->
     "\{\}~n".
 
 
