@@ -22,7 +22,7 @@ release:
 	@ mkdir -p $(OUTDIR) ;
 	@ $(ERLC) $(ERLFLAGS) $(OUTDIR) $(LIBDIR)/*.erl >> ./buildlog.log ;
 	@ $(ERLC) $(ERLFLAGS) $(OUTDIR) $(SRCDIR)/*.erl >> ./buildlog.log ;
-	@ rm ./buildlog ;
+	@ rm ./buildlog.log ;
 	@ echo "Built Release in './$(OUTDIR)/'.\n" ;
 prepush:
 	@ mkdir -p $(OUTDIR) ;
@@ -30,7 +30,7 @@ prepush:
 	@ $(LOGHEADER) >> ./buildlog.log;
 	@ $(ERLC) $(ERLFLAGS) $(OUTDIR) $(LIBDIR)/*.erl >> ./buildlog.log ;
 	@ $(ERLC) $(ERLFLAGS) $(OUTDIR) $(SRCDIR)/*.erl >> ./buildlog.log ;
-	@ rm ./buildlog ;
+	@ rm ./buildlog.log ;
 debug:
 	@ echo "-- Building debug build : Will fail if there are any errors" ;
 	@ $(LOGMSG) ;
@@ -38,7 +38,7 @@ debug:
 	@ mkdir -p $(DEBUGDIR) ;
 	@ $(ERLC) $(DEBUGFLAGS) $(DEBUGDIR) $(LIBDIR)/*.erl >> ./buildlog.log ;
 	@ $(ERLC) $(DEBUGFLAGS) $(DEBUGDIR) $(SRCDIR)/*.erl >> ./buildlog.log ;
-	@ rm ./buildlog ;
+	@ rm ./buildlog.log ;
 	@ echo "Built Debug in './$(DEBUGDIR)/'.\n" ;
 clean:
 	@ echo "-- Cleaning builds" ;
@@ -48,5 +48,5 @@ clean:
 	@ echo "Removing debug/" ;
 	@ rm -rf erl_crush.dump ;
 	@ echo "Removing crash dump" ;
-	@ touch ./buildlog && rm ./buildlog ;
+	@ touch ./buildlog.log && rm ./buildlog.log ;
 	@ echo "Cleaned.\n" ;
