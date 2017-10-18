@@ -11,4 +11,5 @@ edebug/*
 *.core
 .concrete/DEV_MODE
 .rebar
+.log
 ### END - Erlang Stuff ###
