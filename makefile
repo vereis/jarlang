@@ -20,12 +20,14 @@ release:
 	@ $(LOGMSG) ;
 	@ $(LOGHEADER) >> ./buildlog.log;
 	@ mkdir -p $(OUTDIR) ;
+	@ rm $(OUTDIR)/*.beam >> /dev/null
 	@ $(ERLC) $(ERLFLAGS) $(OUTDIR) $(LIBDIR)/*.erl >> ./buildlog.log ;
 	@ $(ERLC) $(ERLFLAGS) $(OUTDIR) $(SRCDIR)/*.erl >> ./buildlog.log ;
 	@ rm ./buildlog.log ;
 	@ echo "Built Release in './$(OUTDIR)/'.\n" ;
 prepush:
 	@ mkdir -p $(OUTDIR) ;
+	@ rm $(OUTDIR)/*.beam >> /dev/null
 	@ $(LOGMSG) ;
 	@ $(LOGHEADER) >> ./buildlog.log;
 	@ $(ERLC) $(ERLFLAGS) $(OUTDIR) $(LIBDIR)/*.erl >> ./buildlog.log ;
@@ -36,6 +38,7 @@ debug:
 	@ $(LOGMSG) ;
 	@ $(LOGHEADER) >> ./buildlog.log;
 	@ mkdir -p $(DEBUGDIR) ;
+	@ rm $(DEBUGDIR)/*.beam >> /dev/null
 	@ $(ERLC) $(DEBUGFLAGS) $(DEBUGDIR) $(LIBDIR)/*.erl >> ./buildlog.log ;
 	@ $(ERLC) $(DEBUGFLAGS) $(DEBUGDIR) $(SRCDIR)/*.erl >> ./buildlog.log ;
 	@ rm ./buildlog.log ;

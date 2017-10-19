@@ -2,6 +2,8 @@
 -compile(export_all). 
 -compile({no_auto_import, [node/0]}).
 
+test() -> false.
+
 module(ModuleName, _Contents) ->
     io_lib:format(
 "{
@@ -88,6 +90,57 @@ blockStatement(Body) ->
 % Generates an if statement
 ifStatement(Test, Consequent, Alternate) ->
     updateRecord(statement(), [{"type", <<"IfStatement">>}, {"test", Test}, {"consequent", Consequent}, {"alternate", Alternate}]).
+
+% Generates a Labeled statement (prefixed with break/continue)
+labeledStatement(Identifier, Body) ->
+    updateRecord(statement(), [{"type", <<"LabeledStatement">>}, {"label", Identifier}, {"body", Body}]).
+
+% Generates a break statement
+breakStatement(Identifier) ->
+    updateRecord(statement(), [{"type", <<"BreakStatement">>}, {"label", Identifier}]).
+
+% Generates a continue statement
+continueStatement(Identifier) ->
+    updateRecord(statement(), [{"type", <<"ContinueStatement">>}, {"label", Identifier}]).
+
+% Generates a with statement
+withStatement(Expression, Statement) ->
+    updateRecord(statement(), [{"type", <<"WithStatement">>}, {"object", Expression}, {"body", Statement}]).
+
+% Generates a switch statement
+switchStatement(Expression, Cases, HasLexScope) when is_list(Cases) ->
+    updateRecord(statement(), [{"type", <<"SwitchStatement">>}, {"discriminant", Expression}, {"cases", Cases}, {"lexical", HasLexScope}]);
+switchStatement(Expression, Cases, HasLexScope) ->
+    switchStatement(Expression, [Cases], HasLexScope).
+
+% Generates a return statement
+returnStatement(Expression) ->
+    updateRecord(statement(), [{"type", <<"ReturnStatement">>}, {"argument", Expression}]).
+
+% Generates a throw statement
+throwStatement(Expression) ->
+    updateRecord(statement(), [{"type", <<"ThrowStatement">>}, {"argument", Expression}]).
+
+% Generates a try statement
+tryStatement(BlockStatement, Handler, GuardedHandler, Finalizer) ->
+    updateRecord(statement(), [{"type", <<"TryStatement">>}, {"block", BlockStatement}, {"handler", Handler}, {"guardedHandler", GuardedHandler}, {"finalizer", Finalizer}]).
+
+% Generates a while statement
+whileStatement(Expression, Body) when is_list(Body) ->
+    updateRecord(statement(), [{"type", <<"WhileStatement">>}, {"test", Expression}, {"body", Body}]);
+whileStatement(Expression, Body) ->
+    whileStatement(Expression, [Body]).
+
+% Generates a for statement
+forStatement(Init, Update, Expression, Body) ->
+    updateRecord(whileStatement(Expression, Body), [{"type", <<"ForStatement">>}, {"init", Init}, {"update", Update}]).
+
+% Generates a forIn statement
+forInStatement(Left, Right, Body) when is_list(Body) ->
+    updateRecord(statement(), [{"type", <<"ForInStatement">>}, {"left", Left}, {"right", Right}, {"each", false}, {"body", Body}]);
+forInStatement(Left, Right, Body) ->
+    forInStatement(Left, Right, [Body]).
+
 
 % ------ Intenal ------ %
 
