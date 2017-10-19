@@ -59,13 +59,13 @@ toksFuncBody(T)->
 toksCaseCond({c_values, _, _Values})->
 	io:format("Values~n");
 toksCaseCond({c_call, _, {_, _, Module}, {_, _, FName}, Params})->
-	io:format("Call function ~s:~s(", [Module, FName]),
-	io:format("~p)~n", [tupleList_getVars_3(Params)]).
+	io:format("Call function ~s:~p(", [Module, FName]),
+	io:format("~p)~n", [tupleList_getVars_3(Params)]);
 
-% This breaks compilation - whats this meant to be?
-%toksCaseCond({c_apply, _, A, B})->
-%	io:format("Call function ~s:~s(",[Module, FName]),
-%	io:format("~p)~n", [tupleList_getVars_3(Params)]).
+% Is apply a local function call? Assignment from function? Assignment with pattern matching?
+toksCaseCond({c_apply, _, {_,_,{FName,_Arity}}, Params})->
+	io:format("Call local function ~s(",[FName]),
+	io:format("~p)~n", [tupleList_getVars_3(Params)]).
 
 
 tupleList_getVars_3([])->
