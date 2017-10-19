@@ -111,4 +111,4 @@ updateRecord(Record, [{Key, Value} | Tail]) ->
 % Misc Functions
 print(Json) ->
     code:add_path("../lib/"),
-    io:format(json:toJson(Json)).
+    io:format(json:serialize(Json)).
