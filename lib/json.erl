@@ -4,6 +4,16 @@
             toJson/1
         ]).
 
+% -- Macros   --
+% is_float(X) ; is_integer(X) is ugly
+-define(is_number(Value), is_float(Value) ; is_integer(Value)).
+
+% Nulls/Undefined are the only atom besides true and false which can be stored in json
+-define(is_allowed_atom(Value), Value =:= null ; Value =:= undefined ; is_boolean(Value)).
+
+
+
+% -- Functions --
 % Takes a Erlang Map and outputs a JSON String representation of it
 toJson() ->
     {err, no_object}.
@@ -62,7 +72,7 @@ consumeArrIndex(Value, Depth, Buffer) when is_list(Value) ->
             print("[],~n", [], Depth, Buffer)
     end;
 
-consumeArrIndex(Value, Depth, Buffer) when is_integer(Value); is_float(Value) ->
+consumeArrIndex(Value, Depth, Buffer) when ?is_number(Value) ; ?is_allowed_atom(Value) ->
     print("~w,~n", [Value], Depth, Buffer);
 
 consumeArrIndex(Value, Depth, Buffer) when is_bitstring(Value) ->
@@ -105,7 +115,7 @@ consumeNode(Key, Value, Depth, Buffer) when is_list(Value) ->
             print("\"~s\": []~n", [Key], Depth, Buffer)
     end;
 
-consumeNode(Key, Value, Depth, Buffer) when is_integer(Value); is_float(Value) ->
+consumeNode(Key, Value, Depth, Buffer) when ?is_number(Value) ; ?is_allowed_atom(Value) ->
     print("\"~s\": ~w,~n", [Key, Value], Depth, Buffer);
 
 consumeNode(Key, Value, Depth, Buffer) when is_bitstring(Value) ->
