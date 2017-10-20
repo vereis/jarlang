@@ -6,7 +6,9 @@
 	 subtraction/1,
 	 multiplication/1,
 	 division/1,
-	 sequence/0]).
+	 sequence/0,
+	 errIfNot3/1,
+	 errIfNot3Tuple/1]).
 
 boolean() -> true.
 integer() -> 3.
@@ -23,4 +25,8 @@ sequence() ->
 	io:format("B"),
 	io:format("C").
 
+errIfNot3(Var) ->
+	3 = Var.
 
+errIfNot3Tuple(Var) ->
+	{3,atom} = {Var,atom}.

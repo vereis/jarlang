@@ -52,12 +52,20 @@ toksFuncBody({c_let, _, [{_, _, Variable}], A, B})->
 toksFuncBody({c_apply, _, _A, _B})->
 	io:format("        Apply statement: ~n");
 	
+toksFuncBody({c_literal,_,Value})->
+	toksLiteral({c_literal,[],Value});
+	
 toksFuncBody(T)->
 	io:format("Unrecognised Token: ~s", [T]).
+
+toksLiteral({c_literal,_,Value})->
+	io:format("        Literal ~p~n", [Value]).
 
 %Convert the condition of a case statement
 toksCaseCond({c_values, _, _Values})->
 	io:format("Values~n");
+toksCaseCond({c_var, _, _Var})->
+	io:format("Variable~n");
 toksCaseCond({c_call, _, {_, _, Module}, {_, _, FName}, Params})->
 	io:format("Call function ~s:~p(", [Module, FName]),
 	io:format("~p)~n", [tupleList_getVars_3(Params)]);
