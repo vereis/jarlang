@@ -6,9 +6,11 @@
 	 subtraction/1,
 	 multiplication/1,
 	 division/1,
+	 echo/1,
 	 sequence/0,
 	 errIfNot3/1,
-	 errIfNot3Tuple/1]).
+	 errIfNot3Tuple/1,
+	 errIfNot3and3/2]).
 
 boolean() -> true.
 integer() -> 3.
@@ -20,6 +22,8 @@ subtraction(Var) -> Var - 3.
 multiplication(Var) -> Var * 3.
 division(Var) -> Var / 3.
 
+echo(Var)->Var.
+
 sequence() ->
 	io:format("A"),
 	io:format("B"),
@@ -30,3 +34,6 @@ errIfNot3(Var) ->
 
 errIfNot3Tuple(Var) ->
 	{3,atom} = {Var,atom}.
+
+errIfNot3and3(Var,Var2) ->
+	{3,3} = {Var,Var2}.

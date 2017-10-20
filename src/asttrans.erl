@@ -16,7 +16,7 @@ toksModule({c_module, _A, {_, _, ModuleName}, Exports, _Attributes, Functions})-
 	toksFunctions(Functions);
 	
 toksModule(T)->
-	io:format("Unrecognised Token: ~s", [T]).
+	io:format("Unrecognised Token in module section: ~p", [T]).
 
 %Split functions apart
 toksFunctions([F | Body])->
@@ -36,9 +36,16 @@ toksFuncBody({c_call, _, {_, _, Module}, {_, _, FunctionName}, Params})->
 	io:format("        call function ~s:~s(", [Module, FunctionName]),
 	io:format("~p)~n", [tupleList_getVars_3(Params)]);
 	
-toksFuncBody({c_case, _, Condition, _Clauses})->
+toksFuncBody({c_case, _, Condition, Clauses})->
 	io:format("        case statement:"),
-	toksCaseCond(Condition);
+	toksFuncBody(Condition),
+	toksClauses(Clauses);
+	
+toksFuncBody({c_values, _, Values})->
+	io:format("~p~n", [tupleList_getVars_3(Values)]);
+
+toksFuncBody({c_var, _, Var})->
+	io:format("~p~n",[Var]);
 	
 toksFuncBody({c_seq, _, A, B})->
 	toksFuncBody(A),
@@ -49,31 +56,30 @@ toksFuncBody({c_let, _, [{_, _, Variable}], A, B})->
 	toksFuncBody(A),
 	toksFuncBody(B);
 	
+% Is apply a local function call? Assignment from function? Assignment with pattern matching?
+toksFuncBody({c_apply, _, {_,_,{FName,_Arity}}, Params})->
+	io:format("Call local function ~s(",[FName]),
+	io:format("~p)~n", [tupleList_getVars_3(Params)]);
+
 toksFuncBody({c_apply, _, _A, _B})->
 	io:format("        Apply statement: ~n");
 	
 toksFuncBody({c_literal,_,Value})->
-	toksLiteral({c_literal,[],Value});
+	io:format("        Literal ~p~n", [Value]);
+
+toksFuncBody({c_tuple,_,Values})->
+	io:format("        Tuple ~p~n", [tupleList_getVars_3(Values)]);
 	
 toksFuncBody(T)->
-	io:format("Unrecognised Token: ~s", [T]).
+	io:format("Unrecognised Token in function body: ~p", [T]).
 
-toksLiteral({c_literal,_,Value})->
-	io:format("        Literal ~p~n", [Value]).
+%Loop through case clauses
+toksClauses([])->ok;
+toksClauses([{c_clause,_,MatchVals,_true,Body}|Rest])->
+	io:format("Clause:~p~n",[MatchVals]),
+	toksFuncBody(Body),
+	toksClauses(Rest).
 
-%Convert the condition of a case statement
-toksCaseCond({c_values, _, _Values})->
-	io:format("Values~n");
-toksCaseCond({c_var, _, _Var})->
-	io:format("Variable~n");
-toksCaseCond({c_call, _, {_, _, Module}, {_, _, FName}, Params})->
-	io:format("Call function ~s:~p(", [Module, FName]),
-	io:format("~p)~n", [tupleList_getVars_3(Params)]);
-
-% Is apply a local function call? Assignment from function? Assignment with pattern matching?
-toksCaseCond({c_apply, _, {_,_,{FName,_Arity}}, Params})->
-	io:format("Call local function ~s(",[FName]),
-	io:format("~p)~n", [tupleList_getVars_3(Params)]).
 
 
 tupleList_getVars_3([])->
