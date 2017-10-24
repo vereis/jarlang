@@ -2,8 +2,6 @@
 -compile(export_all). 
 -compile({no_auto_import, [node/0]}).
 
-test() -> false.
-
 module(ModuleName, _Contents) ->
     io_lib:format(
 "{
@@ -113,6 +111,11 @@ switchStatement(Expression, Cases, HasLexScope) when is_list(Cases) ->
 switchStatement(Expression, Cases, HasLexScope) ->
     switchStatement(Expression, [Cases], HasLexScope).
 
+switchCase(Test, Consequent) when is_list(Consequent) ->
+   updateRecord(statement(), [{"type", <<"SwitchCase">>}, {"test", Test}, {"consequent", Consequent}]);
+switchCase(Test, Consequent) ->
+    switchCase(Test, [Consequent]).
+
 % Generates a return statement
 returnStatement(Expression) ->
     updateRecord(statement(), [{"type", <<"ReturnStatement">>}, {"argument", Expression}]).
@@ -125,6 +128,9 @@ throwStatement(Expression) ->
 tryStatement(BlockStatement, Handler, GuardedHandler, Finalizer) ->
     updateRecord(statement(), [{"type", <<"TryStatement">>}, {"block", BlockStatement}, {"handler", Handler}, {"guardedHandler", GuardedHandler}, {"finalizer", Finalizer}]).
 
+catchClause(Param, Guard, Body) ->
+    updateRecord(statement(), [{"type", <<"CatchClause">>}, {"param", Param}, {"guard", Guard}, {"body", Body}]).
+
 % Generates a while statement
 whileStatement(Expression, Body) when is_list(Body) ->
     updateRecord(statement(), [{"type", <<"WhileStatement">>}, {"test", Expression}, {"body", Body}]);
@@ -136,11 +142,96 @@ forStatement(Init, Update, Expression, Body) ->
     updateRecord(whileStatement(Expression, Body), [{"type", <<"ForStatement">>}, {"init", Init}, {"update", Update}]).
 
 % Generates a forIn statement
-forInStatement(Left, Right, Body) when is_list(Body) ->
-    updateRecord(statement(), [{"type", <<"ForInStatement">>}, {"left", Left}, {"right", Right}, {"each", false}, {"body", Body}]);
-forInStatement(Left, Right, Body) ->
-    forInStatement(Left, Right, [Body]).
+forInStatement(Left, Right, Body, Each) when is_list(Body) ->
+    updateRecord(statement(), [{"type", <<"ForInStatement">>}, {"left", Left}, {"right", Right}, {"each", Each}, {"body", Body}]);
+forInStatement(Left, Right, Body, Each) ->
+    forInStatement(Left, Right, [Body], Each).
 
+% Generates a forOf statement
+forOfStatement(Left, Right, Body) when is_list(Body) ->
+    updateRecord(statement(), [{"type", <<"ForOfStatement">>}, {"left", Left}, {"right", Right}, {"body", Body}]);
+forOfStatement(Left, Right, Body) ->
+    forOfStatement(Left, Right, [Body]).
+
+% Generates a declaration
+declaration() ->
+    node().
+
+% Generates a variable declaration
+variableDeclaration(Declarations, Kind) when is_list(Declarations)  ->
+    updateRecord(declaration(), [{"type", <<"VariableDeclaration">>}, {"declarations", Declarations}, {"kind", Kind}]);
+variableDeclaration(Declarations, Kind) ->
+    variableDeclaration([Declarations], Kind).
+
+% Generates a variable declarator
+variableDeclarator(Identifier, Init) ->
+    node("VariableDeclarator", [{"id", Identifier}, {"init", Init}]).
+
+% Generate a function declaration
+functionDeclaration(Identifier, Params, Body) when is_list(Params) ->
+    updateRecord(declaration(), [{"type", <<"FunctionDeclaration">>}, {"id", Identifier}, {"params", Params}, {"body", Body}]);
+functionDeclaration(Identifier, Params, Body) ->
+    functionDeclaration(Identifier, [Params], Body).
+
+% Generate an Expression
+expression() ->
+    node().
+
+% Generate a This expression
+thisExpression() ->
+    updateRecord(expression(), [{"type", <<"ThisExpression">>}]).
+
+% Generate an Array expression
+arrayExpression(Elements) when is_list(Elements) ->
+    updateRecord(expression(), [{"type", <<"ArrayExpression">>}, {"elements", Elements}]);
+arrayExpression(Elements) ->
+    arrayExpression([Elements]).
+
+% Generate an Object expression
+objectExpression(Properties) when is_list(Properties) ->
+    updateRecord(expression(), [{"type", <<"ObjectExpression">>}, {"properties", Properties}]);
+objectExpression(Properties) ->
+    objectExpression([Properties]).
+
+% A Literal Property for Object expressions
+property(Key, Value) ->
+    node("Property", [{"key", Key}, {"value", Value}, {"kind", <<"init">>}]).
+
+% Generate a sequence expression
+sequenceExpression(Expressions) when length(Expressions) > 1, is_list(Expressions) ->
+    updateRecord(expression(), [{"type", <<"SequenceExpression">>}, {"expressions", Expressions}]).
+
+% Generate a unary operation expression
+unaryExpression(Operator, Prefix, Argument) ->
+    updateRecord(expression(), [{"type", <<"UnaryExpression">>}, {"operator", Operator}, {"prefix", Prefix}, {"argument", Argument}]).
+
+% Generate a binary operation expression
+binaryExpression(Operator, Left, Right) ->
+    updateRecord(expression(), [{"type", <<"UpdateExpression">>}, {"operator", Operator}, {"left", Left}, {"right", Right}]).
+
+% Generate an update (increment or decrement) operator expression
+updateExpression(Operator, Argument, Prefix) ->
+    updateRecord(expression(), [{"type", <<"UpdateExpression">>}, {"operator", Operator}, {"argument", Argument}, {"prefix", Prefix}]).
+
+% Generate a logical operator expression
+logicalExpression(Operator, Left, Right) ->
+    updateRecord(expression(), [{"type", <<"LogicalExpression">>}, {"operator", Operator}, {"left", Left}, {"right", Right}]).
+
+% Generate a conditional expression
+conditionalExpression(Test, Alternate, Consequent) ->
+    updateRecord(expression(), [{"type", <<"ConditionalExpression">>}, {"test", Test}, {"alternate", Alternate}, {"consequent", Consequent}]).
+
+% Generate a new expression
+newExpression(Callee, Arguments) ->
+    updateRecord(expression(), [{"type", <<"NewExpression">>}, {"callee", Callee}, {"arguments", Arguments}]).
+
+% Generate a call expression
+callExpression(Callee, Arguments) ->
+    updateRecord(expression(), [{"type", <<"CallExpression">>}, {"callee", Callee}, {"arguments", Arguments}]).
+
+% Generate a member expression
+memberExpression(Object, Property, Computed) ->
+    updateRecord(expression(), [{"type", <<"MemberExpression">>}, {"object", Object}, {"property", Property}, {"computed", Computed}]).
 
 % ------ Intenal ------ %
 
