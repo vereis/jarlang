@@ -2,30 +2,6 @@
 -compile(export_all). 
 -compile({no_auto_import, [node/0]}).
 
-% -- Macros --
--define(IS_UNARY_OPERATOR(X), 
-        X =:= <<"-">> ;      X =:= <<"+">> ;    X =:= <<"!">> ; X =:= <<"~">> ; 
-        X =:= <<"typeof">> ; X =:= <<"void">> ; X =:= <<"delete">>).
-
--define(IS_BINARY_OPERATOR(X),
-        X =:= <<"==">> ; X =:= <<"!=">> ; X =:= <<"===">> ; X =:= <<"!==">> ;
-        X =:= <<"<">>  ; X =:= <<">">>  ; X =:= <<"<=">>  ; X =:= <<">=">> ;
-        X =:= <<"<<">> ; X =:= <<">>">> ; X =:= <<">>>">> ; X =:= <<"+">> ;
-        X =:= <<"-">>  ; X =:= <<"*">>  ; X =:= <<"/">>   ; X =:= <<"%">> ;
-        X =:= <<"|">>  ; X =:= <<"^">>  ; X =:= <<"&">>   ; X =:= <<"in">> ;
-        X =:= <<"instanceof">> ; X =:= <<"..">>).
-
--define(IS_LOGICAL_OPERATOR(X),
-        X =:= <<"||">> ; X =:= <<"&&">>).
-
--define(IS_ASSIGNMENT_OPERATOR(X),
-        X =:= <<"=">>    ; X =:= <<"+=">> ; X =:= <<"-=">>  ; X =:= <<"*=">> ; 
-        X =:= <<"/=">>   ; X =:= <<"%=">> ; X =:= <<"<<=">> ; X =:= <<">>=">> ;
-        X =:= <<">>>=">> ; X =:= <<"|=">> ; X =:= <<"^=">>  ; X =:= <<"&=">>).
-
--define(IS_UPDATE_OPERATOR(X),
-        X =:= <<"++">> ; X =:= <<"--">>).
-
 % -- EStree definitions --
 -include("estree_primitives.hrl").
 -include("estree_statements.hrl").
@@ -33,8 +9,26 @@
 -include("estree_expressions.hrl").
 
 % -- Functions --
-module(_ModuleName, _Contents) ->
-    ok.
+c_module(ModuleName, _Contents) ->
+    program(
+        variableDeclaration(
+            variableDeclarator(
+                identifier(ModuleName),
+                callExpression(
+                    functionExpression(
+                        null,
+                        [],
+                        blockStatement(
+                            []
+                        ),
+                        false
+                    ),
+                    []
+                )
+            ),
+            const
+        )
+    ).
 
 
 % ------ Intenal ------ %

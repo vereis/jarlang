@@ -1,3 +1,26 @@
+-define(IS_UNARY_OPERATOR(X), 
+        X =:= <<"-">> ;      X =:= <<"+">> ;    X =:= <<"!">> ; X =:= <<"~">> ; 
+        X =:= <<"typeof">> ; X =:= <<"void">> ; X =:= <<"delete">>).
+
+-define(IS_BINARY_OPERATOR(X),
+        X =:= <<"==">> ; X =:= <<"!=">> ; X =:= <<"===">> ; X =:= <<"!==">> ;
+        X =:= <<"<">>  ; X =:= <<">">>  ; X =:= <<"<=">>  ; X =:= <<">=">> ;
+        X =:= <<"<<">> ; X =:= <<">>">> ; X =:= <<">>>">> ; X =:= <<"+">> ;
+        X =:= <<"-">>  ; X =:= <<"*">>  ; X =:= <<"/">>   ; X =:= <<"%">> ;
+        X =:= <<"|">>  ; X =:= <<"^">>  ; X =:= <<"&">>   ; X =:= <<"in">> ;
+        X =:= <<"instanceof">> ; X =:= <<"..">>).
+
+-define(IS_LOGICAL_OPERATOR(X),
+        X =:= <<"||">> ; X =:= <<"&&">>).
+
+-define(IS_ASSIGNMENT_OPERATOR(X),
+        X =:= <<"=">>    ; X =:= <<"+=">> ; X =:= <<"-=">>  ; X =:= <<"*=">> ; 
+        X =:= <<"/=">>   ; X =:= <<"%=">> ; X =:= <<"<<=">> ; X =:= <<">>=">> ;
+        X =:= <<">>>=">> ; X =:= <<"|=">> ; X =:= <<"^=">>  ; X =:= <<"&=">>).
+
+-define(IS_UPDATE_OPERATOR(X),
+        X =:= <<"++">> ; X =:= <<"--">>).
+
 % Generate an Expression
 expression() ->
     node().
@@ -17,6 +40,12 @@ objectExpression(Properties) when is_list(Properties) ->
     updateRecord(expression(), [{"type", <<"ObjectExpression">>}, {"properties", Properties}]);
 objectExpression(Properties) ->
     objectExpression([Properties]).
+
+% Generates a Function expression
+functionExpression(Identifier, Params, Body, Expression) when is_list(Params) ->
+    updateRecord(expression(), [{"type", <<"FunctionExpression">>}, {"id", Identifier}, {"params", Params}, {"body", Body}, {"expression", Expression}]);
+functionExpression(Identifier, Params, Body, Expression) ->
+    functionExpression(Identifier, [Params], Body, Expression).
 
 % A Literal Property for Object expressions
 property(Key, Value) ->

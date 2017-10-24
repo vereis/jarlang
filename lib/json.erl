@@ -101,7 +101,7 @@ consume_node(Key, Value, Depth, Buffer) when is_map(Value) ->
             AfterCloseBrace = format("},~n", [], Depth, AfterNodeContents),
             AfterCloseBrace;
         false ->
-            format("\"~s\": {}~n", [Key], Depth, Buffer)
+            format("\"~s\": {},~n", [Key], Depth, Buffer)
     end;
 
 consume_node(Key, Value, Depth, Buffer) when is_list(Value) ->
@@ -112,7 +112,7 @@ consume_node(Key, Value, Depth, Buffer) when is_list(Value) ->
             AfterCloseBrace = format("],~n", [], Depth, AfterNodeContents),
             AfterCloseBrace;
         false ->
-            format("\"~s\": []~n", [Key], Depth, Buffer)
+            format("\"~s\": [],~n", [Key], Depth, Buffer)
     end;
 
 consume_node(Key, Value, Depth, Buffer) when ?IS_NUMBER(Value) ; ?IS_ALLOWED_ATOM(Value) ->
