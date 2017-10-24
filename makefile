@@ -4,6 +4,8 @@ SHELL = /bin/sh
 ERLC = $(shell which erlc)
 ERLFLAGS = -Werror -v -o
 DEBUGFLAGS = -o
+JSMINIFY = cp
+JSMINIFYFLAGS = -f
 
 # Directory Variables
 SRCDIR = src
@@ -23,6 +25,8 @@ release:
 	@ rm -f $(OUTDIR)/*.beam
 	@ $(ERLC) $(ERLFLAGS) $(OUTDIR) $(LIBDIR)/*.erl >> ./buildlog.log
 	@ $(ERLC) $(ERLFLAGS) $(OUTDIR) $(SRCDIR)/*.erl >> ./buildlog.log
+	@ $(JSMINIFY) $(JSMINIFYFLAGS) $(SRCDIR)/*.js $(OUTDIR) 2> /dev/null || true
+	@ $(JSMINIFY) $(JSMINIFYFLAGS) $(LIBDIR)/*.js $(OUTDIR) 2> /dev/null || true
 	@ rm ./buildlog.log
 	@ echo "Built Release in './$(OUTDIR)/'.\n"
 prepush:
@@ -32,6 +36,8 @@ prepush:
 	@ $(LOGHEADER) >> ./buildlog.log;
 	@ $(ERLC) $(ERLFLAGS) $(OUTDIR) $(LIBDIR)/*.erl >> ./buildlog.log
 	@ $(ERLC) $(ERLFLAGS) $(OUTDIR) $(SRCDIR)/*.erl >> ./buildlog.log
+	@ $(JSMINIFY) $(JSMINIFYFLAGS) $(SRCDIR)/*.js $(OUTDIR) 2> /dev/null || true	
+	@ $(JSMINIFY) $(JSMINIFYFLAGS) $(LIBDIR)/*.js $(OUTDIR) 2> /dev/null || true
 	@ rm ./buildlog.log
 debug:
 	@ echo "-- Building debug build : Will fail if there are any errors"
@@ -41,6 +47,8 @@ debug:
 	@ rm -f $(DEBUGDIR)/*.beam
 	@ $(ERLC) $(DEBUGFLAGS) $(DEBUGDIR) $(LIBDIR)/*.erl >> ./buildlog.log
 	@ $(ERLC) $(DEBUGFLAGS) $(DEBUGDIR) $(SRCDIR)/*.erl >> ./buildlog.log
+	@ $(JSMINIFY) $(JSMINIFYFLAGS) $(SRCDIR)/*.js $(DEBUGDIR) 2> /dev/null || true
+	@ $(JSMINIFY) $(JSMINIFYFLAGS) $(LIBDIR)/*.js $(DEBUGDIR) 2> /dev/null || true
 	@ rm ./buildlog.log
 	@ echo "Built Debug in './$(DEBUGDIR)/'.\n"
 clean:

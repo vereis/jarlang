@@ -1,0 +1,37 @@
+{
+  "name": "jarlang",
+  "version": "1.0.0",
+  "description": "Erlang -> JavaScript transpiler",
+  "main": "null",
+  "directories": {
+    "doc": "doc",
+    "lib": "lib"
+  },
+  "dependencies": {
+    "escodegen": "^1.9.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vereis/jarlang.git"
+  },
+  "keywords": [
+    "jarlang",
+    "erlang",
+    "javascript",
+    "transpiler",
+    "concurrency",
+    "functional",
+    "modules",
+    "ast"
+  ],
+  "author": "Chris Bailey, Andrew Johnson, Nick Laine",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/vereis/jarlang/issues"
+  },
+  "homepage": "https://github.com/vereis/jarlang#readme"
+}

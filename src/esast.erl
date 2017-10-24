@@ -55,6 +55,22 @@ updateRecord(Record, [{Key, Value} | Tail]) ->
 
 
 % Misc Functions
-print(Json) ->
+print(Map) ->
     code:add_path("../lib/"),
-    io:format(json:serialize(Json)).
+    Json = json:serialize(Map),
+
+    % codegen.js has to take a file since its non-trivial parsing JSON on the command line
+    % and different shells may react differently, so we write out to a temp file and delete it
+    % afterwards
+    Temp = "temp.estreejson",
+    filepath:write(Json, Temp),
+    % We generally don't care what happens here, both cases ensure dir exists
+    try io:format("~s", [os:cmd("node codegen.js " ++ Temp)]) of
+        _ -> 
+            filepath:delete(Temp),
+            ok
+    catch
+        _ -> 
+            filepath:delete(Temp),
+            {err, "codegen.js failed for some reason"}
+    end.

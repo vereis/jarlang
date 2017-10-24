@@ -23,7 +23,7 @@ serialize(Object) when is_map(Object) ->
         true ->
             Buffer = format("{~n", [], 0, []),
             Json = lists:flatten(format("}~n", [], 0, consume_obj(Object, 1, Buffer))),
-            Json;
+            remove_trailing_commas(Json);
         false ->
             "\{\}~n"
     end;
@@ -33,10 +33,15 @@ serialize(Array) when is_list(Array) ->
         true ->
             Buffer = format("[~n", [], 0, []),
             Json = lists:flatten(format("]~n", [], 0, consume_arr(Array, 1, Buffer))),
-            Json;
+            remove_trailing_commas(Json);
         false ->
             "\[\]~n"
     end.
+
+% Removes trailing commas, easier to use a regex than deal with doing this during string building
+remove_trailing_commas(Json) ->
+    {_, Regex} = re:compile(",(\n(\s|\t|\ )*(\}|\]))"),
+    re:replace(Json, Regex, "\\1", [global]).
 
 % Reads each node of a list and builds JSON String
 consume_arr([], _Depth, Buffer) ->
@@ -79,7 +84,7 @@ consume_arr_index(Value, Depth, Buffer) when is_bitstring(Value) ->
     format("\"~s\",~n", [bitstring_to_list(Value)], Depth, Buffer);
 
 consume_arr_index(Value, Depth, Buffer) ->
-    format("\"~w\", // Unsupported datatype converted to string to try and not break JSON~n", [Value], Depth, Buffer).
+    format("\"~w\",~n", [Value], Depth, Buffer).
 
 
 % Reads each node of a map and builds JSON String
@@ -122,7 +127,7 @@ consume_node(Key, Value, Depth, Buffer) when is_bitstring(Value) ->
     format("\"~s\": \"~s\",~n", [Key, bitstring_to_list(Value)], Depth, Buffer);
 
 consume_node(Key, Value, Depth, Buffer) ->
-    format("\"~s\": \"~w\", // Unsupported datatype converted to string to try and not break JSON~n", [Key, Value], Depth, Buffer).
+    format("\"~s\": \"~w\",~n", [Key, Value], Depth, Buffer).
 
 
 % Wrapper around io_lib:format that takes into account a depth for automated indentation
