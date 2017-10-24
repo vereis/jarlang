@@ -2,6 +2,22 @@
 -compile(export_all). 
 -compile({no_auto_import, [node/0]}).
 
+% -- Macros --
+
+-define(IS_UNARY_OPERATOR(X), 
+        X =:= <<"-">> ;      X =:= <<"+">> ;    X =:= <<"!">> ; X =:= <<"~">> ; 
+        X =:= <<"typeof">> ; X =:= <<"void">> ; X =:= <<"delete">>).
+
+-define(IS_BINARY_OPERATOR(X),
+       X =:= <<"==">> ; X =:= <<"!=">> ; X =:= <<"===">> ; X =:= <<"!==">> ;
+       X =:= <<"<">>  ; X =:= <<">">>  ; X =:= <<"<=">>  ; X =:= <<">=">> ;
+       X =:= <<"<<">> ; X =:= <<">>">> ; X =:= <<">>>">> ; X =:= <<"+">> ;
+       X =:= <<"-">>  ; X =:= <<"*">>  ; X =:= <<"/">>   ; X =:= <<"%">> ;
+       X =:= <<"|">>  ; X =:= <<"^">>  ; X =:= <<"&">>   ; X =:= <<"in">> ;
+       X =:= <<"instanceof">> ; X =:= <<"..">>).
+
+
+% -- Functions --
 module(ModuleName, _Contents) ->
     io_lib:format(
 "{
@@ -202,11 +218,11 @@ sequenceExpression(Expressions) when length(Expressions) > 1, is_list(Expression
     updateRecord(expression(), [{"type", <<"SequenceExpression">>}, {"expressions", Expressions}]).
 
 % Generate a unary operation expression
-unaryExpression(Operator, Prefix, Argument) ->
+unaryExpression(Operator, Prefix, Argument) when ?IS_UNARY_OPERATOR(Operator)  ->
     updateRecord(expression(), [{"type", <<"UnaryExpression">>}, {"operator", Operator}, {"prefix", Prefix}, {"argument", Argument}]).
 
 % Generate a binary operation expression
-binaryExpression(Operator, Left, Right) ->
+binaryExpression(Operator, Left, Right) when ?IS_BINARY_OPERATOR(Operator) ->
     updateRecord(expression(), [{"type", <<"UpdateExpression">>}, {"operator", Operator}, {"left", Left}, {"right", Right}]).
 
 % Generate an update (increment or decrement) operator expression

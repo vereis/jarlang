@@ -6,10 +6,10 @@
 
 % -- Macros   --
 % is_float(X) ; is_integer(X) is ugly
--define(is_number(Value), is_float(Value) ; is_integer(Value)).
+-define(IS_NUMBER(Value), is_float(Value) ; is_integer(Value)).
 
 % Nulls/Undefined are the only atom besides true and false which can be stored in json
--define(is_allowed_atom(Value), Value =:= null ; Value =:= undefined ; is_boolean(Value)).
+-define(IS_ALLOWED_ATOM(Value), Value =:= null ; Value =:= undefined ; is_boolean(Value)).
 
 
 
@@ -72,7 +72,7 @@ consume_arr_index(Value, Depth, Buffer) when is_list(Value) ->
             format("[],~n", [], Depth, Buffer)
     end;
 
-consume_arr_index(Value, Depth, Buffer) when ?is_number(Value) ; ?is_allowed_atom(Value) ->
+consume_arr_index(Value, Depth, Buffer) when ?IS_NUMBER(Value) ; ?IS_ALLOWED_ATOM(Value) ->
     format("~w,~n", [Value], Depth, Buffer);
 
 consume_arr_index(Value, Depth, Buffer) when is_bitstring(Value) ->
@@ -115,7 +115,7 @@ consume_node(Key, Value, Depth, Buffer) when is_list(Value) ->
             format("\"~s\": []~n", [Key], Depth, Buffer)
     end;
 
-consume_node(Key, Value, Depth, Buffer) when ?is_number(Value) ; ?is_allowed_atom(Value) ->
+consume_node(Key, Value, Depth, Buffer) when ?IS_NUMBER(Value) ; ?IS_ALLOWED_ATOM(Value) ->
     format("\"~s\": ~w,~n", [Key, Value], Depth, Buffer);
 
 consume_node(Key, Value, Depth, Buffer) when is_bitstring(Value) ->
