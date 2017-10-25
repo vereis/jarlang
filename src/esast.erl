@@ -9,26 +9,57 @@
 -include("estree_expressions.hrl").
 
 % -- Functions --
-c_module(ModuleName, _Contents) ->
+c_module(ModuleName, ExportList, _FunctionList) ->
     program(
-        variableDeclaration(
-            variableDeclarator(
-                identifier(list_to_binary(ModuleName)),
-                callExpression(
-                    functionExpression(
-                        null,
-                        [],
-                        blockStatement(
-                            []
-                        ),
-                        false
+        constDeclaration(
+            list_to_binary(ModuleName),
+            callExpression(
+                functionExpression(
+                    null,
+                    [],
+                    blockStatement(
+                        [
+                            c_exports(ExportList),
+                            constDeclaration(
+                                <<"functions">>,
+                                objectExpression([])
+                            ),
+                            returnStatement(
+                                identifier(<<"exports">>)
+                            )
+                        ]
                     ),
-                    []
-                )
-            ),
-            const
+                    false
+                ),
+                []
+            )
         )
     ).
+
+c_exports(ExportList) ->
+    constDeclaration(<<"exports">>, objectExpression(c_exports(ExportList, []))).
+c_exports([], Funcs) ->
+    Funcs;
+c_exports([{FnName, FnArity} | Tails], Funcs) ->
+    FuncName = iolist_to_binary([list_to_binary(FnName), <<"/">>, list_to_binary([FnArity])]),
+    Func = functionExpression(null, [], blockStatement(
+        [
+            returnStatement(
+                callExpression(
+                    memberExpression(
+                        identifier(<<"functions">>),
+                        literal(FuncName),
+                        true
+                    ),
+                    identifier(<<"arguments">>)
+                )
+            )
+        ]
+    ), false),
+    FuncContainer = property(
+        literal(FuncName), Func),
+    c_exports(Tails, Funcs ++ [FuncContainer]).
+
 
 
 % ------ Intenal ------ %
@@ -42,8 +73,12 @@ node(Type) ->
 node() ->
     #{}.
 
+node(Type, AdditionalFields) when is_atom(Type) ->
+    node(atom_to_binary(Type, utf-8), AdditionalFields);
+node(Type, AdditionalFields) when is_list(Type) ->
+    node(list_to_binary(Type), AdditionalFields);
 node(Type, AdditionalFields) ->
-    NewNode = #{type => list_to_binary(Type)},
+    NewNode = #{type => Type},
     updateRecord(NewNode, AdditionalFields).
 
 % Add location data to any node

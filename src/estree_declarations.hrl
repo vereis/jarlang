@@ -17,3 +17,13 @@ functionDeclaration(Identifier, Params, Body) when is_list(Params) ->
     updateRecord(declaration(), [{"type", <<"FunctionDeclaration">>}, {"id", Identifier}, {"params", Params}, {"body", Body}]);
 functionDeclaration(Identifier, Params, Body) ->
     functionDeclaration(Identifier, [Params], Body).
+
+% Variable declarator shorthand
+constDeclaration(Identifier, Init) ->
+    variableDeclaration(variableDeclarator(identifier(Identifier), Init), <<"const">>).
+
+varDeclaration(Identifier, Init) ->
+    variableDeclaration(variableDeclarator(identifier(Identifier), Init), <<"var">>).
+
+letDeclaration(Identifier, Init) ->
+    variableDeclaration(variableDeclarator(identifier(Identifier), Init), <<"let">>).
