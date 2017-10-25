@@ -2,12 +2,12 @@
 % Provides a means of extracting token data from a given file.
 
 -module(tokdata).
--export([map_export_data/1]).
+-export([get_exported_function_map/1]).
 
 
 % Returns a map of the line numbers of exported functions keyed by function name/arity.
 % Throughout the file, this key is referred to as an "export atom" or "definition atom".
-map_export_data(Filename) ->
+get_exported_function_map(Filename) ->
     Toks = tokenize_file(Filename),
     match_export_lines(Toks, find_exports(Toks), #{}).
 
@@ -28,11 +28,11 @@ tokenize_file(Filename) ->
     end.
 
 
-% Search file tokens for an export header, then perform processing.
+% Search file tokens for an export directive, then perform processing.
 find_exports({ok, Toks, _}) ->
     find_exports(Toks);
 
-find_exports([{atom, _LineNo, export} | Toks]) ->
+find_exports([{'-', _} | [{atom, _, export} | [{'(', _} | [{'[', _} | Toks]]]]) ->
     process_exports(Toks);
 
 find_exports([_ | Toks]) ->
@@ -52,14 +52,11 @@ process_exports(Toks) when is_list(Toks) ->
 process_exports(_) ->
     badarg.
 
-process_exports([{'(', _} | [{'[', _} | Toks]], Exp) ->
-    process_exports(Toks, Exp);
+process_exports([{atom, _, Name} | [{'/', _} | [{integer, _, Arity} | Toks]]], Exp) ->
+    process_exports(Toks, [list_to_atom(atom_to_list(Name) ++ "/" ++ integer_to_list(Arity)) | Exp]);
 
 process_exports([{',', _} | Toks], Exp) ->
     process_exports(Toks, Exp);
-
-process_exports([{atom, _, Name} | [{'/', _} | [{integer, _, Arity} | Toks]]], Exp) ->
-    process_exports(Toks, [list_to_atom(atom_to_list(Name) ++ "/" ++ integer_to_list(Arity)) | Exp]);
 
 process_exports([{']', _} | [{')', _} | _Toks]], Exp) ->
     lists:reverse(Exp);
