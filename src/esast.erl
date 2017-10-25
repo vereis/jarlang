@@ -13,7 +13,7 @@ c_module(ModuleName, _Contents) ->
     program(
         variableDeclaration(
             variableDeclarator(
-                identifier(ModuleName),
+                identifier(list_to_binary(ModuleName)),
                 callExpression(
                     functionExpression(
                         null,
@@ -46,6 +46,9 @@ node(Type, AdditionalFields) ->
     NewNode = #{type => list_to_binary(Type)},
     updateRecord(NewNode, AdditionalFields).
 
+% Add location data to any node
+addLocationData(Node) ->
+    updateRecord(Node, []).
 
 % Helper function which appends new key value pairs into an existing record
 updateRecord(Record, [{Key, Value}]) ->

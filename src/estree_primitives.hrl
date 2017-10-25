@@ -1,8 +1,9 @@
 -define(IS_LITERAL(X),
-        is_binary(X) ; X =:= null ; X =:= undefined ; is_integer(X) ; is_float(X) ; is_boolean(X)).
-
+        is_list(X) ; is_binary(X) ; X =:= null ; X =:= undefined ; is_integer(X) ; is_float(X) ; is_boolean(X)).
+-define(IS_IDENTIFIER(X),
+	is_list(X) ; is_binary(X)).
 % Generates an Identifier Node
-identifier(Name) when is_binary(Name) ->
+identifier(Name) when ?IS_IDENTIFIER(Name) ->
     node("Identifier", [{"name", Name}]).
 
 % Generates a Literal Node
