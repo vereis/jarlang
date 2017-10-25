@@ -4,11 +4,16 @@
 -module(tokdata).
 -export([map_export_data/1]).
 
+
+% Returns a map of the line numbers of exported functions keyed by function name/arity.
+% Throughout the file, this key is referred to as an "export atom" or "definition atom".
 map_export_data(Filename) ->
     Toks = tokenize_file(Filename),
     match_export_lines(Toks, find_exports(Toks), #{}).
 
 
+% Scans and tokenizes a given erlang file; not dissimilar to coregen code that tokenizes core erlang.
+% todo: add tokenize_erl/tokenize_core functions to lib?
 tokenize_file(Filename) ->
     case file:read_file(Filename) of
         {ok, Bin} ->
@@ -23,6 +28,7 @@ tokenize_file(Filename) ->
     end.
 
 
+% Search file tokens for an export header, then perform processing.
 find_exports({ok, Toks, _}) ->
     find_exports(Toks);
 
@@ -39,6 +45,7 @@ find_exports(error) ->
     error.
 
 
+% Returns a list of atoms representing exported functions, i.e. the keys in the map of export data.
 process_exports(Toks) when is_list(Toks) ->
     process_exports(Toks, []);
 
@@ -61,8 +68,10 @@ process_exports(_, _) ->
     badexp.
 
 
+% Searches file tokens for the definitions of exported functions.
+% Maps their line numbers to their corresponding export atoms.
 match_export_lines([{atom, Line, Name} | [{'(', _} | Toks]], ExpList, ExpMap) ->
-    {NextToks, DefAtom} = get_definition_atom(Toks, Name, 0),
+    {NextToks, DefAtom} = process_export_atom(Toks, Name, 0),
     {NewList, Found} = match_export_atom(DefAtom, ExpList, []),
     case Found of
         true ->
@@ -83,22 +92,25 @@ match_export_lines([], ExpList, ExpMap) ->
     ExpMap.
 
 
-get_definition_atom([{',', _} | Toks], Name, Arity) ->
-    get_definition_atom(Toks, Name, Arity + 1);
+% Processes tokens that are believed to belong to a function definition, and builds a definition atom accordingly.
+% todo: Make more thorough, as it can't distinguish a function call from a definition until the closing arg bracket.
+process_export_atom([{',', _} | Toks], Name, Arity) ->
+    process_export_atom(Toks, Name, Arity + 1);
 
-get_definition_atom([{')', _} | [{'->', _} | Toks]], Name, Arity) ->
+process_export_atom([{')', _} | [{'->', _} | Toks]], Name, Arity) ->
     {Toks, list_to_atom(atom_to_list(Name) ++ "/" ++ integer_to_list(Arity))};
 
-get_definition_atom([{')', _} | Toks], _Name, _Arity) ->
+process_export_atom([{')', _} | Toks], _Name, _Arity) ->
     {Toks, notdef};
 
-get_definition_atom([_ | Toks], Name, 0) ->
-    get_definition_atom(Toks, Name, 1);
+process_export_atom([_ | Toks], Name, 0) ->
+    process_export_atom(Toks, Name, 1);
 
-get_definition_atom([_ | Toks], Name, Arity) ->
-    get_definition_atom(Toks, Name, Arity).
+process_export_atom([_ | Toks], Name, Arity) ->
+    process_export_atom(Toks, Name, Arity).
 
 
+% Checks whether a definition atom matches an exported function, and removes it from the list of export atoms if found.
 match_export_atom(notdef, Exp, []) ->
     {Exp, false};
 
