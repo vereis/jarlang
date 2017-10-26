@@ -7,8 +7,9 @@
 		 er2file/3]).
 
 % Transpiles a module through the pipeline as far as is implemented
+
 er2(best,_) ->
-	er2(estree,"../doc/misc/sample_erlang/core_AST_revEng");
+	er2(estree,"../doc/Reverse_Engineering_AST/core_AST_revEng");
 
 er2(core_erlang,Module)->
 	{ok,_,CE}=coregen:er2ce(Module,return_CE),
