@@ -1,5 +1,5 @@
 % Author: Andrew Johnson
-% Converts a CoreErlang AST into a ESTree AST.
+% Walks down a CoreErlang AST and calls EStree.
 
 -module(asttrans).
 -export([erast2esast/1,
@@ -16,7 +16,6 @@ toksModule({c_module, _A, {_, _, ModuleName}, Exports, _Attributes, Functions})-
 	%io:format("    exports: ~p ~n", [tupleList_getVars_3(Exports)]),
 	esast:print(esast:c_module(atom_to_list(ModuleName),[],"")),
 	toksFunctions(Functions);
-	
 	
 	
 toksModule(T)->
