@@ -10,7 +10,10 @@
 -include("estree_prefabs.hrl").
 
 % -- Functions --
-c_module(ModuleName, ExportList, FunctionList) ->
+c_module(ModuleName, [{FuncName, Arity} | OtherExports], 
+         [{FuncNameWithArity, Function} | OtherFunctions]) when is_list(ModuleName) , is_list(FuncName) , is_integer(Arity) , is_list(FuncNameWithArity) ->
+    ExportList = [{FuncName, Arity} | OtherExports],
+    FunctionList = [{FuncNameWithArity, Function} | OtherFunctions],
     program(
         constDeclaration(
             list_to_binary(ModuleName),
@@ -41,20 +44,23 @@ c_module(ModuleName, ExportList, FunctionList) ->
 % each entry in the map into a function containing a switch/case statement on arg length.
 c_exports(ExportList) ->
     MappedByFuncName = c_exports_mapfuncs(ExportList, #{}),
-    constDeclaration(<<"exports">>, objectExpression(
-        lists:map(fun({FuncName, Arities}) ->
-            property(
-                literal(list_to_binary(FuncName)), 
-                functionExpression(null, [], blockStatement(c_exports_gencases({FuncName, Arities})), false)
-            )       
-        end, maps:to_list(MappedByFuncName))                                 
-    )).
+    constDeclaration(
+        <<"exports">>, 
+        objectExpression(
+            lists:map(fun({FuncName, Arities}) ->
+                property(
+                    literal(list_to_binary(FuncName)), 
+                    functionExpression(null, [], blockStatement(c_exports_gencases({FuncName, Arities})), false)
+                )       
+            end, maps:to_list(MappedByFuncName))                                 
+        )
+    ).
 
 % Function which takes a list of tuples in the form {Key, Value} and generates a map in the
 % form #{Key => ListOfAllValuesBelongingToKey}
 c_exports_mapfuncs([], Map) ->
     Map;
-c_exports_mapfuncs([{FnName, FnArity} | Tails], Map) ->
+c_exports_mapfuncs([{FnName, FnArity} | Tails], Map) when is_list(FnName) , is_integer(FnArity) ->
     case maps:find(FnName, Map) of
         {ok, Val} ->
             NewVal = Val ++ [FnArity];
@@ -65,7 +71,7 @@ c_exports_mapfuncs([{FnName, FnArity} | Tails], Map) ->
 
 % Generates a switch statement for use in c_exports node. Takes a tuple representing function
 % name and arities belonging to said function name. Cases will be generated for all such arities
-c_exports_gencases({FuncName, Arities}) ->
+c_exports_gencases({FuncName, Arities}) when is_list(FuncName) ->
     [
         switchStatement(
             memberExpression(identifier(<<"arguments">>), identifier(<<"length">>), false),
@@ -97,10 +103,24 @@ c_exports_gencases({FuncName, Arities}) ->
         )
     ].
 
-c_functions(_FunctionList) ->
+% Generates function datastructure which takes a list in the form of [{"SomeFun/2", FUNCTION}] where function
+% is an ESTree functionExpression / functionDeclaration and produces the following:
+% const functions = {"somefun/2": function() { ... }}
+c_functions([{FuncNameWithArity, Function} | Rest]) ->
+    FunctionList = [{FuncNameWithArity, Function} | Rest],
     constDeclaration(
         <<"functions">>,
-        objectExpression([])
+        objectExpression(
+            lists:map(fun({FuncName, _Fn}) ->
+                property(
+                    literal(list_to_binary(FuncName)), 
+                    functionExpression(null, [], blockStatement([
+                        % Function
+                        returnStatement(literal(<<"function parsing not yet implemented">>))
+                    ]), false)
+                )
+            end , FunctionList)
+        )
     ).
 
 % ------ Intenal ------ %
@@ -134,7 +154,7 @@ updateRecord(Record, [{Key, Value} | Tail]) ->
 
 
 % Misc Functions
-print(Map) ->
+test(Map) ->
     code:add_path("../lib/"),
     Json = json:serialize(Map),
 
