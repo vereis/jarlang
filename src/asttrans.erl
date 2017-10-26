@@ -7,13 +7,15 @@
 
 % Compiles a given Erlang source file to a EStree ast
 erast2esast(AST) ->
-	toksModule(AST).
+	%toksModule(AST),
+	esast:print(toksModule(AST)).
 
 %Read the module token (first token)
 toksModule({c_module, _A, {_, _, ModuleName}, Exports, _Attributes, Functions})->
-	io:format("module: ~s ~n", [ModuleName]),
-	io:format("    exports: ~p ~n", [tupleList_getVars_3(Exports)]),
-	toksFunctions(Functions);
+	%io:format("module: ~s ~n", [ModuleName]),
+	%io:format("    exports: ~p ~n", [tupleList_getVars_3(Exports)]),
+	%toksFunctions(Functions);
+	esast:c_module(atom_to_list(ModuleName),"asdf");
 	
 toksModule(T)->
 	io:format("Unrecognised Token in module section: ~p", [T]).
