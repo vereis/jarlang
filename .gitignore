@@ -9,6 +9,8 @@ ebin/*
 edebug/*
 *.ast
 *.core
+!doc/*.ast
+!doc/*.core
 .concrete/DEV_MODE
 .rebar
 .log
