@@ -11,7 +11,7 @@ erast2esast(AST) ->
 	%esast:print(toksModule(AST)).
 
 %Read the module token (first token)
-toksModule({c_module, _A, {_, _, ModuleName}, Exports, _Attributes, Functions})->
+toksModule({c_module, _A, {_, _, ModuleName}, _Exports, _Attributes, Functions})->
 	%io:format("module: ~s ~n", [ModuleName]),
 	%io:format("    exports: ~p ~n", [tupleList_getVars_3(Exports)]),
 	esast:print(esast:c_module(atom_to_list(ModuleName),[],"")),
