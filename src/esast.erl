@@ -75,8 +75,8 @@ c_exports_gencases({FuncName, Arities}) ->
                     [returnStatement(
                         callExpression(
                             memberExpression(
-                                memberExpression(identifier(<<"functions">>), literal(list_to_binary(FuncName)), true),
-                                literal(Arity),
+                                identifier(<<"functions">>), 
+                                literal(iolist_to_binary([FuncName, "/", integer_to_binary(Arity)])), 
                                 true
                             ),
                             identifier(<<"arguments">>)
@@ -85,18 +85,16 @@ c_exports_gencases({FuncName, Arities}) ->
                 )       
             end, Arities),
             false
-        ),
-        
-            error("exception error", "undefined function", 
-                binaryExpression(<<"+">>, 
-                    literal(list_to_binary(FuncName)),
-                    binaryExpression(<<"+">>,
-                        literal(<<"/">>),
-                        memberExpression(identifier(<<"arguments">>), identifier(<<"length">>), false)
-                    )
+        ),        
+        error("exception error", "undefined function", 
+            binaryExpression(<<"+">>, 
+                literal(list_to_binary(FuncName)),
+                binaryExpression(<<"+">>,
+                    literal(<<"/">>),
+                    memberExpression(identifier(<<"arguments">>), identifier(<<"length">>), false)
                 )
             )
-        
+        )
     ].
 
 c_functions(_FunctionList) ->
