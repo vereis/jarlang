@@ -1,3 +1,0 @@
--- Build started on Thu 26 Oct 22:39:23 DST 2017 --
-compile: warnings being treated as errors
-src/asttrans.erl:14: variable 'Exports' is unused
