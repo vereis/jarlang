@@ -1,7 +1,3 @@
-% Generates a generic Statement Node
-statement() ->
-    node().
-
 % Generates an empty statement node - i.e. an empty semicolon
 emptyStatement() ->
     updateRecord(statement(), [{"type", <<"EmptyStatement">>}]).

@@ -21,10 +21,6 @@
 -define(IS_UPDATE_OPERATOR(X),
         X =:= <<"++">> ; X =:= <<"--">>).
 
-% Generate an Expression
-expression() ->
-    node().
-
 % Generate a This expression
 thisExpression() ->
     updateRecord(expression(), [{"type", <<"ThisExpression">>}]).
@@ -61,7 +57,7 @@ unaryExpression(Operator, Prefix, Argument) when ?IS_UNARY_OPERATOR(Operator)  -
 
 % Generate a binary operation expression
 binaryExpression(Operator, Left, Right) when ?IS_BINARY_OPERATOR(Operator) ->
-    updateRecord(expression(), [{"type", <<"UpdateExpression">>}, {"operator", Operator}, {"left", Left}, {"right", Right}]).
+    updateRecord(expression(), [{"type", <<"BinaryExpression">>}, {"operator", Operator}, {"left", Left}, {"right", Right}]).
 
 % Generate an update (increment or decrement) operator expression
 updateExpression(Operator, Argument, Prefix) when ?IS_UPDATE_OPERATOR(Operator) ->

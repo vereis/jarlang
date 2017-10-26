@@ -7,9 +7,10 @@
 -include("estree_statements.hrl").
 -include("estree_declarations.hrl").
 -include("estree_expressions.hrl").
+-include("estree_prefabs.hrl").
 
 % -- Functions --
-c_module(ModuleName, ExportList, _FunctionList) ->
+c_module(ModuleName, ExportList, FunctionList) ->
     program(
         constDeclaration(
             list_to_binary(ModuleName),
@@ -19,11 +20,9 @@ c_module(ModuleName, ExportList, _FunctionList) ->
                     [],
                     blockStatement(
                         [
+                            useStrict(),
                             c_exports(ExportList),
-                            constDeclaration(
-                                <<"functions">>,
-                                objectExpression([])
-                            ),
+                            c_functions(FunctionList),
                             returnStatement(
                                 identifier(<<"exports">>)
                             )
@@ -36,31 +35,75 @@ c_module(ModuleName, ExportList, _FunctionList) ->
         )
     ).
 
+% Eventually creates an export list which is intended to be returned in a c_module call.
+% Function arity is handled with switch/case statements and as we don't know how many different
+% versions of a function there are, we store a map of lists of functions to call. We then turn
+% each entry in the map into a function containing a switch/case statement on arg length.
 c_exports(ExportList) ->
-    constDeclaration(<<"exports">>, objectExpression(c_exports(ExportList, []))).
-c_exports([], Funcs) ->
-    Funcs;
-c_exports([{FnName, FnArity} | Tails], Funcs) ->
-    FuncName = iolist_to_binary([list_to_binary(FnName), <<"/">>, list_to_binary([FnArity])]),
-    Func = functionExpression(null, [], blockStatement(
-        [
-            returnStatement(
-                callExpression(
-                    memberExpression(
-                        identifier(<<"functions">>),
-                        literal(FuncName),
-                        true
-                    ),
-                    identifier(<<"arguments">>)
+    MappedByFuncName = c_exports_mapfuncs(ExportList, #{}),
+    constDeclaration(<<"exports">>, objectExpression(
+        lists:map(fun({FuncName, Arities}) ->
+            property(
+                literal(list_to_binary(FuncName)), 
+                functionExpression(null, [], blockStatement(c_exports_gencases({FuncName, Arities})), false)
+            )       
+        end, maps:to_list(MappedByFuncName))                                 
+    )).
+
+% Function which takes a list of tuples in the form {Key, Value} and generates a map in the
+% form #{Key => ListOfAllValuesBelongingToKey}
+c_exports_mapfuncs([], Map) ->
+    Map;
+c_exports_mapfuncs([{FnName, FnArity} | Tails], Map) ->
+    case maps:find(FnName, Map) of
+        {ok, Val} ->
+            NewVal = Val ++ [FnArity];
+        _else ->
+            NewVal = [FnArity]
+    end,
+    c_exports_mapfuncs(Tails, maps:put(FnName, NewVal, Map)).
+
+% Generates a switch statement for use in c_exports node. Takes a tuple representing function
+% name and arities belonging to said function name. Cases will be generated for all such arities
+c_exports_gencases({FuncName, Arities}) ->
+    [
+        switchStatement(
+            memberExpression(identifier(<<"arguments">>), identifier(<<"length">>), false),
+            lists:map(fun(Arity) ->
+                switchCase(
+                    literal(Arity),
+                    [returnStatement(
+                        callExpression(
+                            memberExpression(
+                                memberExpression(identifier(<<"functions">>), literal(list_to_binary(FuncName)), true),
+                                literal(Arity),
+                                true
+                            ),
+                            identifier(<<"arguments">>)
+                        )   
+                    ), breakStatement(null)]     
+                )       
+            end, Arities),
+            false
+        ),
+        
+            error("exception error", "undefined function", 
+                binaryExpression(<<"+">>, 
+                    literal(list_to_binary(FuncName)),
+                    binaryExpression(<<"+">>,
+                        literal(<<"/">>),
+                        memberExpression(identifier(<<"arguments">>), identifier(<<"length">>), false)
+                    )
                 )
             )
-        ]
-    ), false),
-    FuncContainer = property(
-        literal(FuncName), Func),
-    c_exports(Tails, Funcs ++ [FuncContainer]).
+        
+    ].
 
-
+c_functions(_FunctionList) ->
+    constDeclaration(
+        <<"functions">>,
+        objectExpression([])
+    ).
 
 % ------ Intenal ------ %
 
@@ -74,7 +117,7 @@ node() ->
     #{}.
 
 node(Type, AdditionalFields) when is_atom(Type) ->
-    node(atom_to_binary(Type, utf-8), AdditionalFields);
+    node(atom_to_binary(Type, "utf-8"), AdditionalFields);
 node(Type, AdditionalFields) when is_list(Type) ->
     node(list_to_binary(Type), AdditionalFields);
 node(Type, AdditionalFields) ->
