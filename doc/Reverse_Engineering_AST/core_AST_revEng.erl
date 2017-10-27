@@ -37,3 +37,12 @@ errIfNot3Tuple(Var) ->
 
 errIfNot3and3(Var,Var2) ->
 	{3,3} = {Var,Var2}.
+
+caseExample(Var)->
+	case Var of
+		match ->
+			42;
+		othermatch ->
+			not42;
+		_ -> nomatch
+	end.
