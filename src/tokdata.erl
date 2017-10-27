@@ -6,7 +6,7 @@
 
 
 % Returns a map of the line numbers of exported functions keyed by function name/arity.
-% Throughout the file, this key is referred to as an "export atom" or "definition atom".
+% Throughout the file, this key is referred to as an "export string" or "definition string".
 get_exported_function_map(Filename) ->
     Toks = tokenize_file(Filename),
     match_export_lines(Toks, find_exports(Toks), #{}).
@@ -45,7 +45,7 @@ find_exports(error) ->
     error.
 
 
-% Returns a list of atoms representing exported functions, i.e. the keys in the map of export data.
+% Returns a list of strings representing exported functions, i.e. the keys in the map of export data.
 process_exports(Toks) when is_list(Toks) ->
     process_exports(Toks, []);
 
@@ -53,7 +53,7 @@ process_exports(_) ->
     badarg.
 
 process_exports([{atom, _, Name} | [{'/', _} | [{integer, _, Arity} | Toks]]], Exp) ->
-    process_exports(Toks, [list_to_atom(atom_to_list(Name) ++ "/" ++ integer_to_list(Arity)) | Exp]);
+    process_exports(Toks, [atom_to_list(Name) ++ "/" ++ integer_to_list(Arity) | Exp]);
 
 process_exports([{',', _} | Toks], Exp) ->
     process_exports(Toks, Exp);
@@ -66,10 +66,10 @@ process_exports(_, _) ->
 
 
 % Searches file tokens for the definitions of exported functions.
-% Maps their line numbers to their corresponding export atoms.
+% Maps their line numbers to their corresponding export strings.
 match_export_lines([{atom, Line, Name} | [{'(', _} | Toks]], ExpList, ExpMap) ->
-    {NextToks, DefAtom} = process_export_atom(Toks, Name, 0),
-    {NewList, Found} = match_export_atom(DefAtom, ExpList, []),
+    {NextToks, DefAtom} = process_export_string(Toks, Name, 0),
+    {NewList, Found} = match_export_string(DefAtom, ExpList, []),
     case Found of
         true ->
             match_export_lines(NextToks, NewList, maps:put(DefAtom, Line, ExpMap));
@@ -89,34 +89,34 @@ match_export_lines([], ExpList, ExpMap) ->
     ExpMap.
 
 
-% Processes tokens that are believed to belong to a function definition, and builds a definition atom accordingly.
+% Processes tokens that are believed to belong to a function definition, and builds a definition string accordingly.
 % todo: Make more thorough, as it can't distinguish a function call from a definition until the closing arg bracket.
-process_export_atom([{',', _} | Toks], Name, Arity) ->
-    process_export_atom(Toks, Name, Arity + 1);
+process_export_string([{',', _} | Toks], Name, Arity) ->
+    process_export_string(Toks, Name, Arity + 1);
 
-process_export_atom([{')', _} | [{'->', _} | Toks]], Name, Arity) ->
-    {Toks, list_to_atom(atom_to_list(Name) ++ "/" ++ integer_to_list(Arity))};
+process_export_string([{')', _} | [{'->', _} | Toks]], Name, Arity) ->
+    {Toks, atom_to_list(Name) ++ "/" ++ integer_to_list(Arity)};
 
-process_export_atom([{')', _} | Toks], _Name, _Arity) ->
+process_export_string([{')', _} | Toks], _Name, _Arity) ->
     {Toks, notdef};
 
-process_export_atom([_ | Toks], Name, 0) ->
-    process_export_atom(Toks, Name, 1);
+process_export_string([_ | Toks], Name, 0) ->
+    process_export_string(Toks, Name, 1);
 
-process_export_atom([_ | Toks], Name, Arity) ->
-    process_export_atom(Toks, Name, Arity).
+process_export_string([_ | Toks], Name, Arity) ->
+    process_export_string(Toks, Name, Arity).
 
 
-% Checks whether a definition atom matches an exported function, and removes it from the list of export atoms if found.
-match_export_atom(notdef, Exp, []) ->
+% Checks whether a definition string matches an exported function, and removes it from the list of export strings if found.
+match_export_string(notdef, Exp, []) ->
     {Exp, false};
 
-match_export_atom(DefAtom, [DefAtom | Exp], Checked) ->
+match_export_string(DefAtom, [DefAtom | Exp], Checked) ->
     {Checked ++ Exp, true};
 
-match_export_atom(DefAtom, [E | Exp], Checked) ->
-    match_export_atom(DefAtom, Exp, [E | Checked]);
+match_export_string(DefAtom, [E | Exp], Checked) ->
+    match_export_string(DefAtom, Exp, [E | Checked]);
 
-match_export_atom(_DefAtom, [], Checked) ->
+match_export_string(_DefAtom, [], Checked) ->
     {Checked, false}.
 
