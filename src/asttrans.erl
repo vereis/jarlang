@@ -11,15 +11,39 @@ erast2esast(AST) ->
 	%esast:print(toksModule(AST)).
 
 %Read the module token (first token)
-toksModule({c_module, _A, {_, _, _ModuleName}, _Exports, _Attributes, Functions})->
+toksModule({c_module, _A, {_, _, ModuleName}, Exports, _Attributes, Functions})->
 	%io:format("module: ~s ~n", [ModuleName]),
 	%io:format("    exports: ~p ~n", [tupleList_getVars_3(Exports)]),
-	%esast:print(esast:c_module(atom_to_list(ModuleName),[],"")),
-	toksFunctions(Functions);
+	[{FuncName, Arity} | OtherExports] = rAtomToList(tupleList_getVars_3(Exports)),
+	[{FuncNameWithArity, Function} | OtherFunctions] = rAtomToList(Functions),
+	io:format("FuncName:~p~n",[is_list(FuncName)]),
+	io:format("Arity:~p~n",[is_integer(Arity)]),
+	io:format("FuncNameWithArity:~p~n",[is_list(FuncNameWithArity)]),
+	esast:print(esast:c_module(
+		atom_to_list(ModuleName),
+		rAtomToList(tupleList_getVars_3(Exports)),
+		toksFunctions2(Functions)
+	)),
+	rAtomToList(Functions);
+	%toksFunctions(Functions);
 	
 	
 toksModule(T)->
 	io:format("Unrecognised Token in module section: ~p", [T]).
+
+
+%Split functions apart
+toksFunctions2([{{_, _, {FunctionName, Arity}}, {_, _, ParamNames, Body}}])->
+	{
+		atom_to_list(FunctionName)++"/"++integer_to_list(Arity),
+		{{a, b, {FunctionName, Arity}}, {a, b, ParamNames, Body}}
+	};
+toksFunctions2([{{_, _, {FunctionName, Arity}}, {_, _, ParamNames, Body}} | Rest])->
+	[{
+		atom_to_list(FunctionName)++"/"++integer_to_list(Arity),
+		{{a, b, {FunctionName, Arity}}, {a, b, ParamNames, Body}}
+	}| toksFunctions2(Rest)].
+
 
 %Split functions apart
 toksFunctions([F | Body])->
@@ -98,6 +122,29 @@ readTokens([])->
 readTokens([T | Body])->
 	io:format("~p\n", [T]),
 	readTokens(Body).
+
+rAtomToList([A|Rest])->
+	[rAtomToList(A)|rAtomToList(Rest)];
+rAtomToList({A})->
+	{rAtomToList(A)};
+rAtomToList({A,B})->
+	{rAtomToList(A),rAtomToList(B)};
+rAtomToList({A,B,C})->
+	{rAtomToList(A),rAtomToList(B),rAtomToList(C)};
+rAtomToList({A,B,C,D})->
+	{rAtomToList(A),rAtomToList(B),rAtomToList(C),rAtomToList(D)};
+rAtomToList(A) when is_atom(A) ->
+	atom_to_list(A);
+rAtomToList(A) when not is_atom(A) ->
+	A.
+
+
+
+
+
+
+
+
 
 % Currently unused so commenting out for compilation
 %tuple_to_string(T) ->
