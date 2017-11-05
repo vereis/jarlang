@@ -2,16 +2,7 @@
 -compile(export_all). 
 -compile({no_auto_import, [node/0]}).
 
-% -- Useful Macros --
--define(NODETYPE(X),
-    #{type := X}).
-    
-% -- EStree definitions --
--include("estree_primitives.hrl").
--include("estree_statements.hrl").
--include("estree_declarations.hrl").
--include("estree_expressions.hrl").
--include("estree_prefabs.hrl").
+-include("estree/estree.hrl").
 
 % -- Functions --
 c_module(ModuleName, [{FuncName, Arity} | OtherExports], 

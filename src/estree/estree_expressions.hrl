@@ -1,26 +1,3 @@
--define(IS_UNARY_OPERATOR(X), 
-        X =:= <<"-">> ;      X =:= <<"+">> ;    X =:= <<"!">> ; X =:= <<"~">> ; 
-        X =:= <<"typeof">> ; X =:= <<"void">> ; X =:= <<"delete">>).
-
--define(IS_BINARY_OPERATOR(X),
-        X =:= <<"==">> ; X =:= <<"!=">> ; X =:= <<"===">> ; X =:= <<"!==">> ;
-        X =:= <<"<">>  ; X =:= <<">">>  ; X =:= <<"<=">>  ; X =:= <<">=">> ;
-        X =:= <<"<<">> ; X =:= <<">>">> ; X =:= <<">>>">> ; X =:= <<"+">> ;
-        X =:= <<"-">>  ; X =:= <<"*">>  ; X =:= <<"/">>   ; X =:= <<"%">> ;
-        X =:= <<"|">>  ; X =:= <<"^">>  ; X =:= <<"&">>   ; X =:= <<"in">> ;
-        X =:= <<"instanceof">> ; X =:= <<"..">>).
-
--define(IS_LOGICAL_OPERATOR(X),
-        X =:= <<"||">> ; X =:= <<"&&">>).
-
--define(IS_ASSIGNMENT_OPERATOR(X),
-        X =:= <<"=">>    ; X =:= <<"+=">> ; X =:= <<"-=">>  ; X =:= <<"*=">> ; 
-        X =:= <<"/=">>   ; X =:= <<"%=">> ; X =:= <<"<<=">> ; X =:= <<">>=">> ;
-        X =:= <<">>>=">> ; X =:= <<"|=">> ; X =:= <<"^=">>  ; X =:= <<"&=">>).
-
--define(IS_UPDATE_OPERATOR(X),
-        X =:= <<"++">> ; X =:= <<"--">>).
-
 % Generate a This expression
 thisExpression() ->
     updateRecord(expression(), [{"type", <<"ThisExpression">>}]).
