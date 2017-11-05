@@ -2,6 +2,10 @@
 -compile(export_all). 
 -compile({no_auto_import, [node/0]}).
 
+% -- Useful Macros --
+-define(NODETYPE(X),
+    #{type := X}).
+    
 % -- EStree definitions --
 -include("estree_primitives.hrl").
 -include("estree_statements.hrl").
