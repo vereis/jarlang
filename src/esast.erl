@@ -9,7 +9,7 @@ c_module(ModuleName, [{FuncName, Arity} | OtherExports],
          [{FuncNameWithArity, Function} | OtherFunctions]) when is_list(ModuleName) , is_list(FuncName) , is_integer(Arity) , is_list(FuncNameWithArity) ->
     ExportList = [{FuncName, Arity} | OtherExports],
     FunctionList = [{FuncNameWithArity, Function} | OtherFunctions],
-    program(
+    program([
         constDeclaration(
             list_to_binary(ModuleName),
             callExpression(
@@ -31,7 +31,7 @@ c_module(ModuleName, [{FuncName, Arity} | OtherExports],
                 []
             )
         )
-    ).
+    ]).
 
 % Eventually creates an export list which is intended to be returned in a c_module call.
 % Function arity is handled with switch/case statements and as we don't know how many different
@@ -134,7 +134,7 @@ node(Type, AdditionalFields) when is_atom(Type) ->
 node(Type, AdditionalFields) when is_list(Type) ->
     node(list_to_binary(Type), AdditionalFields);
 node(Type, AdditionalFields) ->
-    NewNode = #{type => Type},
+    NewNode = #{"type" => Type},
     updateRecord(NewNode, AdditionalFields).
 
 % Add location data to any node

@@ -8,10 +8,14 @@ is_thisExpression(_) ->
     false.
 
 % Generate an Array expression
-arrayExpression(Elements) when is_list(Elements) ->
-    updateRecord(expression(), [{"type", <<"ArrayExpression">>}, {"elements", Elements}]);
 arrayExpression(Elements) ->
-    arrayExpression([Elements]).
+    case {is_list(Elements)} of
+        {true} ->
+            updateRecord(expression(), [{"type", <<"ArrayExpression">>}, {"elements", Elements}]);
+        _ ->
+            badArgs(?CURRENT_FUNCTION, [<<"List<Expression>">>], [{typeof(Elements), lists:map(fun(X) -> nodetype(X) end, Elements)}])
+    end.
+
 
 is_arrayExpression(?NODETYPE(<<"ArrayExpression">>)) ->
     true;
@@ -19,10 +23,13 @@ is_arrayExpression(_) ->
     false.
 
 % Generate an Object expression
-objectExpression(Properties) when is_list(Properties) ->
-    updateRecord(expression(), [{"type", <<"ObjectExpression">>}, {"properties", Properties}]);
 objectExpression(Properties) ->
-    objectExpression([Properties]).
+    case {lists:all(fun(X) -> X =:= true end, [is_list(Properties), lists:all(fun(X) -> is_property(X) end, Properties)])} of
+        {true} ->
+            updateRecord(expression(), [{"type", <<"ObjectExpression">>}, {"properties", Properties}]);
+        _ ->
+            badArgs(?CURRENT_FUNCTION, [<<"List<Property>">>], [{typeof(Properties), lists:map(fun(X) -> nodetype(X) end, Properties)}])
+    end.
 
 is_objectExpression(?NODETYPE(<<"ObjectExpression">>)) ->
     true;
@@ -30,10 +37,14 @@ is_objectExpression(_) ->
     false.
 
 % Generates a Function expression
-functionExpression(Identifier, Params, Body, Expression) when is_list(Params) ->
-    updateRecord(expression(), [{"type", <<"FunctionExpression">>}, {"id", Identifier}, {"params", Params}, {"body", Body}, {"expression", Expression}]);
 functionExpression(Identifier, Params, Body, Expression) ->
-    functionExpression(Identifier, [Params], Body, Expression).
+    case {lists:any(fun(X) -> X =:= true end, [is_identifier(Identifier), Identifier =:= null]), is_blockStatement(Body), is_boolean(Expression)} of
+        {true, true, true} ->
+            updateRecord(expression(), [{"type", <<"FunctionExpression">>}, {"id", Identifier}, {"params", Params}, {"body", Body}, {"expression", Expression}]);
+        _ ->
+            badArgs(?CURRENT_FUNCTION, [<<"Identifier or null">>, <<"List<Pattern(?)>">>, <<"BlockStatement">>, boolean], 
+                                       [nodetype(Identifier), nodetype(Params), nodetype(Body), typeof(Expression)])
+    end.
 
 is_functionExpression(?NODETYPE(<<"FunctionExpression">>)) ->
     true;
@@ -42,7 +53,12 @@ is_functionExpression(_) ->
 
 % A Literal Property for Object expressions
 property(Key, Value) ->
-    node("Property", [{"key", Key}, {"value", Value}, {"kind", <<"init">>}]).
+    case {lists:any(fun(X) -> X =:= true end, [is_literal(Key), is_identifier(Key)])} of
+        {true} ->
+            node("Property", [{"key", Key}, {"value", Value}, {"kind", <<"init">>}]);
+        _ ->
+            badArgs(?CURRENT_FUNCTION, [<<"Literal or Identifier">>, <<"Expression">>], [nodetype(Key), nodetype(Value)])
+    end.
 
 is_property(?NODETYPE(<<"Property">>)) ->
     true;
@@ -50,8 +66,14 @@ is_property(_) ->
     false.
 
 % Generate a sequence expression
-sequenceExpression(Expressions) when length(Expressions) > 1, is_list(Expressions) ->
-    updateRecord(expression(), [{"type", <<"SequenceExpression">>}, {"expressions", Expressions}]).
+sequenceExpression(Expressions) ->
+    %case {is_list(Expressions), lists:all(fun(X) -> X =:= true end, lists:map(fun(X) -> is_expression(X)))} of
+    case {is_list(Expressions)} of
+        {true} ->
+            updateRecord(expression(), [{"type", <<"SequenceExpression">>}, {"expressions", Expressions}]);
+        _ ->
+            badArgs(?CURRENT_FUNCTION, [<<"List<Expression>">>], [{typeof(Expressions)}])
+    end.
 
 is_sequenceExpression(?NODETYPE(<<"SequenceExpression">>)) ->
     true;
@@ -123,7 +145,12 @@ is_callExpression(_) ->
 
 % Generate a member expression
 memberExpression(Object, Property, Computed) ->
-    updateRecord(expression(), [{"type", <<"MemberExpression">>}, {"object", Object}, {"property", Property}, {"computed", Computed}]).
+    case {is_identifier(Object), is_boolean(Computed)} of
+        {true, true} ->
+            updateRecord(expression(), [{"type", <<"MemberExpression">>}, {"object", Object}, {"property", Property}, {"computed", Computed}]);
+        _ ->
+            badArgs(?CURRENT_FUNCTION, [<<"Expression">>, <<"Identifier or Expression">>, boolean], [nodetype(Object), nodetype(Property), typeof(Computed)])
+    end.
     
 is_memberExpression(?NODETYPE(<<"MemberExpression">>)) ->
     true;

@@ -9,7 +9,12 @@ is_identifier(_) ->
 
 % Generates a SourceLocation node
 sourceLocation(LineNumber, ColStart, ColEnd) ->
-    node("SourceLocation", [{"source", null}, {"start", position(LineNumber, ColStart)}, {"end", position(LineNumber, ColEnd)}]).
+    case {is_integer(LineNumber), is_integer(ColStart), is_integer(ColEnd)} of 
+        {true, true, true} ->    
+            node("SourceLocation", [{"source", null}, {"start", position(LineNumber, ColStart)}, {"end", position(LineNumber, ColEnd)}]);
+        _ ->
+            badArgs(?CURRENT_FUNCTION, [integer, integer, integer], [typeof(LineNumber), typeof(ColStart), typeof(ColEnd)])
+    end.
 
 is_sourceLocation(?NODETYPE(<<"SourceLocation">>)) ->
     true;
@@ -17,7 +22,12 @@ is_sourceLocation(_) ->
     false.
 
 position(Line, Col) ->
-    node("Position", [{"line", Line}, {"column", Col}]).
+    case {is_integer(Line), is_integer(Col)} of
+        {true, true} ->
+            node("Position", [{"line", Line}, {"column", Col}]);
+        _ ->
+            badArgs(?CURRENT_FUNCTION, [integer, integer], [typeof(Line), typeof(Col)])
+    end.
 
 is_position(?NODETYPE(<<"Position">>)) ->
     true;
@@ -43,10 +53,13 @@ is_regex(_) ->
     false.
 
 % Generates a Program Node
-program(Statements) when is_list(Statements) ->
-    node("Program", [{"body", Statements}]);
 program(Statements) ->
-    program([Statements]).
+    case {is_list(Statements)} of
+        {true} ->
+            node("Program", [{"body", Statements}]);
+        _ ->
+            badArgs(?CURRENT_FUNCTION, [list], [typeof(Statements)])
+    end.
 
 is_program(?NODETYPE(<<"Program">>)) ->
     true;
