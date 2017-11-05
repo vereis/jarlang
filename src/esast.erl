@@ -138,8 +138,8 @@ node(Type, AdditionalFields) ->
     updateRecord(NewNode, AdditionalFields).
 
 % Add location data to any node
-addLocationData(Node) ->
-    updateRecord(Node, []).
+addLocationData(Node, LineNumber, ColStart, ColEnd) ->
+    updateRecord(Node, [{"loc", sourceLocation(LineNumber, ColStart, ColEnd)}]).
 
 % Helper function which appends new key value pairs into an existing record
 updateRecord(Record, [{Key, Value}]) ->

@@ -7,6 +7,23 @@ is_identifier(?NODETYPE(<<"Identifier">>)) ->
 is_identifier(_) ->
     false.
 
+% Generates a SourceLocation node
+sourceLocation(LineNumber, ColStart, ColEnd) ->
+    node("SourceLocation", [{"source", null}, {"start", position(LineNumber, ColStart)}, {"end", position(LineNumber, ColEnd)}]).
+
+is_sourceLocation(?NODETYPE(<<"SourceLocation">>)) ->
+    true;
+is_sourceLocation(_) ->
+    false.
+
+position(Line, Col) ->
+    node("Position", [{"line", Line}, {"column", Col}]).
+
+is_position(?NODETYPE(<<"Position">>)) ->
+    true;
+is_position(_) ->
+    false.
+
 % Generates a Literal Node
 literal(Value) when ?IS_LITERAL(Value) ->
     node("Literal", [{"value", Value}]).
@@ -18,7 +35,7 @@ is_literal(_) ->
 
 % Generates a RegExp Literal
 regex(Pattern, Flags) ->
-    updateRecord(literal(null), [{regex, #{pattern => Pattern, flags => Flags}}]).
+    updateRecord(literal(null), [{"regex", #{pattern => Pattern, flags => Flags}}]).
 
 is_regex(#{regex := _}) ->
     true;
