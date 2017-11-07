@@ -18,11 +18,11 @@ is_expressionStatement(_) ->
 
 % Generates a block statement
 blockStatement(Body) ->
-    case {is_list(Body)} of
-        {true} ->
+    case {is_list(Body), lists:all(fun(X) -> X =:= true end, lists:map(fun(X) -> is_statement(X) end, Body))} of
+        {true, true} ->
             updateRecord(statement(), [{"type", <<"BlockStatement">>}, {"body", Body}]);
         _ ->
-            badArgs(?CURRENT_FUNCTION, [list], [typeof(Body)])
+            badArgs(?CURRENT_FUNCTION, [<<"List<Statements>">>], [{typeof(Body), lists:map(fun(X) -> nodetype(X) end, Body)}])
     end.
 
 is_blockStatement(?NODETYPE(<<"BlockStatement">>)) ->
@@ -32,11 +32,11 @@ is_blockStatement(_) ->
 
 % Generates an if statement
 ifStatement(Test, Consequent, Alternate) ->
-    case {is_expressionStatement(Test)} of
-        {true} ->    
+    case {is_expressionStatement(Test), is_statement(Consequent), lists:member(true, [is_statement(Alternate), Alternate =:= null])} of
+        {true, true, true} ->    
             updateRecord(statement(), [{"type", <<"IfStatement">>}, {"test", Test}, {"consequent", Consequent}, {"alternate", Alternate}]);
         _ ->
-            badArgs(?CURRENT_FUNCTION, [<<"ExpressionStatement">>, <<"Statement">>, <<"Statement">>], [nodetype(Test), nodetype(Consequent), nodetype(Alternate)])
+            badArgs(?CURRENT_FUNCTION, [<<"ExpressionStatement">>, <<"Statement">>, <<"Statement or null">>], [nodetype(Test), nodetype(Consequent), nodetype(Alternate)])
     end.
 
 is_ifStatement(?NODETYPE(<<"IfStatement">>)) ->
@@ -46,8 +46,8 @@ is_ifStatement(_) ->
 
 % Generates a Labeled statement (prefixed with break/continue)
 labeledStatement(Identifier, Body) ->
-    case {is_identifier(Identifier)} of
-        {true} ->
+    case {is_identifier(Identifier), is_statement(Body)} of
+        {true, true} ->
             updateRecord(statement(), [{"type", <<"LabeledStatement">>}, {"label", Identifier}, {"body", Body}]);
         _ ->
             badArgs(?CURRENT_FUNCTION, [<<"Identifier">>, <<"Statement">>], [nodetype(Identifier), nodetype(Body)])
@@ -92,8 +92,8 @@ is_continueStatement(_) ->
 
 % Generates a with statement
 withStatement(Expression, BlockStatement) ->
-    case {is_blockStatement(BlockStatement)} of
-        {true} ->
+    case {is_expression(Expression), is_blockStatement(BlockStatement)} of
+        {true, true} ->
             updateRecord(statement(), [{"type", <<"WithStatement">>}, {"object", Expression}, {"body", BlockStatement}]);
         _ ->
             badArgs(?CURRENT_FUNCTION, [<<"Expression">>, <<"BlockStatement">>], [nodetype(Expression), nodetype(BlockStatement)])
@@ -106,8 +106,8 @@ is_withStatement(_) ->
 
 % Generates a switch statement
 switchStatement(Expression, Cases, HasLexScope) ->
-    case {is_list(Cases), lists:all(fun(Case) -> is_switchCase(Case) end, Cases), is_boolean(HasLexScope)} of
-        {true, true, true} ->
+    case {is_expression(Expression), is_list(Cases), lists:all(fun(Case) -> is_switchCase(Case) end, Cases), is_boolean(HasLexScope)} of
+        {true, true, true, true} ->
             updateRecord(statement(), [{"type", <<"SwitchStatement">>}, {"discriminant", Expression}, {"cases", Cases}, {"lexical", HasLexScope}]);
         _ ->
             badArgs(?CURRENT_FUNCTION, [<<"Expression">>, <<"List<SwitchCase>">>, boolean], 
@@ -120,8 +120,8 @@ is_switchStatement(_) ->
     false.
 
 switchCase(Test, Consequent) ->
-    case {is_list(Consequent)} of
-        {true} ->
+    case {is_expression(Test), is_list(Consequent)} of
+        {true, true} ->
             updateRecord(statement(), [{"type", <<"SwitchCase">>}, {"test", Test}, {"consequent", Consequent}]);
         _ ->
             badArgs(?CURRENT_FUNCTION, [<<"Expression">>, <<"List<Statement>">>], [nodetype(Test), 
@@ -135,7 +135,12 @@ is_switchCase(_) ->
 
 % Generates a return statement
 returnStatement(Expression) ->
-    updateRecord(statement(), [{"type", <<"ReturnStatement">>}, {"argument", Expression}]).
+    case {is_expression(Expression)} of
+        {true} ->
+            updateRecord(statement(), [{"type", <<"ReturnStatement">>}, {"argument", Expression}]);
+        _ ->
+            badArgs(?CURRENT_FUNCTION, [<<"Expression">>], [nodetype(Expression)])
+    end.
 
 is_returnStatement(?NODETYPE(<<"ReturnStatement">>)) ->
     true;
@@ -144,7 +149,12 @@ is_returnStatement(_) ->
 
 % Generates a throw statement
 throwStatement(Expression) ->
-    updateRecord(statement(), [{"type", <<"ThrowStatement">>}, {"argument", Expression}]).
+    case {is_expression(Expression)} of
+        {true} ->
+            updateRecord(statement(), [{"type", <<"ThrowStatement">>}, {"argument", Expression}]);
+        _ ->
+            badArgs(?CURRENT_FUNCTION, [<<"Expression">>], [nodetype(Expression)])
+    end.
 
 is_throwStatement(?NODETYPE(<<"ThrowStatement">>)) ->
     true;
@@ -154,8 +164,12 @@ is_throwStatement(_) ->
 % Generates a try statement
 % Note, type checking this one is a little difficult
 tryStatement(BlockStatement, Handler, GuardedHandler, Finalizer) ->
-    case {is_blockStatement(BlockStatement), is_blockStatement(Finalizer)} of
-        {true, true} ->
+    case {is_blockStatement(BlockStatement), 
+          is_catchClause(Handler), 
+          is_blockStatement(Finalizer), 
+          is_list(GuardedHandler), 
+          lists:every(fun(X) -> X =:= true end, lists:map(fun(X) -> is_catchClause(X) end, GuardedHandler))} of
+        {true, true, true, true, true} ->
             updateRecord(statement(), [{"type", <<"TryStatement">>}, {"block", BlockStatement}, {"handler", Handler}, {"guardedHandler", GuardedHandler}, {"finalizer", Finalizer}]);
         _ ->
             badArgs(?CURRENT_FUNCTION, [<<"BlockStatement">>, <<"CatchClause">>, <<"List<CatchClause">>, <<"BlockStatement">>], 
@@ -168,8 +182,8 @@ is_tryStatement(_) ->
     false.
 
 catchClause(Param, Guard, Body) ->
-    case {is_blockStatement(Body)} of
-        {true} ->
+    case {is_expression(Guard), is_blockStatement(Body)} of
+        {true, true} ->
             updateRecord(statement(), [{"type", <<"CatchClause">>}, {"param", Param}, {"guard", Guard}, {"body", Body}]);
         _ ->
             badArgs(?CURRENT_FUNCTION, [<<"Pattern(?)">>, <<"Expression">>, <<"BlockStatement">>], [typeof(Param), nodetype(Guard), nodetype(Body)])
@@ -182,9 +196,12 @@ is_catchClause(_) ->
 
 % Generates a while statement
 whileStatement(Expression, Body) when is_list(Body) ->
-    updateRecord(statement(), [{"type", <<"WhileStatement">>}, {"test", Expression}, {"body", Body}]);
-whileStatement(Expression, Body) ->
-    whileStatement(Expression, [Body]).
+    case {is_expression(Expression), is_statement(Body)} of
+        {true, true} ->
+            updateRecord(statement(), [{"type", <<"WhileStatement">>}, {"test", Expression}, {"body", Body}]);
+        _ ->
+            badArgs(?CURRENT_FUNCTION, [<<"Expression">>, <<"Statement">>], [typeof(Expression), nodetype(Body)])
+    end.
 
 is_whileStatement(?NODETYPE(<<"WhileStatement">>)) ->
     true;
@@ -193,11 +210,14 @@ is_whileStatement(_) ->
 
 % Generates a for statement
 forStatement(Init, Update, Expression, Body) ->
-    case {lists:any(fun(X) -> X =:= true end, [is_variableDeclaration(Init), Init =:= null])} of
-        {true} ->
+    case {lists:any(fun(X) -> X =:= true end, [is_expression(Init), is_variableDeclaration(Init), Init =:= null]),
+          is_expression(Update),
+          is_expression(Expression),
+          is_statement(Body)} of
+        {true, true, true, true} ->
             updateRecord(whileStatement(Expression, Body), [{"type", <<"ForStatement">>}, {"init", Init}, {"update", Update}]);
         _ ->
-            badArgs(?CURRENT_FUNCTION, [<<"VariableDeclaration or null">>, <<"Expression or null">>, <<"Expression">>, <<"Statement">>], 
+            badArgs(?CURRENT_FUNCTION, [<<"Expression, VariableDeclaration or null">>, <<"Expression or null">>, <<"Expression">>, <<"Statement">>], 
                                        [nodetype(Init), nodetype(Update), nodetype(Expression), nodetype(Body)])
     end.
 
@@ -208,8 +228,11 @@ is_forStatement(_) ->
 
 % Generates a forIn statement
 forInStatement(Left, Right, Body, Each) ->
-    case {is_variableDeclaration(Left)} of
-        {true} ->
+    case {lists:member(true, [is_variableDeclaration(Left), is_expression(Left)]), 
+          is_expression(Right), 
+          is_statement(Body), 
+          is_boolean(Each)} of
+        {true, true, true, true} ->
             updateRecord(statement(), [{"type", <<"ForInStatement">>}, {"left", Left}, {"right", Right}, {"each", Each}, {"body", Body}]);
         _ ->
             badArgs(?CURRENT_FUNCTION, [<<"VariableDeclaration or Expression">>, <<"Expression">>, <<"Statement">>, boolean], 
@@ -223,8 +246,8 @@ is_forInStatement(_) ->
 
 % Generates a forOf statement
 forOfStatement(Left, Right, Body) ->
-    case {is_variableDeclaration(Left)} of
-        {true} ->
+    case {lists:member(true, [is_expression(Left), is_variableDeclaration(Left)]), is_expression(Right), is_statement(Body)} of
+        {true, true, true} ->
             updateRecord(statement(), [{"type", <<"ForOfStatement">>}, {"left", Left}, {"right", Right}, {"body", Body}]);
         _ ->
             badArgs(?CURRENT_FUNCTION, [<<"VariableDeclaration or Expression">>, <<"Expression">>, <<"Statement">>], 

@@ -17,8 +17,8 @@ is_variableDeclaration(_) ->
 
 % Generates a variable declarator
 variableDeclarator(Identifier, Init) ->
-    case {is_identifier(Identifier)} of
-        {true} ->
+    case {is_identifier(Identifier), is_expression(Init)} of
+        {true, true} ->
             node("VariableDeclarator", [{"id", Identifier}, {"init", Init}]);
         _ ->
             badArgs(?CURRENT_FUNCTION, [<<"Identifier">>, <<"Expression">>], [nodetype(Identifier), nodetype(Init)])

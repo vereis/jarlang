@@ -47,18 +47,18 @@ is_literal(_) ->
 regex(Pattern, Flags) ->
     updateRecord(literal(null), [{"regex", #{pattern => Pattern, flags => Flags}}]).
 
-is_regex(#{regex := _}) ->
+is_regex(#{"regex" := _}) ->
     true;
 is_regex(_) ->
     false.
 
 % Generates a Program Node
 program(Statements) ->
-    case {is_list(Statements)} of
-        {true} ->
+    case {is_list(Statements), lists:all(fun(X) -> X =:= true end, lists:map(fun(X) -> is_statement(X) end, Statements))} of
+        {true, true} ->
             node("Program", [{"body", Statements}]);
         _ ->
-            badArgs(?CURRENT_FUNCTION, [list], [typeof(Statements)])
+            badArgs(?CURRENT_FUNCTION, [<<"List[Statements]">>], [{typeof(Statements), lists:map(fun(X) -> nodetype(X) end, Statements)}])
     end.
 
 is_program(?NODETYPE(<<"Program">>)) ->
@@ -70,10 +70,40 @@ is_program(_) ->
 declaration() ->
     node().
 
+is_declaration(#{"type" := Type}) ->
+    case re:run(Type, "Declaration") of
+        {match, _} ->
+            true;
+        _ ->
+            false
+    end;
+is_declaration(#{}) ->
+    true.
+
 % Generate an Expression
 expression() ->
     node().
 
+is_expression(#{"type" := Type}) ->
+    case re:run(Type, "Expression|Literal|Identifier") of
+        {match, _} ->
+            true;
+        _ ->
+            false
+    end;
+is_expression(#{}) ->
+    true.
+
 % Generates a generic Statement Node
 statement() ->
     node().
+
+is_statement(#{"type" := Type}) ->
+    case re:run(Type, "Statement|Declaration") of
+        {match, _} ->
+            true;
+        _ ->
+            false
+    end;
+is_statement(#{}) ->
+    true.

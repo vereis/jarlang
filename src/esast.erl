@@ -80,7 +80,7 @@ c_exports_gencases({FuncName, Arities}) when is_list(FuncName) ->
                                 literal(iolist_to_binary([FuncName, "/", integer_to_binary(Arity)])), 
                                 true
                             ),
-                            identifier(<<"arguments">>)
+                            [identifier(<<"arguments">>)]
                         )   
                     ), breakStatement(null)]     
                 )       

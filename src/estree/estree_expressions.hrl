@@ -9,8 +9,8 @@ is_thisExpression(_) ->
 
 % Generate an Array expression
 arrayExpression(Elements) ->
-    case {is_list(Elements)} of
-        {true} ->
+    case {is_list(Elements), lists:all(fun(X) -> X =:= true end, lists:map(fun(X) -> is_expression(X) end, Elements))} of
+        {true, true} ->
             updateRecord(expression(), [{"type", <<"ArrayExpression">>}, {"elements", Elements}]);
         _ ->
             badArgs(?CURRENT_FUNCTION, [<<"List<Expression>">>], [{typeof(Elements), lists:map(fun(X) -> nodetype(X) end, Elements)}])
@@ -24,8 +24,8 @@ is_arrayExpression(_) ->
 
 % Generate an Object expression
 objectExpression(Properties) ->
-    case {lists:all(fun(X) -> X =:= true end, [is_list(Properties), lists:all(fun(X) -> is_property(X) end, Properties)])} of
-        {true} ->
+    case {is_list(Properties), lists:all(fun(X) -> X =:= true end, lists:map(fun(X) -> is_property(X) end, Properties))} of
+        {true, true} ->
             updateRecord(expression(), [{"type", <<"ObjectExpression">>}, {"properties", Properties}]);
         _ ->
             badArgs(?CURRENT_FUNCTION, [<<"List<Property>">>], [{typeof(Properties), lists:map(fun(X) -> nodetype(X) end, Properties)}])
@@ -38,7 +38,7 @@ is_objectExpression(_) ->
 
 % Generates a Function expression
 functionExpression(Identifier, Params, Body, Expression) ->
-    case {lists:any(fun(X) -> X =:= true end, [is_identifier(Identifier), Identifier =:= null]), is_blockStatement(Body), is_boolean(Expression)} of
+    case {lists:member(true, [is_identifier(Identifier), Identifier =:= null]), is_blockStatement(Body), is_boolean(Expression)} of
         {true, true, true} ->
             updateRecord(expression(), [{"type", <<"FunctionExpression">>}, {"id", Identifier}, {"params", Params}, {"body", Body}, {"expression", Expression}]);
         _ ->
@@ -53,8 +53,8 @@ is_functionExpression(_) ->
 
 % A Literal Property for Object expressions
 property(Key, Value) ->
-    case {lists:any(fun(X) -> X =:= true end, [is_literal(Key), is_identifier(Key)])} of
-        {true} ->
+    case {lists:any(fun(X) -> X =:= true end, [is_literal(Key), is_identifier(Key)]), is_expression(Value)} of
+        {true, true} ->
             node("Property", [{"key", Key}, {"value", Value}, {"kind", <<"init">>}]);
         _ ->
             badArgs(?CURRENT_FUNCTION, [<<"Literal or Identifier">>, <<"Expression">>], [nodetype(Key), nodetype(Value)])
@@ -67,9 +67,8 @@ is_property(_) ->
 
 % Generate a sequence expression
 sequenceExpression(Expressions) ->
-    %case {is_list(Expressions), lists:all(fun(X) -> X =:= true end, lists:map(fun(X) -> is_expression(X)))} of
-    case {is_list(Expressions)} of
-        {true} ->
+    case {is_list(Expressions), lists:all(fun(X) -> X =:= true end, lists:map(fun(X) -> is_expression(X) end, Expressions))} of
+        {true, true} ->
             updateRecord(expression(), [{"type", <<"SequenceExpression">>}, {"expressions", Expressions}]);
         _ ->
             badArgs(?CURRENT_FUNCTION, [<<"List<Expression>">>], [{typeof(Expressions)}])
@@ -82,8 +81,13 @@ is_sequenceExpression(_) ->
 
 % Generate a unary operation expression
 unaryExpression(Operator, Prefix, Argument) when ?IS_UNARY_OPERATOR(Operator)  ->
-    updateRecord(expression(), [{"type", <<"UnaryExpression">>}, {"operator", Operator}, {"prefix", Prefix}, {"argument", Argument}]).
-
+    case {is_expression(Argument)} of
+        {true} ->
+            updateRecord(expression(), [{"type", <<"UnaryExpression">>}, {"operator", Operator}, {"prefix", Prefix}, {"argument", Argument}]);
+        _ ->
+            badArgs(?CURRENT_FUNCTION, [<<"Unary Operator">>, boolean, <<"Expression">>], [{nodetype(Operator), nodetype(Prefix), nodetype(Argument)}])
+    end.
+        
 is_unaryExpression(?NODETYPE(<<"UnaryExpression">>)) ->
     true;
 is_unaryExpression(_) ->
@@ -91,8 +95,13 @@ is_unaryExpression(_) ->
 
 % Generate a binary operation expression
 binaryExpression(Operator, Left, Right) when ?IS_BINARY_OPERATOR(Operator) ->
-    updateRecord(expression(), [{"type", <<"BinaryExpression">>}, {"operator", Operator}, {"left", Left}, {"right", Right}]).
-
+    case {is_expression(Left), is_expression(Right)} of
+        {true, true} ->
+            updateRecord(expression(), [{"type", <<"BinaryExpression">>}, {"operator", Operator}, {"left", Left}, {"right", Right}]);
+        _ ->
+            badArgs(?CURRENT_FUNCTION, [<<"Binary Operator">>, <<"Expression">>, <<"Expression">>], [{nodetype(Operator), nodetype(Left), nodetype(Right)}])
+    end.
+        
 is_binaryExpression(?NODETYPE(<<"BinaryExpression">>)) ->
     true;
 is_binaryExpression(_) ->
@@ -100,7 +109,12 @@ is_binaryExpression(_) ->
 
 % Generate an update (increment or decrement) operator expression
 updateExpression(Operator, Argument, Prefix) when ?IS_UPDATE_OPERATOR(Operator) ->
-    updateRecord(expression(), [{"type", <<"UpdateExpression">>}, {"operator", Operator}, {"argument", Argument}, {"prefix", Prefix}]).
+    case {is_expression(Argument)} of
+        {true} ->
+            updateRecord(expression(), [{"type", <<"UpdateExpression">>}, {"operator", Operator}, {"argument", Argument}, {"prefix", Prefix}]);
+        _ ->
+            badArgs(?CURRENT_FUNCTION, [<<"Update Operator">>, <<"Expression">>, boolean], [{nodetype(Operator), nodetype(Argument), typeof(Prefix)}])
+    end.
 
 is_updateExpression(?NODETYPE(<<"UpdateExpression">>)) ->
     true;
@@ -109,7 +123,12 @@ is_updateExpression(_) ->
 
 % Generate a logical operator expression
 logicalExpression(Operator, Left, Right) when ?IS_LOGICAL_OPERATOR(Operator) ->
-    updateRecord(expression(), [{"type", <<"LogicalExpression">>}, {"operator", Operator}, {"left", Left}, {"right", Right}]).
+    case {is_expression(Left), is_expression(Right)} of
+        {true, true} ->
+            updateRecord(expression(), [{"type", <<"LogicalExpression">>}, {"operator", Operator}, {"left", Left}, {"right", Right}]);
+        _ ->
+            badArgs(?CURRENT_FUNCTION, [<<"Logical Operator">>, <<"Expression">>, <<"Expression">>], [{nodetype(Operator), nodetype(Left), nodetype(Right)}])
+    end.
 
 is_logicalExpression(?NODETYPE(<<"LogicalExpression">>)) ->
     true;
@@ -118,7 +137,12 @@ is_logicalExpression(_) ->
 
 % Generate a conditional expression
 conditionalExpression(Test, Alternate, Consequent) ->
-    updateRecord(expression(), [{"type", <<"ConditionalExpression">>}, {"test", Test}, {"alternate", Alternate}, {"consequent", Consequent}]).
+    case {is_expression(Test), is_expression(Alternate), is_expression(Consequent)} of
+        {true, true, true} ->
+            updateRecord(expression(), [{"type", <<"ConditionalExpression">>}, {"test", Test}, {"alternate", Alternate}, {"consequent", Consequent}]);
+        _ ->
+            badArgs(?CURRENT_FUNCTION, [<<"Expression">>, <<"Expression">>, <<"Expression">>], [{nodetype(Test), nodetype(Alternate), nodetype(Consequent)}])
+    end.
 
 is_conditionalExpression(?NODETYPE(<<"ConditionalExpression">>)) ->
     true;
@@ -127,7 +151,12 @@ is_conditionalExpression(_) ->
 
 % Generate a new expression
 newExpression(Callee, Arguments) ->
-    updateRecord(expression(), [{"type", <<"NewExpression">>}, {"callee", Callee}, {"arguments", Arguments}]).
+    case {is_expression(Callee), is_list(Arguments), lists:all(fun(X) -> X =:= true end, lists:map(fun(X) -> is_expression(X) end, Arguments))} of
+        {true, true, true} ->
+            updateRecord(expression(), [{"type", <<"NewExpression">>}, {"callee", Callee}, {"arguments", Arguments}]);
+        _ ->
+            badArgs(?CURRENT_FUNCTION, [<<"Expression">>, <<"Expression">>], [{nodetype(Callee), nodetype(Arguments)}])
+    end.
 
 is_newExpression(?NODETYPE(<<"NewExpression">>)) ->
     true;
@@ -136,7 +165,12 @@ is_newExpression(_) ->
 
 % Generate a call expression
 callExpression(Callee, Arguments) ->
-    updateRecord(expression(), [{"type", <<"CallExpression">>}, {"callee", Callee}, {"arguments", Arguments}]).
+    case {is_expression(Callee), is_list(Arguments), lists:all(fun(X) -> X =:= true end, lists:map(fun(X) -> is_expression(X) end, Arguments))} of
+        {true, true, true} ->
+            updateRecord(expression(), [{"type", <<"CallExpression">>}, {"callee", Callee}, {"arguments", Arguments}]);
+        _ ->
+            badArgs(?CURRENT_FUNCTION, [<<"Expression">>, <<"Expression">>], [{nodetype(Callee), nodetype(Arguments)}])
+    end.
 
 is_callExpression(?NODETYPE(<<"CallExpression">>)) ->
     true;
@@ -145,8 +179,8 @@ is_callExpression(_) ->
 
 % Generate a member expression
 memberExpression(Object, Property, Computed) ->
-    case {is_identifier(Object), is_boolean(Computed)} of
-        {true, true} ->
+    case {is_identifier(Object), lists:member(true, [is_identifier(Property), is_expression(Property)]), is_boolean(Computed)} of
+        {true, true, true} ->
             updateRecord(expression(), [{"type", <<"MemberExpression">>}, {"object", Object}, {"property", Property}, {"computed", Computed}]);
         _ ->
             badArgs(?CURRENT_FUNCTION, [<<"Expression">>, <<"Identifier or Expression">>, boolean], [nodetype(Object), nodetype(Property), typeof(Computed)])
