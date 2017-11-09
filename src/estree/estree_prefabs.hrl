@@ -13,10 +13,10 @@ useStrict() ->
 
 % Variable declarator shorthand
 constDeclaration(Identifier, Init) ->
-    variableDeclaration(variableDeclarator(identifier(Identifier), Init), <<"const">>).
+    variableDeclaration([variableDeclarator(identifier(Identifier), Init)], <<"const">>).
 
 varDeclaration(Identifier, Init) ->
-    variableDeclaration(variableDeclarator(identifier(Identifier), Init), <<"var">>).
+    variableDeclaration([variableDeclarator(identifier(Identifier), Init)], <<"var">>).
 
 letDeclaration(Identifier, Init) ->
-    variableDeclaration(variableDeclarator(identifier(Identifier), Init), <<"let">>).
+    variableDeclaration([variableDeclarator(identifier(Identifier), Init)], <<"let">>).

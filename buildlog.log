@@ -1,0 +1,9 @@
+-- Build started on Sun 5 Nov 16:50:44 STD 2017 --
+compile: warnings being treated as errors
+src/asttrans.erl:17: variable 'OtherExports' is unused
+src/asttrans.erl:18: variable 'Function' is unused
+src/asttrans.erl:18: variable 'OtherFunctions' is unused
+src/asttrans.erl:49: function toksFunctions/1 is unused
+src/asttrans.erl:56: function toksFunc/1 is unused
+src/asttrans.erl:62: function toksFuncBody/1 is unused
+src/asttrans.erl:105: function toksClauses/1 is unused

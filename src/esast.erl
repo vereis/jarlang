@@ -2,19 +2,14 @@
 -compile(export_all). 
 -compile({no_auto_import, [node/0]}).
 
-% -- EStree definitions --
--include("estree_primitives.hrl").
--include("estree_statements.hrl").
--include("estree_declarations.hrl").
--include("estree_expressions.hrl").
--include("estree_prefabs.hrl").
+-include("estree/estree.hrl").
 
 % -- Functions --
 c_module(ModuleName, [{FuncName, Arity} | OtherExports], 
          [{FuncNameWithArity, Function} | OtherFunctions]) when is_list(ModuleName) , is_list(FuncName) , is_integer(Arity) , is_list(FuncNameWithArity) ->
     ExportList = [{FuncName, Arity} | OtherExports],
     FunctionList = [{FuncNameWithArity, Function} | OtherFunctions],
-    program(
+    program([
         constDeclaration(
             list_to_binary(ModuleName),
             callExpression(
@@ -36,7 +31,7 @@ c_module(ModuleName, [{FuncName, Arity} | OtherExports],
                 []
             )
         )
-    ).
+    ]).
 
 % Eventually creates an export list which is intended to be returned in a c_module call.
 % Function arity is handled with switch/case statements and as we don't know how many different
@@ -85,7 +80,7 @@ c_exports_gencases({FuncName, Arities}) when is_list(FuncName) ->
                                 literal(iolist_to_binary([FuncName, "/", integer_to_binary(Arity)])), 
                                 true
                             ),
-                            identifier(<<"arguments">>)
+                            [identifier(<<"arguments">>)]
                         )   
                     ), breakStatement(null)]     
                 )       
@@ -139,12 +134,12 @@ node(Type, AdditionalFields) when is_atom(Type) ->
 node(Type, AdditionalFields) when is_list(Type) ->
     node(list_to_binary(Type), AdditionalFields);
 node(Type, AdditionalFields) ->
-    NewNode = #{type => Type},
+    NewNode = #{"type" => Type},
     updateRecord(NewNode, AdditionalFields).
 
 % Add location data to any node
-addLocationData(Node) ->
-    updateRecord(Node, []).
+addLocationData(Node, LineNumber, ColStart, ColEnd) ->
+    updateRecord(Node, [{"loc", sourceLocation(LineNumber, ColStart, ColEnd)}]).
 
 % Helper function which appends new key value pairs into an existing record
 updateRecord(Record, [{Key, Value}]) ->
