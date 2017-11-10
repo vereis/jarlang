@@ -130,7 +130,7 @@ node() ->
     #{}.
 
 node(Type, AdditionalFields) when is_atom(Type) ->
-    node(atom_to_binary(Type, "utf-8"), AdditionalFields);
+    node(atom_to_binary(Type, utf8), AdditionalFields);
 node(Type, AdditionalFields) when is_list(Type) ->
     node(list_to_binary(Type), AdditionalFields);
 node(Type, AdditionalFields) ->

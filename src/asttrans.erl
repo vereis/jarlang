@@ -12,91 +12,84 @@ erast2esast(AST) ->
 
 %Read the module token (first token)
 toksModule({c_module, _A, {_, _, ModuleName}, Exports, _Attributes, Functions})->
-	%io:format("module: ~s ~n", [ModuleName]),
-	%io:format("    exports: ~p ~n", [tupleList_getVars_3(Exports)]),
-	[{FuncName, Arity} | OtherExports] = rAtomToList(tupleList_getVars_3(Exports)),
-	[{FuncNameWithArity, Function} | OtherFunctions] = rAtomToList(Functions),
-	io:format("FuncName:~p~n",[is_list(FuncName)]),
-	io:format("Arity:~p~n",[is_integer(Arity)]),
-	io:format("FuncNameWithArity:~p~n",[is_list(FuncNameWithArity)]),
-	esast:print(esast:c_module(
-		atom_to_list(ModuleName),
-		rAtomToList(tupleList_getVars_3(Exports)),
-		toksFunctions2(Functions)
-	)),
-	rAtomToList(Functions);
-	%toksFunctions(Functions);
+	io:format("module: ~s ~n", [ModuleName]),
+	io:format("    exports: ~p ~n", [tupleList_getVars_3(Exports)]),
+	FormattedFunctions = toksFunctions(Functions),
+    FormattedExports = lists:map(fun({N,A})->{atom_to_list(N),A} end,tupleList_getVars_3(Exports)),
+    esast:c_module(atom_to_list(ModuleName),FormattedExports,FormattedFunctions);
 	
 	
 toksModule(T)->
 	io:format("Unrecognised Token in module section: ~p", [T]).
 
 
-%Split functions apart
-toksFunctions2([{{_, _, {FunctionName, Arity}}, {_, _, ParamNames, Body}}])->
-	{
-		atom_to_list(FunctionName)++"/"++integer_to_list(Arity),
-		{{a, b, {FunctionName, Arity}}, {a, b, ParamNames, Body}}
-	};
-toksFunctions2([{{_, _, {FunctionName, Arity}}, {_, _, ParamNames, Body}} | Rest])->
-	[{
-		atom_to_list(FunctionName)++"/"++integer_to_list(Arity),
-		{{a, b, {FunctionName, Arity}}, {a, b, ParamNames, Body}}
-	}| toksFunctions2(Rest)].
-
 
 %Split functions apart
-toksFunctions([F | Body])->
-	toksFunc(F),
-	toksFunctions(Body);
-toksFunctions([])->
-	ok.
+toksFunctions(Functions)->
+	lists:map(fun(X)->toksFunc(X) end,Functions).
 
 %Read a function
+toksFunc({{_, _, {FunctionName, Arity}}, {_, [compiler_generated], _, _}})->
+    {atom_to_list(FunctionName)++"/"++integer_to_list(Arity),esast:functionExpression(esast:identifier("compiler_generated"),[],esast:blockStatement([esast:emptyStatement()]),false)};
 toksFunc({{_, _, {FunctionName, Arity}}, {_, _, ParamNames, Body}})->
-	io:format("    function: ~s/~w ~n", [FunctionName, Arity]),
-	io:format("        parameters: ~p ~n", [tupleList_getVars_3(ParamNames)]),
-	toksFuncBody(Body).
+	%io:format("    function: ~s/~w ~n", [FunctionName, Arity]),
+	%io:format("        parameters: ~p ~n", [tupleList_getVars_3(ParamNames)]),
+    {atom_to_list(FunctionName)++"/"++integer_to_list(Arity),esast:functionExpression(esast:identifier("null"),[],esast:blockStatement([toksFuncBody(Body)]),false)}.
+
 
 %Parse the function body
 toksFuncBody({c_call, _, {_, _, Module}, {_, _, FunctionName}, Params})->
-	io:format("        call function ~s:~s(", [Module, FunctionName]),
-	io:format("~p)~n", [tupleList_getVars_3(Params)]);
+	%io:format("        call function ~s:~s(", [Module, FunctionName]),
+	%io:format("~p)~n", [tupleList_getVars_3(Params)]);
+    io:format("",[]);
 	
 toksFuncBody({c_case, _, Condition, Clauses})->
-	io:format("        case statement:"),
-	toksFuncBody(Condition),
-	toksClauses(Clauses);
+	%io:format("        case statement:"),
+	%toksFuncBody(Condition),
+	%toksClauses(Clauses);
+    io:format("",[]);
 	
 toksFuncBody({c_values, _, Values})->
-	io:format("~p~n", [tupleList_getVars_3(Values)]);
+	%io:format("~p~n", [tupleList_getVars_3(Values)]);
+    io:format("",[]);
 
 toksFuncBody({c_var, _, Var})->
-	io:format("~p~n",[Var]);
+	%io:format("~p~n",[Var]);
+    io:format("",[]);
 	
 toksFuncBody({c_seq, _, A, B})->
-	toksFuncBody(A),
-	toksFuncBody(B);
+	%toksFuncBody(A),
+	%toksFuncBody(B);
+    io:format("",[]);
 	
 toksFuncBody({c_let, _, [{_, _, Variable}], A, B})->
-	io:format("        Let statement: ~s~n", [Variable]),
-	toksFuncBody(A),
-	toksFuncBody(B);
+	%io:format("        Let statement: ~s~n", [Variable]),
+	%toksFuncBody(A),
+	%toksFuncBody(B);
+    io:format("",[]);
 	
 % Is apply a local function call? Assignment from function? Assignment with pattern matching?
 toksFuncBody({c_apply, _, {_,_,{FName,_Arity}}, Params})->
-	io:format("Call local function ~s(",[FName]),
-	io:format("~p)~n", [tupleList_getVars_3(Params)]);
+	%io:format("Call local function ~s(",[FName]),
+	%io:format("~p)~n", [tupleList_getVars_3(Params)]);
+    io:format("",[]);
 
 toksFuncBody({c_apply, _, _A, _B})->
-	io:format("        Apply statement: ~n");
+	%io:format("        Apply statement: ~n");
+    io:format("",[]);
 	
 toksFuncBody({c_literal,_,Value})->
-	io:format("        Literal ~p~n", [Value]);
-	%esast:print(esast:literal(Value));
+	%io:format("        Literal ~p~n", [Value]);
+	esast:returnStatement(esast:literal(Value));
+    %io:format("~p~n",[Value]);
 
 toksFuncBody({c_tuple,_,Values})->
-	io:format("        Tuple ~p~n", [tupleList_getVars_3(Values)]);
+	%io:format("        Tuple ~p~n", [tupleList_getVars_3(Values)]);
+    io:format("",[]);
+	
+toksFuncBody({c_primop,_,Name,Details})->
+	%io:format("        Error? ~p~n~p~n", [Name,Details]);
+    io:format("",[]);
 	
 toksFuncBody(T)->
 	io:format("Unrecognised Token in function body: ~p", [T]).
@@ -104,9 +97,10 @@ toksFuncBody(T)->
 %Loop through case clauses
 toksClauses([])->ok;
 toksClauses([{c_clause,_,MatchVals,_true,Body}|Rest])->
-	io:format("Clause:~p~n",[MatchVals]),
-	toksFuncBody(Body),
-	toksClauses(Rest).
+	%io:format("Clause:~p~n",[MatchVals]).
+	%toksFuncBody(Body),
+	%toksClauses(Rest).
+    io:format("",[]).
 
 
 
