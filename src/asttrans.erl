@@ -7,8 +7,8 @@
 
 % Compiles a given Erlang source file to a EStree ast
 erast2esast(AST) ->
-	toksModule(AST).
-	%esast:print(toksModule(AST)).
+    toksModule(AST).
+    %esast:print(toksModule(AST)).
 
 %Read the module token (first token)
 toksModule({c_module, _A, {_, _, ModuleName}, Exports, _Attributes, Functions})->
@@ -86,51 +86,53 @@ toksFuncBody({c_literal,_,Value})->
 toksFuncBody({c_tuple,_,Values})->
 	%io:format("        Tuple ~p~n", [tupleList_getVars_3(Values)]);
     io:format("",[]);
-	
-toksFuncBody({c_primop,_,Name,Details})->
-	%io:format("        Error? ~p~n~p~n", [Name,Details]);
-    io:format("",[]);
-	
+    
+toksFuncBody({c_primop,_,{_,_,Type},Details})->
+    % io:format("        Error? ~p~n~p~n", [Type,Details]),
+    esast:error(atom_to_list(Type),"TODO Errors dont parse nicely",esast:literal("Message"));
+    % io:format("",[]);
+    
+    
 toksFuncBody(T)->
-	io:format("Unrecognised Token in function body: ~p", [T]).
+    io:format("Unrecognised Token in function body: ~p", [T]).
 
 %Loop through case clauses
 toksClauses([])->ok;
 toksClauses([{c_clause,_,MatchVals,_true,Body}|Rest])->
-	%io:format("Clause:~p~n",[MatchVals]).
-	%toksFuncBody(Body),
-	%toksClauses(Rest).
-    io:format("",[]).
+    % io:format("Clause:~p~n",[MatchVals]),
+    toksFuncBody(Body),
+    toksClauses(Rest).
+
 
 
 
 tupleList_getVars_3([])->
-	[];
+    [];
 tupleList_getVars_3([{_,_, Val} | Body])->
-	[Val | tupleList_getVars_3(Body)];
+    [Val | tupleList_getVars_3(Body)];
 tupleList_getVars_3([{_, _, Val, _} | Body])->
-	[Val | tupleList_getVars_3(Body)].
+    [Val | tupleList_getVars_3(Body)].
 
 readTokens([])->
-	io:format("Done.",[]);
+    io:format("Done.",[]);
 readTokens([T | Body])->
-	io:format("~p\n", [T]),
-	readTokens(Body).
+    io:format("~p\n", [T]),
+    readTokens(Body).
 
 rAtomToList([A|Rest])->
-	[rAtomToList(A)|rAtomToList(Rest)];
+    [rAtomToList(A)|rAtomToList(Rest)];
 rAtomToList({A})->
-	{rAtomToList(A)};
+    {rAtomToList(A)};
 rAtomToList({A,B})->
-	{rAtomToList(A),rAtomToList(B)};
+    {rAtomToList(A),rAtomToList(B)};
 rAtomToList({A,B,C})->
-	{rAtomToList(A),rAtomToList(B),rAtomToList(C)};
+    {rAtomToList(A),rAtomToList(B),rAtomToList(C)};
 rAtomToList({A,B,C,D})->
-	{rAtomToList(A),rAtomToList(B),rAtomToList(C),rAtomToList(D)};
+    {rAtomToList(A),rAtomToList(B),rAtomToList(C),rAtomToList(D)};
 rAtomToList(A) when is_atom(A) ->
-	atom_to_list(A);
+    atom_to_list(A);
 rAtomToList(A) when not is_atom(A) ->
-	A.
+    A.
 
 
 
@@ -142,4 +144,4 @@ rAtomToList(A) when not is_atom(A) ->
 
 % Currently unused so commenting out for compilation
 %tuple_to_string(T) ->
-%	lists:flatten(io:format("~p", [T])).
+%   lists:flatten(io:format("~p", [T])).
