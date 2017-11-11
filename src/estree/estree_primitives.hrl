@@ -9,12 +9,8 @@ is_identifier(_) ->
 
 % Generates a SourceLocation node
 sourceLocation(LineNumber, ColStart, ColEnd) ->
-    case {is_integer(LineNumber), is_integer(ColStart), is_integer(ColEnd)} of 
-        {true, true, true} ->    
-            node("SourceLocation", [{"source", null}, {"start", position(LineNumber, ColStart)}, {"end", position(LineNumber, ColEnd)}]);
-        _ ->
-            badArgs(?CURRENT_FUNCTION, [integer, integer, integer], [typeof(LineNumber), typeof(ColStart), typeof(ColEnd)])
-    end.
+    ?spec([{LineNumber, integer}, {ColStart, integer}, {ColEnd, integer}]),
+    node("SourceLocation", [{"source", null}, {"start", position(LineNumber, ColStart)}, {"end", position(LineNumber, ColEnd)}]).
 
 is_sourceLocation(?NODETYPE(<<"SourceLocation">>)) ->
     true;
@@ -22,12 +18,8 @@ is_sourceLocation(_) ->
     false.
 
 position(Line, Col) ->
-    case {is_integer(Line), is_integer(Col)} of
-        {true, true} ->
-            node("Position", [{"line", Line}, {"column", Col}]);
-        _ ->
-            badArgs(?CURRENT_FUNCTION, [integer, integer], [typeof(Line), typeof(Col)])
-    end.
+    ?spec([{Line, integer}, {Col, integer}]),    
+    node("Position", [{"line", Line}, {"column", Col}]).
 
 is_position(?NODETYPE(<<"Position">>)) ->
     true;
@@ -54,12 +46,8 @@ is_regex(_) ->
 
 % Generates a Program Node
 program(Statements) ->
-    case {is_list(Statements), lists:all(fun(X) -> X =:= true end, lists:map(fun(X) -> is_statement(X) end, Statements))} of
-        {true, true} ->
-            node("Program", [{"body", Statements}]);
-        _ ->
-            badArgs(?CURRENT_FUNCTION, [<<"List[Statements]">>], [{typeof(Statements), lists:map(fun(X) -> nodetype(X) end, Statements)}])
-    end.
+    ?spec([{Statements, list_of_statement}]),
+    node("Program", [{"body", Statements}]).
 
 is_program(?NODETYPE(<<"Program">>)) ->
     true;
@@ -78,7 +66,9 @@ is_declaration(#{"type" := Type}) ->
             false
     end;
 is_declaration(#{}) ->
-    true.
+    true;
+is_declaration(_) ->
+    false.
 
 % Generate an Expression
 expression() ->
@@ -92,7 +82,9 @@ is_expression(#{"type" := Type}) ->
             false
     end;
 is_expression(#{}) ->
-    true.
+    true;
+is_expression(_) ->
+    false.
 
 % Generates a generic Statement Node
 statement() ->
@@ -106,4 +98,6 @@ is_statement(#{"type" := Type}) ->
             false
     end;
 is_statement(#{}) ->
-    true.
+    true;
+is_statement(_) ->
+    false.
