@@ -41,7 +41,21 @@ toksFuncBody(return,{c_call, A, {B, C, Module}, {D, E, FunctionName}, Params})->
     %io:format("~p)~n", [tupleList_getVars_3(Params)]);
     esast:returnStatement(toksFuncBody(noreturn,{c_call, A, {B, C, Module}, {D, E, FunctionName}, Params}));
 
-%Detect primitive operations like addition & multiplication
+
+
+%Handle Operator calls
+
+
+
+toksFuncBody(noreturn,{c_call, _, {_, _, erlang}, {_, _, 'band'}, [L,R]})->
+    esast:binaryExpression(atom_to_binary('&',utf8),toksFuncBody(noreturn,L),toksFuncBody(noreturn,R));
+toksFuncBody(noreturn,{c_call, _, {_, _, erlang}, {_, _, 'bor'}, [L,R]})->
+    esast:binaryExpression(atom_to_binary('|',utf8),toksFuncBody(noreturn,L),toksFuncBody(noreturn,R));
+toksFuncBody(noreturn,{c_call, _, {_, _, erlang}, {_, _, 'bxor'}, [L,R]})->
+    esast:binaryExpression(atom_to_binary('^',utf8),toksFuncBody(noreturn,L),toksFuncBody(noreturn,R));
+toksFuncBody(noreturn,{c_call, _, {_, _, erlang}, {_, _, 'bnot'}, [L]})->
+    esast:unaryExpression(atom_to_binary('~',utf8),true,toksFuncBody(noreturn,L));
+
 toksFuncBody(noreturn,{c_call, _, {_, _, erlang}, {_, _, 'or'}, [L,R]})->
     esast:logicalExpression(atom_to_binary('||',utf8),toksFuncBody(noreturn,L),toksFuncBody(noreturn,R));
 toksFuncBody(noreturn,{c_call, _, {_, _, erlang}, {_, _, 'and'}, [L,R]})->
@@ -67,8 +81,13 @@ toksFuncBody(noreturn,{c_call, _, {_, _, erlang}, {_, _, '/='}, [L,R]})->
     esast:binaryExpression(atom_to_binary('!=',utf8),toksFuncBody(noreturn,L),toksFuncBody(noreturn,R));
 toksFuncBody(noreturn,{c_call, _, {_, _, erlang}, {_, _, '=<'}, [L,R]})->
     esast:binaryExpression(atom_to_binary('<=',utf8),toksFuncBody(noreturn,L),toksFuncBody(noreturn,R));
+
 toksFuncBody(noreturn,{c_call, _, {_, _, erlang}, {_, _, FunctionName}, [L,R]})->
     esast:binaryExpression(atom_to_binary(FunctionName,utf8),toksFuncBody(noreturn,L),toksFuncBody(noreturn,R));
+
+
+
+
 
 toksFuncBody(noreturn,{c_call, _, {_, _, Module}, {_, _, FunctionName}, Params})->
     io:format("",[]);

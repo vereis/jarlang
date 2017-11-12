@@ -18,6 +18,10 @@
     andTest/2,
     notTest/1,
     xorTest/2,
+    borTest/2,
+    bandTest/2,
+    bnotTest/1,
+    bxorTest/2,
     echo/1]).
 
 boolean() -> true.
@@ -44,5 +48,10 @@ orTest(Var1,Var2)->Var1 or Var2.
 andTest(Var1,Var2)->Var1 and Var2.
 notTest(Var)->not Var.
 xorTest(Var1,Var2)->Var1 xor Var2.
+
+borTest(Var1,Var2)->Var1 bor Var2.
+bandTest(Var1,Var2)->Var1 band Var2.
+bnotTest(Var)->bnot Var.
+bxorTest(Var1,Var2)->Var1 bxor Var2.
 
 echo(Var)->Var.
