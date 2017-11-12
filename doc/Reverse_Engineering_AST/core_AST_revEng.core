@@ -12,10 +12,7 @@ module 'core_AST_revEng' ['addition'/1,
 			  'sequence'/0,
 			  'string'/0,
 			  'subtraction'/1]
-    attributes [%% Line 1
-		'file' =
-		    %% Line 1
-		    [{[99|[111|[114|[101|[95|[65|[83|[84|[95|[114|[101|[118|[69|[110|[103|[46|[101|[114|[108]]]]]]]]]]]]]]]]]]],1}]]
+    attributes []
 'boolean'/0 =
     %% Line 15
     fun () ->
@@ -30,28 +27,28 @@ module 'core_AST_revEng' ['addition'/1,
 	[72|[101|[108|[108|[111|[44|[32|[119|[111|[114|[108|[100|[33]]]]]]]]]]]]]
 'addition'/1 =
     %% Line 19
-    fun (_@c0) ->
+    fun (_cor0) ->
 	call 'erlang':'+'
-	    (_@c0, 3)
+	    (_cor0, 3)
 'subtraction'/1 =
     %% Line 20
-    fun (_@c0) ->
+    fun (_cor0) ->
 	call 'erlang':'-'
-	    (_@c0, 3)
+	    (_cor0, 3)
 'multiplication'/1 =
     %% Line 22
-    fun (_@c0) ->
+    fun (_cor0) ->
 	call 'erlang':'*'
-	    (_@c0, 3)
+	    (_cor0, 3)
 'division'/1 =
     %% Line 23
-    fun (_@c0) ->
+    fun (_cor0) ->
 	call 'erlang':'/'
-	    (_@c0, 3)
+	    (_cor0, 3)
 'echo'/1 =
     %% Line 25
-    fun (_@c0) ->
-	_@c0
+    fun (_cor0) ->
+	_cor0
 'sequence'/0 =
     %% Line 27
     fun () ->
@@ -66,58 +63,87 @@ module 'core_AST_revEng' ['addition'/1,
 		    ([67])
 'errIfNot3'/1 =
     %% Line 32
-    fun (_@c0) ->
+    fun (_cor0) ->
 	%% Line 33
-	case _@c0 of
+	case _cor0 of
 	  <3> when 'true' ->
-	      _@c0
-	  ( <_@c1> when 'true' ->
+	      _cor0
+	  ( <_cor1> when 'true' ->
 		primop 'match_fail'
-		    ({'badmatch',_@c1})
+		    ({'badmatch',_cor1})
 	    -| ['compiler_generated'] )
 	end
 'errIfNot3Tuple'/1 =
     %% Line 35
-    fun (_@c0) ->
+    fun (_cor0) ->
 	%% Line 36
-	case _@c0 of
+	case _cor0 of
 	  <3> when 'true' ->
-	      ( {_@c0,( 'atom'
-			-| ['compiler_generated'] )}
+	      ( {_cor0,( 'atom'
+			 -| ['compiler_generated'] )}
 		-| ['compiler_generated'] )
-	  ( <( _@f6
+	  ( <( _fol6
 	       -| ['compiler_generated'] )> when 'true' ->
-		let <_@c1> = {( _@f6
+		let <_cor1> = {( _fol6
 		       -| ['compiler_generated'] ),( 'atom'
 						     -| ['compiler_generated'] )}
 		in  primop 'match_fail'
-			({'badmatch',_@c1})
+			({'badmatch',_cor1})
 	    -| ['compiler_generated'] )
 	end
 'errIfNot3and3'/2 =
     %% Line 38
-    fun (_@c1,_@c0) ->
+    fun (_cor1,_cor0) ->
 	%% Line 39
-	case <_@c1,_@c0> of
+	case <_cor1,_cor0> of
 	  <3,3> when 'true' ->
-	      ( {_@c1,_@c0}
+	      ( {_cor1,_cor0}
 		-| ['compiler_generated'] )
-	  ( <( _@f9
-	       -| ['compiler_generated'] ),( _@f10
+	  ( <( _fol9
+	       -| ['compiler_generated'] ),( _fol10
 					     -| ['compiler_generated'] )> when 'true' ->
-		let <_@c2> = {( _@f9
-		       -| ['compiler_generated'] ),( _@f10
+		let <_cor2> = {( _fol9
+		       -| ['compiler_generated'] ),( _fol10
 						     -| ['compiler_generated'] )}
 		in  primop 'match_fail'
-			({'badmatch',_@c2})
+			({'badmatch',_cor2})
 	    -| ['compiler_generated'] )
 	end
+'caseExample'/1 =
+    %% Line 41
+    fun (_cor0) ->
+	%% Line 42
+	case _cor0 of
+	  %% Line 43
+	  <'match'> when 'true' ->
+	      %% Line 44
+	      42
+	  %% Line 45
+	  <'othermatch'> when 'true' ->
+	      %% Line 46
+	      'not42'
+	  %% Line 47
+	  <_cor3> when 'true' ->
+	      'nomatch'
+	end
 'module_info'/0 =
-    fun () ->
-	call 'erlang':'get_module_info'
-	    ('core_AST_revEng')
+    ( fun () ->
+	  ( call ( 'erlang'
+		   -| ['compiler_generated'] ):( 'get_module_info'
+						 -| ['compiler_generated'] )
+		(( 'core_AST_revEng'
+		   -| ['compiler_generated'] ))
+	    -| ['compiler_generated'] )
+      -| ['compiler_generated'] )
 'module_info'/1 =
-    fun (_@c0) ->
-	call 'erlang':'get_module_info'
-	    ('core_AST_revEng', _@c0)
+    ( fun (( _cor0
+	     -| ['compiler_generated'] )) ->
+	  ( call ( 'erlang'
+		   -| ['compiler_generated'] ):( 'get_module_info'
+						 -| ['compiler_generated'] )
+		(( 'core_AST_revEng'
+		   -| ['compiler_generated'] ), ( _cor0
+						  -| ['compiler_generated'] ))
+	    -| ['compiler_generated'] )
+      -| ['compiler_generated'] )
 end

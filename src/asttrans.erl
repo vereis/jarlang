@@ -42,6 +42,20 @@ toksFuncBody(return,{c_call, A, {B, C, Module}, {D, E, FunctionName}, Params})->
     esast:returnStatement(toksFuncBody(noreturn,{c_call, A, {B, C, Module}, {D, E, FunctionName}, Params}));
 
 %Detect primitive operations like addition & multiplication
+toksFuncBody(noreturn,{c_call, _, {_, _, erlang}, {_, _, 'or'}, [L,R]})->
+    esast:logicalExpression(atom_to_binary('||',utf8),toksFuncBody(noreturn,L),toksFuncBody(noreturn,R));
+toksFuncBody(noreturn,{c_call, _, {_, _, erlang}, {_, _, 'and'}, [L,R]})->
+    esast:logicalExpression(atom_to_binary('&&',utf8),toksFuncBody(noreturn,L),toksFuncBody(noreturn,R));
+toksFuncBody(noreturn,{c_call, _, {_, _, erlang}, {_, _, 'not'}, [L]})->
+    esast:unaryExpression(atom_to_binary('!',utf8),true,toksFuncBody(noreturn,L));
+
+toksFuncBody(noreturn,{c_call, _, {_, _, erlang}, {_, _, 'xor'}, [L,R]})->
+    toksFuncBody(noreturn,{c_call, a, {a, a, erlang}, {a, a, 'or'}, [
+            {c_call, a, {a, a, erlang}, {a, a, 'and'}, [L,{c_call, a, {a, a, erlang}, {a, a, 'not'}, [R]}]},
+            {c_call, a, {a, a, erlang}, {a, a, 'and'}, [R,{c_call, a, {a, a, erlang}, {a, a, 'not'}, [L]}]}
+        ]}
+    );
+
 toksFuncBody(noreturn,{c_call, _, {_, _, erlang}, {_, _, 'div'}, [L,R]})->
     esast:callExpression(
          esast:memberExpression(esast:identifier(<<"Math">>),esast:identifier(<<"floor">>),false),

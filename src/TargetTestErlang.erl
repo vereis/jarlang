@@ -14,6 +14,10 @@
     lessThanOrEq/2,
     moreThan/2,
     moreThanOrEq/2,
+    orTest/2,
+    andTest/2,
+    notTest/1,
+    xorTest/2,
     echo/1,
     sequence/0,
     errIfNot3/1,
@@ -39,6 +43,11 @@ lessThan(Var1,Var2)->Var1<Var2.
 lessThanOrEq(Var1,Var2)->Var1=<Var2.
 moreThan(Var1,Var2)->Var1>Var2.
 moreThanOrEq(Var1,Var2)->Var1>=Var2.
+
+orTest(Var1,Var2)->Var1 or Var2.
+andTest(Var1,Var2)->Var1 and Var2.
+notTest(Var)->not Var.
+xorTest(Var1,Var2)->Var1 xor Var2.
 
 echo(Var)->Var.
 
