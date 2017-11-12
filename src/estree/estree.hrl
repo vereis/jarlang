@@ -1,3 +1,4 @@
+% Macros for use in guards in certain places
 -define(IS_LITERAL(X),
     is_list(X) ; is_binary(X) ; X =:= null ; X =:= undefined ; is_integer(X) ; is_float(X) ; is_boolean(X)).
         
