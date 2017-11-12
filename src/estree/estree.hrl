@@ -39,7 +39,7 @@
 % Arg by calling ?MODULE:is_customtype(Arg) where customtype is the type given.
 % ?spec supports one additional level for compound types allowing types such as list_of_type,
 % where again, type can be a built-in type or a compound type.
--include("../../lib/typecheck.hrl").
+-include("../lib/typecheck.hrl").
 
 % Custom type declarations  
 is_variableType(X) ->

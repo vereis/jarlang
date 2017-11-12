@@ -106,13 +106,10 @@ c_functions([{FuncNameWithArity, Function} | Rest]) ->
     constDeclaration(
         <<"functions">>,
         objectExpression(
-            lists:map(fun({FuncName, _Fn}) ->
+            lists:map(fun({FuncName, FuncBody}) ->
                 property(
                     literal(list_to_binary(FuncName)), 
-                    functionExpression(null, [], blockStatement([
-                        % Function
-                        returnStatement(literal(<<"function parsing not yet implemented">>))
-                    ]), false)
+                    FuncBody
                 )
             end , FunctionList)
         )
@@ -150,7 +147,7 @@ updateRecord(Record, [{Key, Value} | Tail]) ->
 
 % Misc Functions
 test(Map) ->
-    code:add_path("../lib/"),
+    code:add_path("lib/"),
     Json = json:serialize(Map),
 
     % codegen.js has to take a file since its non-trivial parsing JSON on the command line
