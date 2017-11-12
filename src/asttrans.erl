@@ -10,16 +10,16 @@ erast2esast(AST) ->
 
 %Read the module token (first token)
 toksModule({c_module, _A, {_, _, ModuleName}, Exports, _Attributes, Functions})->
-	io:format("module: ~s ~n", [ModuleName]),
-	io:format("    exports: ~p ~n", [tupleList_getVars_3(Exports)]),
-	FormattedFunctions = toksFunctions(Functions),
+    io:format("module: ~s ~n", [ModuleName]),
+    io:format("    exports: ~p ~n", [tupleList_getVars_3(Exports)]),
+    FormattedFunctions = toksFunctions(Functions),
     FormattedExports = lists:map(fun({N,A})->{atom_to_list(N),A} end,tupleList_getVars_3(Exports)),
     %io:format("~p~n~n~n~n~n~n", [FormattedFunctions]),
     esast:c_module(atom_to_list(ModuleName),FormattedExports,FormattedFunctions);
-	
-	
+    
+    
 toksModule(T)->
-	io:format("Unrecognised Token in module section: ~p", [T]).
+    io:format("Unrecognised Token in module section: ~p", [T]).
 
 
 
@@ -37,8 +37,8 @@ toksFunc({{_, _, {FunctionName, Arity}}, {_, _, ParamNames, Body}})->
 %Parse the function body
 
 toksFuncBody(return,{c_call, A, {B, C, Module}, {D, E, FunctionName}, Params})->
-	%io:format("        call function ~s:~s(", [Module, FunctionName]),
-	%io:format("~p)~n", [tupleList_getVars_3(Params)]);
+    %io:format("        call function ~s:~s(", [Module, FunctionName]),
+    %io:format("~p)~n", [tupleList_getVars_3(Params)]);
     esast:returnStatement(toksFuncBody(noreturn,{c_call, A, {B, C, Module}, {D, E, FunctionName}, Params}));
 
 %Detect primitive operations like addition & multiplication
@@ -48,45 +48,45 @@ toksFuncBody(noreturn,{c_call, _, {_, _, erlang}, {_, _, FunctionName}, [L,R]})-
 
 toksFuncBody(noreturn,{c_call, _, {_, _, Module}, {_, _, FunctionName}, Params})->
     io:format("",[]);
-	
+    
 toksFuncBody(return,{c_values, _, Values})->
-	%io:format("~p~n", [tupleList_getVars_3(Values)]);
+    %io:format("~p~n", [tupleList_getVars_3(Values)]);
     io:format("",[]);
 
 toksFuncBody(return,{c_var, A, Var})->
-	esast:returnStatement(toksFuncBody(noreturn,{c_var, A, Var}));
+    esast:returnStatement(toksFuncBody(noreturn,{c_var, A, Var}));
 toksFuncBody(noreturn,{c_var, _, Var})->
-	esast:identifier(atom_to_binary(Var,utf8));
+    esast:identifier(atom_to_binary(Var,utf8));
     %io:format("",[]);
-	
+    
 toksFuncBody(return,{c_seq, _, A, B})->
-	%toksFuncBody(A),
-	%toksFuncBody(B);
+    %toksFuncBody(A),
+    %toksFuncBody(B);
     io:format("",[]);
-	
+    
 toksFuncBody(return,{c_let, _, [{_, _, Variable}], A, B})->
-	%io:format("        Let statement: ~s~n", [Variable]),
-	%toksFuncBody(A),
-	%toksFuncBody(B);
+    %io:format("        Let statement: ~s~n", [Variable]),
+    %toksFuncBody(A),
+    %toksFuncBody(B);
     io:format("",[]);
-	
+    
 % Is apply a local function call? Assignment from function? Assignment with pattern matching?
 toksFuncBody(return,{c_apply, _, {_,_,{FName,_Arity}}, Params})->
-	%io:format("Call local function ~s(",[FName]),
-	%io:format("~p)~n", [tupleList_getVars_3(Params)]);
+    %io:format("Call local function ~s(",[FName]),
+    %io:format("~p)~n", [tupleList_getVars_3(Params)]);
     io:format("",[]);
 
 toksFuncBody(return,{c_apply, _, _A, _B})->
-	%io:format("        Apply statement: ~n");
+    %io:format("        Apply statement: ~n");
     io:format("",[]);
-	
+    
 toksFuncBody(return,{c_literal,_,Value})->
-	esast:returnStatement(esast:literal(Value));
+    esast:returnStatement(esast:literal(Value));
 toksFuncBody(_,{c_literal,_,Value})->
-	esast:literal(Value);
+    esast:literal(Value);
 
 toksFuncBody(return,{c_tuple,_,Values})->
-	%io:format("        Tuple ~p~n", [tupleList_getVars_3(Values)]);
+    %io:format("        Tuple ~p~n", [tupleList_getVars_3(Values)]);
     io:format("",[]);
     
 toksFuncBody(return,{c_primop,_,{_,_,Type},Details})->
@@ -95,9 +95,9 @@ toksFuncBody(return,{c_primop,_,{_,_,Type},Details})->
     % io:format("",[]);
     
 toksFuncBody(return,{c_case, _, Condition, Clauses})->
-	%io:format("        case statement:"),
-	%toksFuncBody(noreturn,Condition),
-	%lists:map(fun({c_clause,_,MatchVals,_true,Body})->toksFuncBody(return,Body) end,Clauses).
+    %io:format("        case statement:"),
+    %toksFuncBody(noreturn,Condition),
+    %lists:map(fun({c_clause,_,MatchVals,_true,Body})->toksFuncBody(return,Body) end,Clauses).
     io:format("",[]);
     
 toksFuncBody(_,T)->
