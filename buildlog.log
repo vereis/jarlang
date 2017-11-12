@@ -1,0 +1,22 @@
+-- Build started on Sun Nov 12 12:19:57 STD 2017 --
+compile: warnings being treated as errors
+src/asttrans.erl:34: variable 'ParamNames' is unused
+src/asttrans.erl:41: variable 'FunctionName' is unused
+src/asttrans.erl:41: variable 'Module' is unused
+src/asttrans.erl:41: variable 'Params' is unused
+src/asttrans.erl:46: variable 'Clauses' is unused
+src/asttrans.erl:46: variable 'Condition' is unused
+src/asttrans.erl:52: variable 'Values' is unused
+src/asttrans.erl:56: variable 'Var' is unused
+src/asttrans.erl:60: variable 'A' is unused
+src/asttrans.erl:60: variable 'B' is unused
+src/asttrans.erl:65: variable 'A' is unused
+src/asttrans.erl:65: variable 'B' is unused
+src/asttrans.erl:65: variable 'Variable' is unused
+src/asttrans.erl:72: variable 'FName' is unused
+src/asttrans.erl:72: variable 'Params' is unused
+src/asttrans.erl:86: variable 'Values' is unused
+src/asttrans.erl:90: variable 'Details' is unused
+src/asttrans.erl:100: function toksClauses/1 is unused
+src/asttrans.erl:101: variable 'MatchVals' is unused
+src/asttrans.erl:122: function rAtomToList/1 is unused

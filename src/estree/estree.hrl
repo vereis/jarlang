@@ -137,6 +137,9 @@ typeof(X) ->
 is_null(X) ->
     X =:= null.
 
+is_anything(_) ->
+    true.
+
 is_bif(X) ->
     case re:run(atom_to_list(X), "^(is_boolean|is_pid|is_port|is_reference|is_list|is_atom|is_bitstring|is_float|is_integer|is_map|is_tuple)$") of
         {match, _} ->
@@ -152,6 +155,9 @@ is_compound_type(X) ->
         _ ->
             false
     end.
+
+is_variableType(X) ->
+    lists:member(X, [<<"var">>, <<"let">>, <<"const">>]).
     
 nodetype(#{"type" := Type}) ->
     list_to_atom(string:to_lower(binary_to_list(Type)));
