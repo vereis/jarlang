@@ -6,6 +6,8 @@
      subtraction/1,
      multiplication/1,
      division/1,
+     remainder/1,
+     intDivision/1,
      echo/1,
      sequence/0,
      errIfNot3/1,
@@ -21,6 +23,9 @@ subtraction(Var) -> Var - 3.
 
 multiplication(Var) -> Var * 3.
 division(Var) -> Var / 3.
+
+remainder(Var) -> Var rem 3.
+intDivision(Var) -> Var div 3.
 
 echo(Var)->Var.
 

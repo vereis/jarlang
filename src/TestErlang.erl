@@ -23,4 +23,12 @@ division(Var) -> Var / 3.
 remainder(Var) -> Var rem 3.
 intDivision(Var) -> Var div 3.
 
-echo(Var)->Var.
+echo(Var)->Var.-module(core_AST_revEng).
+-export([boolean/0,
+     integer/0,
+     string/0]).
+
+boolean() -> true.
+integer() -> 3.
+string() ->"Hello, world!".
+
