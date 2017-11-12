@@ -14,6 +14,7 @@ toksModule({c_module, _A, {_, _, ModuleName}, Exports, _Attributes, Functions})-
 	io:format("    exports: ~p ~n", [tupleList_getVars_3(Exports)]),
 	FormattedFunctions = toksFunctions(Functions),
     FormattedExports = lists:map(fun({N,A})->{atom_to_list(N),A} end,tupleList_getVars_3(Exports)),
+    io:format("~p~n~n~n~n~n~n", [FormattedFunctions])
     esast:c_module(atom_to_list(ModuleName),FormattedExports,FormattedFunctions);
 	
 	
@@ -24,13 +25,19 @@ toksModule(T)->
 
 %Split functions apart
 toksFunctions(Functions)->
-	lists:map(fun(X)->toksFunc(X) end,Functions).
+    lists:map(fun(X)->toksFunc(X) end,Functions).
 
 %Read a function
 toksFunc({{_, _, {FunctionName, Arity}}, {_, [compiler_generated], _, _}})->
-    {atom_to_list(FunctionName)++"/"++integer_to_list(Arity),esast:functionExpression(esast:identifier("compiler_generated"),[],esast:blockStatement([esast:emptyStatement()]),false)};
+    {atom_to_list(FunctionName)++"/"++integer_to_list(Arity),esast:functionExpression(null,[],esast:blockStatement([esast:emptyStatement()]),false)};
 toksFunc({{_, _, {FunctionName, Arity}}, {_, _, ParamNames, Body}})->
+<<<<<<< HEAD
     {atom_to_list(FunctionName)++"/"++integer_to_list(Arity),esast:functionExpression(esast:identifier("null"),[],esast:blockStatement([toksFuncBody(return,Body)]),false)}.
+=======
+	%io:format("    function: ~s/~w ~n", [FunctionName, Arity]),
+	%io:format("        parameters: ~p ~n", [tupleList_getVars_3(ParamNames)]),
+    {atom_to_list(FunctionName)++"/"++integer_to_list(Arity),esast:functionExpression(null,[],esast:blockStatement([toksFuncBody(Body)]),false)}.
+>>>>>>> rebar3
 
 
 %Parse the function body
@@ -68,10 +75,16 @@ toksFuncBody(return,{c_apply, _, _A, _B})->
 	%io:format("        Apply statement: ~n");
     io:format("",[]);
 	
+<<<<<<< HEAD
 toksFuncBody(return,{c_literal,_,Value})->
 	esast:returnStatement(esast:literal(Value));
 toksFuncBody(_,{c_literal,_,Value})->
 	esast:literal(Value);
+=======
+toksFuncBody({c_literal,_,Value})->
+	io:format("        Literal ~p~n", [Value]),
+    esast:returnStatement(esast:literal(Value));
+>>>>>>> rebar3
 
 toksFuncBody(return,{c_tuple,_,Values})->
 	%io:format("        Tuple ~p~n", [tupleList_getVars_3(Values)]);
