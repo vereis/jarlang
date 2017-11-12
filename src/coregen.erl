@@ -15,7 +15,7 @@ er2best(Module) ->
 
 % Compiles a given Erlang source file to a CoreErlang file
 er2ce(Module) ->
-    code:add_path("../lib/"),
+    code:add_path("lib/"),
     er2ce(Module, filepath:path(Module)).
 
 er2ce(Module,return_CE)->
@@ -26,7 +26,7 @@ er2ce(Module, OutputDirectory) ->
         nomatch ->
             {error, output_directory_not_valid};
         _ ->
-            code:add_path("../lib/"),
+            code:add_path("lib/"),
             compile:file(Module, to_core),
 
             % Compiling always generates output in working directory so lets
@@ -38,11 +38,11 @@ er2ce(Module, OutputDirectory) ->
 
 % Compiles a given Erlang source file to a CoreErlang AST file
 er2ast(Module) ->
-    code:add_path("../lib/"),
+    code:add_path("lib/"),
     er2ast(Module, filepath:path(Module)).
 
 er2ast(Module, return_AST) ->
-    code:add_path("../lib/"),
+    code:add_path("lib/"),
     er2ce(Module, "./"),
 
     % Parse core erlang and generate AST, credits to
@@ -64,7 +64,7 @@ er2ast(Module, return_AST) ->
 
 
 er2ast(Module, OutputDirectory) ->
-    code:add_path("../lib/"),
+    code:add_path("lib/"),
     ModuleName = filepath:name(Module),
 	case er2ast(Module, return_AST) of
 		{ok, AST} ->

@@ -27,9 +27,9 @@ er2(estree,Module)->
 %############################################
 
 er2file(Task,Module)->
-    code:add_path("../lib/"),
-    OutputDirectory=filepath:path(Module),
-    er2file(Task,Module,OutputDirectory).
+	code:add_path("lib/"),
+	OutputDirectory=filepath:path(Module),
+	er2file(Task,Module,OutputDirectory).
 er2file(Task,Module,OutputDirectory)->
     toFile(Task,OutputDirectory,Module).
 
@@ -40,11 +40,11 @@ toFile(core_AST,OutputDirectory,Module)->
     toFile(core_AST,OutputDirectory,Module,"ast").
 
 toFile(Task,OutputDirectory,Module,Ext)->
-    code:add_path("../lib/"),
-    ModuleName = filepath:name(Module),
-    Tuple=er2(Task,Module),
-    Str=OutputDirectory ++ ModuleName ++ "." ++ Ext,
-    file:write_file(Str, tuple_to_string(Tuple)).
+	code:add_path("lib/"),
+	ModuleName = filepath:name(Module),
+	Tuple=er2(Task,Module),
+	Str=OutputDirectory ++ ModuleName ++ "." ++ Ext,
+	file:write_file(Str, tuple_to_string(Tuple)).
 
 
 
