@@ -53,8 +53,8 @@ toksFuncBody(return,{c_values, _, Values})->
 	%io:format("~p~n", [tupleList_getVars_3(Values)]);
     io:format("",[]);
 
-toksFuncBody(return,{c_var, _, Var})->
-	esast:returnStatement(esast:identifier(Var));
+toksFuncBody(return,{c_var, A, Var})->
+	esast:returnStatement(toksFuncBody(noreturn,{c_var, A, Var}));
 toksFuncBody(noreturn,{c_var, _, Var})->
 	esast:identifier(atom_to_binary(Var,utf8));
     %io:format("",[]);
