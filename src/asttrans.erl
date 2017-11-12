@@ -31,7 +31,7 @@ toksFunctions(Functions)->
 toksFunc({{_, _, {FunctionName, Arity}}, {_, [compiler_generated], _, _}})->
     {atom_to_list(FunctionName)++"/"++integer_to_list(Arity),esast:functionExpression(null,[],esast:blockStatement([esast:emptyStatement()]),false)};
 toksFunc({{_, _, {FunctionName, Arity}}, {_, _, ParamNames, Body}})->
-    {atom_to_list(FunctionName)++"/"++integer_to_list(Arity),esast:functionExpression(null,[],esast:blockStatement([toksFuncBody(return,Body)]),false)}.
+    {atom_to_list(FunctionName)++"/"++integer_to_list(Arity),esast:functionExpression(null,tupleListToIdentifierList(ParamNames),esast:blockStatement([toksFuncBody(return,Body)]),false)}.
 
 
 %Parse the function body
@@ -42,8 +42,9 @@ toksFuncBody(return,{c_call, A, {B, C, Module}, {D, E, FunctionName}, Params})->
     esast:returnStatement(toksFuncBody(noreturn,{c_call, A, {B, C, Module}, {D, E, FunctionName}, Params}));
 
 %Detect primitive operations like addition & multiplication
-toksFuncBody(noreturn,{c_call, _, {_, _, erlang}, {_, _, FunctionName}, Params})->
-    io:format("",[]);
+toksFuncBody(noreturn,{c_call, _, {_, _, erlang}, {_, _, FunctionName}, [L,R]})->
+    esast:binaryExpression(atom_to_binary(FunctionName,utf8),toksFuncBody(noreturn,L),toksFuncBody(noreturn,R));
+    %io:format("",[]);
 
 toksFuncBody(noreturn,{c_call, _, {_, _, Module}, {_, _, FunctionName}, Params})->
     io:format("",[]);
@@ -53,8 +54,10 @@ toksFuncBody(return,{c_values, _, Values})->
     io:format("",[]);
 
 toksFuncBody(return,{c_var, _, Var})->
-	%io:format("~p~n",[Var]);
-    io:format("",[]);
+	esast:returnStatement(esast:identifier(Var));
+toksFuncBody(noreturn,{c_var, _, Var})->
+	esast:identifier(atom_to_binary(Var,utf8));
+    %io:format("",[]);
 	
 toksFuncBody(return,{c_seq, _, A, B})->
 	%toksFuncBody(A),
@@ -101,6 +104,10 @@ toksFuncBody(_,T)->
     io:format("Unrecognised Token in function body: ~p", [T]).
 
 
+
+
+tupleListToIdentifierList(List)->
+    lists:map(fun({c_var,[],A})->toksFuncBody(noreturn,{c_var,[],A}) end,List).
 
 
 
