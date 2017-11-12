@@ -75,7 +75,7 @@ expression() ->
     node().
 
 is_expression(#{"type" := Type}) ->
-    case re:run(Type, "Expression|Literal|Identifier") of
+    case re:run(Type, "SpreadElement|Expression|Literal|Identifier") of
         {match, _} ->
             true;
         _ ->
@@ -100,4 +100,14 @@ is_statement(#{"type" := Type}) ->
 is_statement(#{}) ->
     true;
 is_statement(_) ->
+    false.
+
+% SpreadExpression 
+spreadElement(Argument) ->
+    ?spec([{Argument, [identifier, arrayExpression]}]),
+    updateRecord(node(), [{"type", <<"SpreadElement">>}, {"argument", Argument}]).
+
+is_spreadElement(#{"type" := <<"SpreadElement">>}) ->
+    true;
+is_spreadElement(_) ->
     false.
