@@ -47,9 +47,12 @@ toksFuncBody(noreturn,{c_call, _, {_, _, erlang}, {_, _, 'div'}, [L,R]})->
          esast:memberExpression(esast:identifier(<<"Math">>),esast:identifier(<<"floor">>),false),
          [toksFuncBody(noreturn,{c_call, a, {b, c, erlang}, {d, e, '/'}, [L,R]})]
      );
-
 toksFuncBody(noreturn,{c_call, _, {_, _, erlang}, {_, _, 'rem'}, [L,R]})->
     esast:binaryExpression(atom_to_binary('%',utf8),toksFuncBody(noreturn,L),toksFuncBody(noreturn,R));
+toksFuncBody(noreturn,{c_call, _, {_, _, erlang}, {_, _, '/='}, [L,R]})->
+    esast:binaryExpression(atom_to_binary('!=',utf8),toksFuncBody(noreturn,L),toksFuncBody(noreturn,R));
+toksFuncBody(noreturn,{c_call, _, {_, _, erlang}, {_, _, '=<'}, [L,R]})->
+    esast:binaryExpression(atom_to_binary('<=',utf8),toksFuncBody(noreturn,L),toksFuncBody(noreturn,R));
 toksFuncBody(noreturn,{c_call, _, {_, _, erlang}, {_, _, FunctionName}, [L,R]})->
     esast:binaryExpression(atom_to_binary(FunctionName,utf8),toksFuncBody(noreturn,L),toksFuncBody(noreturn,R));
 
