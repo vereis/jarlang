@@ -34,9 +34,17 @@ toksFunc({{_, _, {FunctionName, Arity}}, {_, _, ParamNames, Body}})->
 
 
 %Parse the function body
-toksFuncBody(return,{c_call, _, {_, _, Module}, {_, _, FunctionName}, Params})->
+
+toksFuncBody(return,{c_call, A, {B, C, Module}, {D, E, FunctionName}, Params})->
 	%io:format("        call function ~s:~s(", [Module, FunctionName]),
 	%io:format("~p)~n", [tupleList_getVars_3(Params)]);
+    esast:returnStatement(toksFuncBody(noreturn,{c_call, A, {B, C, Module}, {D, E, FunctionName}, Params}));
+
+%Detect primitive operations like addition & multiplication
+toksFuncBody(noreturn,{c_call, _, {_, _, erlang}, {_, _, FunctionName}, Params})->
+    io:format("",[]);
+
+toksFuncBody(noreturn,{c_call, _, {_, _, Module}, {_, _, FunctionName}, Params})->
     io:format("",[]);
 	
 toksFuncBody(return,{c_values, _, Values})->

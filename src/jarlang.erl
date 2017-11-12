@@ -9,7 +9,7 @@
 % Transpiles a module through the pipeline as far as is implemented
 
 er2(best,_) ->
-    esast:test(er2(estree,"../doc/Reverse_Engineering_AST/core_AST_revEng"));
+    esast:test(er2(estree,"./core_AST_revEng"));
 
 er2(core_erlang,Module)->
     {ok,_,CE}=coregen:er2ce(Module,return_CE),
