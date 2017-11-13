@@ -30,7 +30,7 @@
 
 -define(NODETYPE(X),
     #{"type" := X}).
- 
+
 % Include typechecking header file containing a macro ?spec.
 % ?spec takes a list of tuples in the form of [{Arg, type}] where Arg is a reference to a
 % parameter, and type is a atom stating what type Arg should be.
@@ -45,11 +45,34 @@
 is_variableType(X) ->
     lists:member(X, [<<"var">>, <<"let">>, <<"const">>]).
 
+is_variableType_test() ->
+    ?assertEqual(is_variableType(<<"var">>), true),
+    ?assertEqual(is_variableType(<<"let">>), true),
+    ?assertEqual(is_variableType(<<"const">>), true),
+    ?assertEqual(is_variableType(<<"somethingelse">>), false).
+
 is_anything(_) ->
     true.
 
+is_anything_test() ->
+    ?assertEqual(is_anything(an_atom), true),
+    ?assertEqual(is_anything("a list string"), true),
+    ?assertEqual(is_anything(12), true),
+    ?assertEqual(is_anything(0.14), true),
+    ?assertEqual(is_anything(<<"bit string">>), true),
+    ?assertEqual(is_anything(#{}), true).
+
 is_null(X) ->
     X =:= null.
+
+is_null_test() ->
+    ?assertEqual(is_null(null), true),
+    ?assertEqual(is_null(an_atom), false),
+    ?assertEqual(is_null("null"), false),
+    ?assertEqual(is_null(12), false),
+    ?assertEqual(is_null(0.14), false),
+    ?assertEqual(is_null(<<"null">>), false),
+    ?assertEqual(is_null(#{}), false).
 
 % Include ESTREE Declarations, which we seperate into types for readability
 % All nodetypes defined in these header files also have custom type declarations for use with
@@ -79,12 +102,54 @@ node(Type, AdditionalFields) ->
     NewNode = #{"type" => Type},
     updateRecord(NewNode, AdditionalFields).
 
+node_test() ->
+    ?assertEqual(node(), #{}),
+    ?assertEqual(node(atomname, []), #{"type" => <<"atomname">>}),
+    ?assertEqual(node("listname", []), #{"type" => <<"listname">>}),
+    ?assertEqual(node(random, [{1, 2}]), #{"type" => <<"random">>, 1 => 2}).
+
 % Add location data to any node
 addLocationData(Node, LineNumber, ColStart, ColEnd) ->
     updateRecord(Node, [{"loc", sourceLocation(LineNumber, ColStart, ColEnd)}]).
 
+addLocationData_test() ->
+    ?assertEqual(
+        addLocationData(
+            blockStatement([emptyStatement(), emptyStatement(), emptyStatement()]),
+            12, 15, 22
+        ),
+        #{
+            "body" => [
+                #{"type" => <<"EmptyStatement">>},
+                #{"type" => <<"EmptyStatement">>},
+                #{"type" => <<"EmptyStatement">>}
+            ],
+            "loc" => #{
+                "end" => #{
+                    "column" => 22,
+                    "line" => 12,
+                    "type" => <<"Position">>
+                },
+                "source" => null,
+                "start" => #{
+                    "column" => 15,
+                    "line" => 12,
+                    "type" => <<"Position">>
+                },
+                "type" => <<"SourceLocation">>
+            },
+            "type" => <<"BlockStatement">>
+        }
+    ).
+
 % Helper function which appends new key value pairs into an existing record
+updateRecord(Record, []) ->
+    Record;
 updateRecord(Record, [{Key, Value}]) ->
     Record#{Key => Value};
 updateRecord(Record, [{Key, Value} | Tail]) ->
     updateRecord(Record#{Key => Value}, Tail).
+
+updateRecord_test() ->
+    ?assertEqual(updateRecord(#{a => 1, b => 2, c => 3}, [{4, 5}]), #{a => 1, b => 2, c => 3, 4 => 5}),
+    ?assertEqual(updateRecord(#{a => 1, b => 2, c => 3}, [{<<"string">>, 5}]), #{a => 1, b => 2, c => 3, <<"string">> => 5}).
