@@ -1,4 +1,4 @@
--module(core_AST_revEng).
+-module('TestErlang').
 -export([boolean/0,
     integer/0,
     string/0,

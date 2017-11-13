@@ -147,6 +147,9 @@ updateRecord(Record, [{Key, Value} | Tail]) ->
 
 % Misc Functions
 test(Map) ->
+    test(Map, "codegen.js").
+
+test(Map, Escodegen) ->
     code:add_path("lib/"),
     Json = json:serialize(Map),
 
@@ -155,8 +158,9 @@ test(Map) ->
     % afterwards
     Temp = "temp.estreejson",
     filepath:write(Json, Temp),
+    io:format("~p~n", [file:get_cwd()]),
     % We generally don't care what happens here, both cases ensure dir exists
-    try io:format("~s", [os:cmd("node codegen.js " ++ Temp)]) of
+    try io:format("~s", [os:cmd("node " ++ Escodegen ++ " " ++ Temp)]) of
         _ -> 
             filepath:delete(Temp),
             ok
