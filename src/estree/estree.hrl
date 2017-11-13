@@ -59,3 +59,32 @@ is_null(X) ->
 -include("estree_declarations.hrl").
 -include("estree_expressions.hrl").
 -include("estree_prefabs.hrl").
+
+% Functions
+
+% Generates a plain node, setting only node type
+node(Type) ->
+    node(Type, []).
+
+% Generates a plain node and sets additional fields in the form
+% List[{Key, Value}]
+node() ->
+    #{}.
+
+node(Type, AdditionalFields) when is_atom(Type) ->
+    node(atom_to_binary(Type, utf8), AdditionalFields);
+node(Type, AdditionalFields) when is_list(Type) ->
+    node(list_to_binary(Type), AdditionalFields);
+node(Type, AdditionalFields) ->
+    NewNode = #{"type" => Type},
+    updateRecord(NewNode, AdditionalFields).
+
+% Add location data to any node
+addLocationData(Node, LineNumber, ColStart, ColEnd) ->
+    updateRecord(Node, [{"loc", sourceLocation(LineNumber, ColStart, ColEnd)}]).
+
+% Helper function which appends new key value pairs into an existing record
+updateRecord(Record, [{Key, Value}]) ->
+    Record#{Key => Value};
+updateRecord(Record, [{Key, Value} | Tail]) ->
+    updateRecord(Record#{Key => Value}, Tail).

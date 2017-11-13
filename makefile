@@ -31,6 +31,8 @@ release:
 	@ echo "    Compiling files will fail if any errors occur"
 	@ mkdir -p $(OUTDIR)
 	@ rm -f $(OUTDIR)/*.beam
+	@ rm -f $(OUTDIR)/*.sh
+	@ rm -f $(OUTDIR)/*.js
 	@ echo "$(GREEN)==> Compiling Library Files$(RED)"
 	@ $(ERLC) $(ERLFLAGS) $(OUTDIR) $(LIBDIR)/*.erl
 	@ echo "$(NORMAL)    Done"
@@ -41,7 +43,7 @@ release:
 	@ $(JSMINIFY) $(JSMINIFYFLAGS) $(SRCDIR)/*.js $(OUTDIR) 2> /dev/null || true
 	@ $(JSMINIFY) $(JSMINIFYFLAGS) $(LIBDIR)/*.js $(OUTDIR) 2> /dev/null || true
 	@ echo "$(NORMAL)    Done"
-	@ echo "$(GREEN)==> Creating launch script './$(OUTDIR)/'$(NORMAL)"
+	@ echo "$(GREEN)==> Creating launch script in './$(OUTDIR)/'$(NORMAL)"
 	@ cp -f $(MISCDIR)/* $(OUTDIR) 2> /dev/null || true
 	@ echo "$(NORMAL)    Done"
 	@ echo "$(GREEN)==> RELEASE release successfully built in './$(OUTDIR)/'$(NORMAL)"
@@ -54,6 +56,8 @@ debug:
 	@ echo "    Compiling files will fail if any errors occur"
 	@ mkdir -p $(DEBUGDIR)
 	@ rm -f $(DEBUGDIR)/*.beam
+	@ rm -f $(DEBUGDIR)/*.sh
+	@ rm -f $(DEBUGDIR)/*.js
 	@ echo "$(BLUE)==> Compiling Library Files$(RED)"
 	@ $(ERLC) $(DEBUGFLAGS) $(DEBUGDIR) $(LIBDIR)/*.erl
 	@ echo "$(NORMAL)    Done"
@@ -64,19 +68,21 @@ debug:
 	@ $(JSMINIFY) $(JSMINIFYFLAGS) $(SRCDIR)/*.js $(DEBUGDIR) 2> /dev/null || true
 	@ $(JSMINIFY) $(JSMINIFYFLAGS) $(LIBDIR)/*.js $(DEBUGDIR) 2> /dev/null || true
 	@ echo "$(NORMAL)    Done"
-	@ echo "$(BLUE)==> Creating launch script './$(DEBUGDIR)/'$(NORMAL)"
+	@ echo "$(BLUE)==> Creating launch script in './$(DEBUGDIR)/'$(NORMAL)"
 	@ cp -f $(MISCDIR)/* $(DEBUGDIR) 2> /dev/null || true
 	@ echo "$(NORMAL)    Done"
 	@ echo "$(BLUE)==> DEBUG release successfully built in './$(DEBUGDIR)/'$(NORMAL)"
 	@ echo "    You can run jarlang with './$(DEBUGDIR)/jarlang.sh FILE1 FILE2 FILE3...'"
 	@ echo "    Done\n"
 test:
-	@ echo "$(PURPLE)==> Building DEBUG to run tests$(NORMAL)"
+	@ echo "$(PURPLE)==> Building TEST$(NORMAL)"
 	@ echo "    Compiling giles with debug_info enabled"
 	@ echo "    Compiling files with warnings ignored"
 	@ echo "    Compiling giles will fail if any errors occur"
 	@ mkdir -p $(TESTDIR)
 	@ rm -f $(TESTDIR)/*.beam
+	@ rm -f $(TESTDIR)/*.sh
+	@ rm -f $(TESTDIR)/*.js
 	@ echo "$(PURPLE)==> Compiling Library Files$(RED)"
 	@ $(ERLC) $(DEBUGFLAGS) $(TESTDIR) $(LIBDIR)/*.erl
 	@ echo "$(NORMAL)    Done"
@@ -87,9 +93,17 @@ test:
 	@ $(JSMINIFY) $(JSMINIFYFLAGS) $(SRCDIR)/*.js $(TESTDIR) 2> /dev/null || true
 	@ $(JSMINIFY) $(JSMINIFYFLAGS) $(LIBDIR)/*.js $(TESTDIR) 2> /dev/null || true
 	@ echo "$(NORMAL)    Done"
-	@ echo "$(PURPLE)==> DEBUG release successfully built in './$(TESTDIR)/'$(NORMAL)"
+	@ echo "$(PURPLE)==> Creating test script in './$(TESTDIR)/'$(NORMAL)"
+	@ echo "$(NORMAL)    Done"
+	@ cp -f $(MISCDIR)/* $(TESTDIR) 2> /dev/null || true
+	@ echo "-mode eunit" >> $(TESTDIR)/jarlang.sh && mv $(TESTDIR)/jarlang.sh $(TESTDIR)/run_tests.sh
+	@ echo "$(PURPLE)==> Running EUnit tests$(NORMAL)"
+	@ ./$(TESTDIR)/run_tests.sh
 	@ echo "$(PURPLE)==> Running Dialyzer$(NORMAL)"
 	@ dialyzer $(TESTDIR)/*.beam || true
+	@ echo "$(PURPLE)==> Finished Testing, results are printed to console$(NORMAL)"
+	@ echo "    You can re-run tests for this build with './$(TESTDIR)/run_tests.sh'"
+	@ echo "    Done\n"
 clean:
 	@ echo "$(ORANGE)==> Cleaning builds"
 	@ rm -rf $(OUTDIR)
