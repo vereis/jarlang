@@ -2,13 +2,14 @@
 -compile(export_all). 
 -compile({no_auto_import, [node/0]}).
 
+-include_lib("eunit/include/eunit.hrl").
 -include("estree/estree.hrl").
 
 % -- Functions --
-c_module(ModuleName, [{FuncName, Arity} | OtherExports], 
-         [{FuncNameWithArity, Function} | OtherFunctions]) when is_list(ModuleName) , is_list(FuncName) , is_integer(Arity) , is_list(FuncNameWithArity) ->
-    ExportList = [{FuncName, Arity} | OtherExports],
-    FunctionList = [{FuncNameWithArity, Function} | OtherFunctions],
+c_module(ModuleName, ExportList, FunctionList) ->
+    % Export list looks like [{"Funcname", Arity}...]
+    % Function list looks like [{"Funcname/Arity", esast:functionDeclaration or esast:functionExpression}]
+    ?spec([{ModuleName, list}, {ExportList, list_of_tuple}, {FunctionList, list_of_tuple}]),   
     program([
         constDeclaration(
             list_to_binary(ModuleName),
@@ -59,7 +60,7 @@ c_exports_mapfuncs([{FnName, FnArity} | Tails], Map) when is_list(FnName) , is_i
     case maps:find(FnName, Map) of
         {ok, Val} ->
             NewVal = Val ++ [FnArity];
-        _else ->
+        _ ->
             NewVal = [FnArity]
     end,
     c_exports_mapfuncs(Tails, maps:put(FnName, NewVal, Map)).
@@ -114,36 +115,6 @@ c_functions([{FuncNameWithArity, Function} | Rest]) ->
             end , FunctionList)
         )
     ).
-
-% ------ Intenal ------ %
-
-% Generates a plain node, setting only node type
-node(Type) ->
-    node(Type, []).
-
-% Generates a plain node and sets additional fields in the form
-% List[{Key, Value}]
-node() ->
-    #{}.
-
-node(Type, AdditionalFields) when is_atom(Type) ->
-    node(atom_to_binary(Type, utf8), AdditionalFields);
-node(Type, AdditionalFields) when is_list(Type) ->
-    node(list_to_binary(Type), AdditionalFields);
-node(Type, AdditionalFields) ->
-    NewNode = #{"type" => Type},
-    updateRecord(NewNode, AdditionalFields).
-
-% Add location data to any node
-addLocationData(Node, LineNumber, ColStart, ColEnd) ->
-    updateRecord(Node, [{"loc", sourceLocation(LineNumber, ColStart, ColEnd)}]).
-
-% Helper function which appends new key value pairs into an existing record
-updateRecord(Record, [{Key, Value}]) ->
-    Record#{Key => Value};
-updateRecord(Record, [{Key, Value} | Tail]) ->
-    updateRecord(Record#{Key => Value}, Tail).
-
 
 % Misc Functions
 test(Map) ->

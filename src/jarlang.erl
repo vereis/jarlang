@@ -7,14 +7,32 @@
          er2file/2,
          er2file/3]).
 
+-include_lib("eunit/include/eunit.hrl").
+
 % Main Function, Command line entrypoint
 main() ->
     Args = parseArgs(init:get_plain_arguments()),
-    case length(maps:get(files, Args)) of
-        0 ->
-            io:format("usage: jarlang.sh filename.erl filename2.erl ... filenameN.erl~n~n");
-        X ->
-            lists:map(fun(F) -> esast:test(er2(estree, F), maps:get(escodegen, Args)) end, maps:get(files, Args))
+    case maps:get(mode, Args) of
+        "transpile" ->
+            case length(maps:get(files, Args)) of
+                0 ->
+                    io:format("usage: jarlang.sh filename.erl filename2.erl ... filenameN.erl~n~n");
+                _ ->
+                    lists:map(fun(F) -> esast:test(er2(estree, F), maps:get(escodegen, Args)) end, maps:get(files, Args))
+            end;
+        "eunit" ->
+            lists:map(fun(M) -> 
+                io:format("Running any and all tests in module '~p'~n", [M]),    
+                eunit:test(M) 
+            end, [
+                asttrans,
+                coregen,
+                esast,
+                jarlang,
+                json,
+                filepath,
+                tokdata
+            ])
     end,
     halt().
 
@@ -38,14 +56,21 @@ er2(js,Module)->
     esast:test(er2(estree,Module)).
 
 parseArgs(Args) ->
-    parseArgs(Args, #{files => [], escodegen => null}, null).
+    parseArgs(Args, #{files => [], escodegen => null, mode => "transpile"}, null).
 
 parseArgs([], ArgsMap, _Prev) ->
     ArgsMap;
+
+parseArgs(["-mode" | Args], ArgsMap, _Prev) ->
+    parseArgs(Args, ArgsMap, mode);
+parseArgs([Arg | Args], ArgsMap, mode) ->
+    parseArgs(Args, maps:update(mode, Arg, ArgsMap), null);
+
 parseArgs(["-escodegen" | Args], ArgsMap, _Prev) ->
     parseArgs(Args, ArgsMap, escodegen);
 parseArgs([Arg | Args], ArgsMap, escodegen) ->
     parseArgs(Args, maps:update(escodegen, Arg, ArgsMap), null);
+
 parseArgs([Arg | Args], ArgsMap, _Prev) ->
     parseArgs(Args, maps:update(files, [Arg | maps:get(files, ArgsMap)], ArgsMap), Arg).
 
