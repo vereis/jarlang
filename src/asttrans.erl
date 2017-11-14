@@ -186,8 +186,6 @@ parseFunctionBody(return,{c_primop,_,{_,_,Type},_Details})->
 
 
 parseFunctionBody(ReturnAtom,{c_case, _, {c_var,_,Var}, Clauses})->
-    %parseFunctionBody(noreturn,Condition),
-    %lists:map(fun({c_clause,_,MatchVals,_true,Body})->parseFunctionBody(return,Body) end,Clauses).
     esast:switchStatement(
         parseFunctionBody(noreturn,{c_var,a,Var}),
         lists:map(
