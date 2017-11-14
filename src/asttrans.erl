@@ -80,20 +80,20 @@ parseFunctionBody(return,{c_call, A, {B, C, Module}, {D, E, FunctionName}, Param
 
 
 parseFunctionBody(noreturn,{c_call, _, {_, _, erlang}, {_, _, 'band'}, [L,R]})->
-    esast:binaryExpression(atom_to_binary('&',utf8),parseFunctionBody(noreturn,L),parseFunctionBody(noreturn,R));
+    esast:binaryExpression(<<"&">>,parseFunctionBody(noreturn,L),parseFunctionBody(noreturn,R));
 parseFunctionBody(noreturn,{c_call, _, {_, _, erlang}, {_, _, 'bor'}, [L,R]})->
-    esast:binaryExpression(atom_to_binary('|',utf8),parseFunctionBody(noreturn,L),parseFunctionBody(noreturn,R));
+    esast:binaryExpression(<<"|">>,parseFunctionBody(noreturn,L),parseFunctionBody(noreturn,R));
 parseFunctionBody(noreturn,{c_call, _, {_, _, erlang}, {_, _, 'bxor'}, [L,R]})->
-    esast:binaryExpression(atom_to_binary('^',utf8),parseFunctionBody(noreturn,L),parseFunctionBody(noreturn,R));
+    esast:binaryExpression(<<"^">>,parseFunctionBody(noreturn,L),parseFunctionBody(noreturn,R));
 parseFunctionBody(noreturn,{c_call, _, {_, _, erlang}, {_, _, 'bnot'}, [L]})->
-    esast:unaryExpression(atom_to_binary('~',utf8),true,parseFunctionBody(noreturn,L));
+    esast:unaryExpression(<<"~">>,true,parseFunctionBody(noreturn,L));
 
 parseFunctionBody(noreturn,{c_call, _, {_, _, erlang}, {_, _, 'or'}, [L,R]})->
-    esast:logicalExpression(atom_to_binary('||',utf8),parseFunctionBody(noreturn,L),parseFunctionBody(noreturn,R));
+    esast:logicalExpression(<<"||">>,parseFunctionBody(noreturn,L),parseFunctionBody(noreturn,R));
 parseFunctionBody(noreturn,{c_call, _, {_, _, erlang}, {_, _, 'and'}, [L,R]})->
-    esast:logicalExpression(atom_to_binary('&&',utf8),parseFunctionBody(noreturn,L),parseFunctionBody(noreturn,R));
+    esast:logicalExpression(<<"&&">>,parseFunctionBody(noreturn,L),parseFunctionBody(noreturn,R));
 parseFunctionBody(noreturn,{c_call, _, {_, _, erlang}, {_, _, 'not'}, [L]})->
-    esast:unaryExpression(atom_to_binary('!',utf8),true,parseFunctionBody(noreturn,L));
+    esast:unaryExpression(<<"!">>,true,parseFunctionBody(noreturn,L));
 
 parseFunctionBody(noreturn,{c_call, _, {_, _, erlang}, {_, _, 'xor'}, [L,R]})->
     parseFunctionBody(noreturn,{c_call, a, {a, a, erlang}, {a, a, 'or'}, [
@@ -108,11 +108,11 @@ parseFunctionBody(noreturn,{c_call, _, {_, _, erlang}, {_, _, 'div'}, [L,R]})->
          [parseFunctionBody(noreturn,{c_call, a, {b, c, erlang}, {d, e, '/'}, [L,R]})]
      );
 parseFunctionBody(noreturn,{c_call, _, {_, _, erlang}, {_, _, 'rem'}, [L,R]})->
-    esast:binaryExpression(atom_to_binary('%',utf8),parseFunctionBody(noreturn,L),parseFunctionBody(noreturn,R));
+    esast:binaryExpression(<<"%">>,parseFunctionBody(noreturn,L),parseFunctionBody(noreturn,R));
 parseFunctionBody(noreturn,{c_call, _, {_, _, erlang}, {_, _, '/='}, [L,R]})->
-    esast:binaryExpression(atom_to_binary('!=',utf8),parseFunctionBody(noreturn,L),parseFunctionBody(noreturn,R));
+    esast:binaryExpression(<<"!=">>,parseFunctionBody(noreturn,L),parseFunctionBody(noreturn,R));
 parseFunctionBody(noreturn,{c_call, _, {_, _, erlang}, {_, _, '=<'}, [L,R]})->
-    esast:binaryExpression(atom_to_binary('<=',utf8),parseFunctionBody(noreturn,L),parseFunctionBody(noreturn,R));
+    esast:binaryExpression(<<"<=">>,parseFunctionBody(noreturn,L),parseFunctionBody(noreturn,R));
 
 parseFunctionBody(noreturn,{c_call, _, {_, _, erlang}, {_, _, FunctionName}, [L,R]})->
     esast:binaryExpression(atom_to_binary(FunctionName,utf8),parseFunctionBody(noreturn,L),parseFunctionBody(noreturn,R));
