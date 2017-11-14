@@ -31,7 +31,39 @@ toksFunctions(Functions)->
 toksFunc({{_, _, {FunctionName, Arity}}, {_, [compiler_generated], _, _}})->
     {atom_to_list(FunctionName)++"/"++integer_to_list(Arity),esast:functionExpression(null,[],esast:blockStatement([esast:emptyStatement()]),false)};
 toksFunc({{_, _, {FunctionName, Arity}}, {_, _, ParamNames, Body}})->
-    {atom_to_list(FunctionName)++"/"++integer_to_list(Arity),esast:functionExpression(null,tupleListToIdentifierList(ParamNames),esast:blockStatement([toksFuncBody(return,Body)]),false)}.
+    {atom_to_list(FunctionName)++"/"++integer_to_list(Arity),esast:functionExpression(
+        null,
+        tupleListToIdentifierList(ParamNames),
+        esast:blockStatement(
+            encapsulateExpressions(
+                listCheck(
+                    toksFuncBody(return,Body)
+                )
+            )
+        ),
+        false
+    )}.
+
+encapsulateExpressions(L)->
+    lists:map(
+        fun(X)->
+            IsStmt = esast:is_statement(X),
+            if
+                IsStmt->X;
+                true->esast:expressionStatement(X)
+            end
+        end,
+        L
+    ).
+
+listCheck([L]) when is_list(L) ->
+    listCheck(L);
+listCheck(L)->
+    IsStmt = esast:is_statement(L),
+    if
+        IsStmt->[L];
+        true->L
+    end.
 
 
 %Parse the function body
@@ -85,13 +117,19 @@ toksFuncBody(noreturn,{c_call, _, {_, _, erlang}, {_, _, '=<'}, [L,R]})->
 toksFuncBody(noreturn,{c_call, _, {_, _, erlang}, {_, _, FunctionName}, [L,R]})->
     esast:binaryExpression(atom_to_binary(FunctionName,utf8),toksFuncBody(noreturn,L),toksFuncBody(noreturn,R));
 
-
-
+%Bodge job: external module calls
+%TODO: proper external module calls
+toksFuncBody(noreturn,{c_call, _, {_, _, io}, {_, _, format}, [T]})->
+    esast:callExpression(
+         esast:memberExpression(esast:identifier(<<"console">>),esast:identifier(<<"log">>),false),
+         [toksFuncBody(noreturn,T)]
+     );
 
 
 toksFuncBody(noreturn,{c_call, _, {_, _, Module}, {_, _, FunctionName}, Params})->
     io:format("",[]);
-    
+
+
 toksFuncBody(return,{c_values, _, Values})->
     %io:format("~p~n", [tupleList_getVars_3(Values)]);
     io:format("",[]);
@@ -101,12 +139,19 @@ toksFuncBody(return,{c_var, A, Var})->
 toksFuncBody(noreturn,{c_var, _, Var})->
     esast:identifier(atom_to_binary(Var,utf8));
     %io:format("",[]);
-    
+
+
 toksFuncBody(return,{c_seq, _, A, B})->
-    %toksFuncBody(A),
-    %toksFuncBody(B);
-    io:format("",[]);
-    
+    assembleSequence(
+        toksFuncBody(noreturn,A),
+        toksFuncBody(return,B));
+toksFuncBody(noreturn,{c_seq, _, A, B})->
+    assembleSequence(
+        toksFuncBody(noreturn,A),
+        toksFuncBody(noreturn,B));
+
+
+
 toksFuncBody(return,{c_let, _, [{_, _, Variable}], A, B})->
     %io:format("        Let statement: ~s~n", [Variable]),
     %toksFuncBody(A),
@@ -146,7 +191,14 @@ toksFuncBody(return,{c_case, _, Condition, Clauses})->
 toksFuncBody(_,T)->
     io:format("Unrecognised Token in function body: ~p", [T]).
 
-
+assembleSequence(L,R) when is_list(L) and is_list(R)->
+    lists:append(L,R);
+assembleSequence(L,R) when is_list(R)->
+    [L|R];
+assembleSequence(L,R) when is_list(L)->
+    lists:append(L,[R]);
+assembleSequence(L,R)->
+    [L,R].
 
 
 tupleListToIdentifierList(List)->

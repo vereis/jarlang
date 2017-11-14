@@ -22,7 +22,8 @@
     bandTest/2,
     bnotTest/1,
     bxorTest/2,
-    echo/1]).
+    echo/1,
+    sequence/0]).
 
 boolean() -> true.
 integer() -> 3.
@@ -55,3 +56,9 @@ bnotTest(Var)->bnot Var.
 bxorTest(Var1,Var2)->Var1 bxor Var2.
 
 echo(Var)->Var.
+
+sequence() ->
+    io:format("A"),
+    io:format("B"),
+    io:format("C").
+

@@ -19,8 +19,8 @@ main() ->
     halt().
 
 % Transpiles a module through the pipeline as far as is implemented
-er2(best,_) ->
-    esast:test(er2(estree,"./core_AST_revEng"));
+er2(best,Module) ->
+    er2(js,Module);
 
 er2(core_erlang,Module)->
     {ok,_,CE}=coregen:er2ce(Module,return_CE),
@@ -32,7 +32,10 @@ er2(core_AST,Module)->
 
 er2(estree,Module)->
     AST=er2(core_AST,Module),
-    asttrans:erast2esast(AST).
+    asttrans:erast2esast(AST);
+
+er2(js,Module)->
+    esast:test(er2(estree,Module)).
 
 parseArgs(Args) ->
     parseArgs(Args, #{files => [], escodegen => null}, null).
@@ -59,7 +62,11 @@ er2file(Task,Module,OutputDirectory)->
 toFile(core_erlang,OutputDirectory,Module)->
     toFile(core_erlang,OutputDirectory,Module,"core");
 toFile(core_AST,OutputDirectory,Module)->
-    toFile(core_AST,OutputDirectory,Module,"ast").
+    toFile(core_AST,OutputDirectory,Module,"ast");
+toFile(estree,OutputDirectory,Module)->
+    toFile(estree,OutputDirectory,Module,"est");
+toFile(js,OutputDirectory,Module)->
+    toFile(js,OutputDirectory,Module,"js").
 
 toFile(Task,OutputDirectory,Module,Ext)->
 	code:add_path("lib/"),
