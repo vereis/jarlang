@@ -126,11 +126,11 @@ toksFuncBody(noreturn,{c_call, _, {_, _, io}, {_, _, format}, [T]})->
      );
 
 
-toksFuncBody(noreturn,{c_call, _, {_, _, Module}, {_, _, FunctionName}, Params})->
+toksFuncBody(noreturn,{c_call, _, {_, _, _Module}, {_, _, _FunctionName}, _Params})->
     io:format("",[]);
 
 
-toksFuncBody(return,{c_values, _, Values})->
+toksFuncBody(return,{c_values, _, _Values})->
     %io:format("~p~n", [tupleList_getVars_3(Values)]);
     io:format("",[]);
 
@@ -152,14 +152,14 @@ toksFuncBody(noreturn,{c_seq, _, A, B})->
 
 
 
-toksFuncBody(return,{c_let, _, [{_, _, Variable}], A, B})->
+toksFuncBody(return,{c_let, _, [{_, _, _Variable}], _A, _B})->
     %io:format("        Let statement: ~s~n", [Variable]),
     %toksFuncBody(A),
     %toksFuncBody(B);
     io:format("",[]);
     
 % Is apply a local function call? Assignment from function? Assignment with pattern matching?
-toksFuncBody(return,{c_apply, _, {_,_,{FName,_Arity}}, Params})->
+toksFuncBody(return,{c_apply, _, {_,_,{_FName,_Arity}}, _Params})->
     %io:format("Call local function ~s(",[FName]),
     %io:format("~p)~n", [tupleList_getVars_3(Params)]);
     io:format("",[]);
@@ -173,16 +173,16 @@ toksFuncBody(return,{c_literal,_,Value})->
 toksFuncBody(_,{c_literal,_,Value})->
     esast:literal(Value);
 
-toksFuncBody(return,{c_tuple,_,Values})->
+toksFuncBody(return,{c_tuple,_,_Values})->
     %io:format("        Tuple ~p~n", [tupleList_getVars_3(Values)]);
     io:format("",[]);
     
-toksFuncBody(return,{c_primop,_,{_,_,Type},Details})->
+toksFuncBody(return,{c_primop,_,{_,_,Type},_Details})->
     % io:format("        Error? ~p~n~p~n", [Type,Details]),
     esast:error(atom_to_list(Type),"TODO Errors dont parse nicely",esast:literal("Message"));
     % io:format("",[]);
     
-toksFuncBody(return,{c_case, _, Condition, Clauses})->
+toksFuncBody(return,{c_case, _, _Condition, _Clauses})->
     %io:format("        case statement:"),
     %toksFuncBody(noreturn,Condition),
     %lists:map(fun({c_clause,_,MatchVals,_true,Body})->toksFuncBody(return,Body) end,Clauses).
@@ -213,20 +213,20 @@ tupleList_getVars_3([{_,_, Val} | Body])->
 tupleList_getVars_3([{_, _, Val, _} | Body])->
     [Val | tupleList_getVars_3(Body)].
 
-rAtomToList([A|Rest])->
-    [rAtomToList(A)|rAtomToList(Rest)];
-rAtomToList({A})->
-    {rAtomToList(A)};
-rAtomToList({A,B})->
-    {rAtomToList(A),rAtomToList(B)};
-rAtomToList({A,B,C})->
-    {rAtomToList(A),rAtomToList(B),rAtomToList(C)};
-rAtomToList({A,B,C,D})->
-    {rAtomToList(A),rAtomToList(B),rAtomToList(C),rAtomToList(D)};
-rAtomToList(A) when is_atom(A) ->
-    atom_to_list(A);
-rAtomToList(A) when not is_atom(A) ->
-    A.
+%rAtomToList([A|Rest])->
+%    [rAtomToList(A)|rAtomToList(Rest)];
+%rAtomToList({A})->
+%    {rAtomToList(A)};
+%rAtomToList({A,B})->
+%    {rAtomToList(A),rAtomToList(B)};
+%rAtomToList({A,B,C})->
+%    {rAtomToList(A),rAtomToList(B),rAtomToList(C)};
+%rAtomToList({A,B,C,D})->
+%    {rAtomToList(A),rAtomToList(B),rAtomToList(C),rAtomToList(D)};
+%rAtomToList(A) when is_atom(A) ->
+%    atom_to_list(A);
+%rAtomToList(A) when not is_atom(A) ->
+%    A.
 
 
 
