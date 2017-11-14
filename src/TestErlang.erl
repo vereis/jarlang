@@ -23,7 +23,8 @@
     bnotTest/1,
     bxorTest/2,
     echo/1,
-    sequence/0]).
+    sequence/0,
+    caseExample/1]).
 
 boolean() -> true.
 integer() -> 3.
@@ -62,3 +63,11 @@ sequence() ->
     io:format("B"),
     io:format("C").
 
+caseExample(Var)->
+    case Var of
+        match ->
+            42;
+        othermatch ->
+            not42;
+        _ -> nomatch
+    end.

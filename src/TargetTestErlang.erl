@@ -22,11 +22,14 @@
     bandTest/2,
     bnotTest/1,
     bxorTest/2,
+    ifTest/1,
     echo/1,
     sequence/0,
     errIfNot3/1,
     errIfNot3Tuple/1,
-    errIfNot3and3/2]).
+    errIfNot3and3/2,
+    caseExample/1,
+    caseWithCall/1]).
 
 boolean() -> true.
 integer() -> 3.
@@ -58,6 +61,14 @@ bandTest(Var1,Var2)->Var1 band Var2.
 bnotTest(Var)->bnot Var.
 bxorTest(Var1,Var2)->Var1 bxor Var2.
 
+ifTest(Var)->
+    if
+        Var == 42 ->
+            "The meaning of life, the universe & everything";
+        true ->
+            "= 6 x 9"
+     end.
+
 echo(Var)->Var.
 
 sequence() ->
@@ -81,4 +92,13 @@ caseExample(Var)->
         othermatch ->
             not42;
         _ -> nomatch
+    end.
+
+caseWithCall(Var)->
+    Res = io:format(Var),
+    case Res of
+        nope ->
+            "Didn't work";
+        ok ->
+            "ok"
     end.

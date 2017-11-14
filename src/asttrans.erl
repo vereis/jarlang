@@ -168,6 +168,8 @@ parseFunctionBody(return,{c_apply, _, _A, _B})->
     %io:format("        Apply statement: ~n");
     io:format("",[]);
     
+parseFunctionBody(ReturnAtom,{c_literal,_,Value}) when is_atom(Value)->
+    parseFunctionBody(ReturnAtom,{c_literal,a,atom_to_list(Value)});
 parseFunctionBody(return,{c_literal,_,Value})->
     esast:returnStatement(esast:literal(Value));
 parseFunctionBody(_,{c_literal,_,Value})->
@@ -181,15 +183,36 @@ parseFunctionBody(return,{c_primop,_,{_,_,Type},_Details})->
     % io:format("        Error? ~p~n~p~n", [Type,Details]),
     esast:error(atom_to_list(Type),"TODO Errors dont parse nicely",esast:literal("Message"));
     % io:format("",[]);
-    
-parseFunctionBody(return,{c_case, _, _Condition, _Clauses})->
-    %io:format("        case statement:"),
+
+
+parseFunctionBody(ReturnAtom,{c_case, _, {c_var,_,Var}, Clauses})->
     %parseFunctionBody(noreturn,Condition),
     %lists:map(fun({c_clause,_,MatchVals,_true,Body})->parseFunctionBody(return,Body) end,Clauses).
+    esast:switchStatement(
+        parseFunctionBody(noreturn,{c_var,a,Var}),
+        lists:map(
+            fun({c_clause,_,[MatchVal],_trueLiteral,Body})->
+                esast:switchCase(
+                    parseFunctionBody(noreturn,MatchVal),
+                    encapsulateExpressions(assembleSequence(
+                        parseFunctionBody(ReturnAtom,Body),
+                        esast:breakStatement(null)
+                    ))
+                )
+            end,
+            Clauses
+        ),
+        false
+    );
+
+parseFunctionBody(_,{c_case, _, _Condition, _Clauses})->
+    io:format("Error: this type of case statement is not implemented"),
     io:format("",[]);
-    
+
+
 parseFunctionBody(_,T)->
     io:format("Unrecognised Token in function body: ~p", [T]).
+
 
 assembleSequence(L,R) when is_list(L) and is_list(R)->
     lists:append(L,R);
