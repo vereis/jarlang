@@ -22,6 +22,21 @@ main() ->
             end;
         "eunit" ->
             lists:map(fun(M) -> 
+                % XREF    
+                io:format("Running XREF analysis for module '~p'~n", [M]),
+                [{_, DeprecatedFuns}, {_, UndefFuns}, _] = xref:m(M),
+                case {length(DeprecatedFuns), length(UndefFuns)} of
+                    {0, 0} ->
+                        io:format("  No Undefined or Deprecated functions used in module '~p'~n", [M]);
+                    _ ->
+                        lists:map(fun({Func, Arity}) ->
+                            io:format("  Deprecated Function '~p/~p' used in module '~p'~n", [Func, Arity, M])    
+                        end, DeprecatedFuns),
+                        lists:map(fun({Func, Arity}) ->
+                            io:format("  Undefined Function '~p/~p' used in module '~p'~n", [Func, Arity, M])    
+                        end, UndefFuns)
+                end,                
+                % EUNIT    
                 io:format("Running any and all tests in module '~p'~n", [M]),    
                 eunit:test(M) 
             end, [

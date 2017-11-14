@@ -89,6 +89,10 @@ test:
 	@ echo "$(PURPLE)==> Compiling Source Files$(RED)"
 	@ $(ERLC) $(DEBUGFLAGS) $(TESTDIR) $(SRCDIR)/*.erl
 	@ echo "$(NORMAL)    Done"
+	@ echo "$(PURPLE)==> Bootstrapping Source Files onto build$(RED)"
+	@ cp $(SRCDIR)/*.erl $(TESTDIR) 2> /dev/null || true
+	@ cp $(LIBDIR)/*.erl $(TESTDIR) 2> /dev/null || true
+	@ echo "$(NORMAL)    Done"
 	@ echo "$(PURPLE)==> Bootstrapping NodeJS Environment onto build$(RED)"
 	@ $(JSMINIFY) $(JSMINIFYFLAGS) $(SRCDIR)/*.js $(TESTDIR) 2> /dev/null || true
 	@ $(JSMINIFY) $(JSMINIFYFLAGS) $(LIBDIR)/*.js $(TESTDIR) 2> /dev/null || true
@@ -97,7 +101,7 @@ test:
 	@ echo "$(NORMAL)    Done"
 	@ cp -f $(MISCDIR)/* $(TESTDIR) 2> /dev/null || true
 	@ echo "-mode eunit" >> $(TESTDIR)/jarlang.sh && mv $(TESTDIR)/jarlang.sh $(TESTDIR)/run_tests.sh
-	@ echo "$(PURPLE)==> Running EUnit tests$(NORMAL)"
+	@ echo "$(PURPLE)==> Running EUnit tests and XREF analyses$(NORMAL)"
 	@ ./$(TESTDIR)/run_tests.sh
 	@ echo "$(PURPLE)==> Running Dialyzer$(NORMAL)"
 	@ dialyzer $(TESTDIR)/*.beam || true
