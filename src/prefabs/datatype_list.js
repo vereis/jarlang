@@ -121,4 +121,17 @@ class List {
             }
         }
     }
+
+    isUnbound(){
+        return false;
+    }
+
+    match(Var){
+        if(!List.isList(Var) || length!=Var.length){return undefined;}//test if Var is a list and the same length
+        var i=0;
+        for(const elem of Var){
+            if(value[i].match(elem) == undefined)return undefined;//test if any content is already bound to something else
+        }
+        return Var;
+    }
 }
