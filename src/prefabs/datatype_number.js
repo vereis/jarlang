@@ -1,26 +1,32 @@
-class Number {
+var BigNumber = require("bignumber.js");
+
+class ErlNumber {
     constructor(value) {
-        this.value = value;
+        this.value = new BigNumber(value);
     }
 
     toString() {
-        return value.toString();
+        return this.value.toString();
     }
 
-    static isNumber(number) {
-        return number instanceof Number;
+    static isErlNumber(erlnum) {
+        return erlnum instanceof ErlNumber;
     }
 
-    static cloneNumber(number) {
-        return new Number(number);
+    static cloneNumber(erlnum) {
+        return new ErlNumber(erlnum.toString());
     }
 
-    isUnbound(){
+    isUnbound() {
         return false;
     }
 
-    match(Var){
-        if(!Number.isNumber(Var) || !value.equals(Var))return undefined;
-        return Var;
+    match(value) {
+        if (!this.value.equals(value)) {
+            return undefined;
+        }
+        return value;
     }
 }
+
+exports.ErlNumber = ErlNumber;
