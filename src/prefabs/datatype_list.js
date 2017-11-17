@@ -1,137 +1,97 @@
-class ImproperList {
-    constructor(value) {
-        this.value = value;
+// Constructor
+function List (car, ...cdr) {
+    this.val = car;
+    this.next = car !== undefined ? new List(...cdr) : undefined;
+
+    this.iterator = this;
+};
+
+
+// Static Methods
+List.isList = (list) => list instanceof List;
+List.isEmptyList = (list) => List.isList(list) && list.value === undefined && list.next === undefined;
+List.clonList = (list) => new List(...list);
+
+
+// Internal Usage Prototype Methods
+List.prototype.__nthNode = function(n) {
+    if (n < 0 || n >= this.size()) {
+        throw "index out of bounds error";
+    }    
+
+    let i = 0;
+    let walker = this;
+
+    while (i < n) {
+        walker = walker.next;
+        i++;
     }
 
-    toString() {
-        return this.value;
-    }
+    return walker;
+};
 
-    static isImproperList(list) {
-        return list instanceof ImproperList;
-    }
-}
-
-class List {
-    constructor(Head, ...Tail) {
-        this.iterator = this;        
-        this.value = Head;
-        this.next = Tail.length ? new List(...Tail) : null;
-    }
-
-    toString() {
-        let buffer = "";
-        let reference = this;
-
-        while (!!reference) {
-            let seg = "";
-            if (List.isList(reference)) {
-                seg = reference.value;
-            }
-            else {
-                seg = reference;
-            }
-
-            if (buffer.length) {
-                buffer += (List.isList(reference) && !List.isImproperList(reference.value) ? ", " : " | ") + seg;
-            }
-            else {
-                buffer += seg;
-            }
-
-            reference = reference.next;
-        }
-
-        return "L[" + buffer + "]";
-    }
-
-    cons(X) {
-        let constructedList = List.cloneList(this);
-        
-        // Cons is technically only ever a function of the last entry of a clone of the current list,
-        // so make sure it exists to deal with broken lists
-        let last = constructedList.last();
-
-        console.log(last, last.value);
-        if (List.isImproperList(last.value)) {
-            throw `Syntax Error: Cannot construct a new list with improper list '${constructedList.toString()}'`;
-        }
-
-        last.next = List.isList(X) ? X : new ImproperList(X);
-        return constructedList;
-    }
-
-    nth(n) {
-        if (n >= 0) {
-            let reference = this;
-            while (n > 0) {
-                if (!reference.next) { throw `Exception Error: Index out of bounds`; }                
-                reference = reference.next;
-                n--;
-            }
-            return List.isList(reference) ? reference.value : reference;
-        }
-        else {
-            throw `Exception Error: Negative indexes such as: ${n} are not allowed as argument for function Nth()`;
-        }
-    }
-
-    last() {
-        let reference = this;
-        while (reference.next) {
-            reference = reference.next;
-        }
-
-        return reference;
-    }
-
-    static isList(list) {
-        return list instanceof List;
-    }
-
-    static isImproperList(list) {
-        return list instanceof ImproperList;
-    }
-
-    static cloneList(list) {
-        return new List(...list);
-    }
-
-    static isEmptyList(list) {
-        return (list === undefined || list === null) || (List.isList(list) && list.length === 0); 
-    }
-
-    [Symbol.iterator]() {
-        return {
-            next: () => {
-                if (!!this.iterator) {
-                    let value = List.isImproperList(this.iterator) ? new ImproperList(this.iterator.value) : this.iterator.value;
-                    this.iterator = this.iterator.next;
-                    return {
-                        value: value, 
-                        done: false
-                    };
-                } 
-                else {
-                    this.iterator = this;
-                    return {
-                        done: true
-                    };
+List.prototype[Symbol.iterator] = function() {
+    return {
+        next: () => {
+            // If the next node of the current iterator isn't another list OR is an empty list, then we know
+            // we have reached the end of the linked list
+            let isLastNode = this.iterator.next === undefined || List.isEmptyList(this.iterator.next);
+            let v = List.isList(this.iterator) ? this.iterator.val : this.iterator;
+            
+            if (this.iterator === "done") {
+                return {                    
+                    done: true
                 }
             }
+            else {
+                this.iterator = isLastNode ? "done" : this.iterator.next;
+                return {
+                    value: v,
+                    done: false
+                };
+            }
         }
     }
+};
 
-    isUnbound(){
-        return false;
-    }
+List.prototype.__last = function() {
+    return this.__nthNode(this.size() - 1);
+};
 
-    match(Var){
-        if(!List.isList(Var) || length!=Var.length){return undefined;}//test if Var is a list and the same length
-        var i=0;
-        for(const elem of Var){
-            if(value[i].match(elem) == undefined)return undefined;//test if any content is already bound to something else
-        }
-        return Var;
-    }
-}
+
+// Prototype Methods
+List.prototype.nth = function(n) {
+    let nth = this.__nthNode(n);
+    return List.isList(nth) ? nth.val : nth;
+};
+
+List.prototype.size = function() {
+    let i = 1;
+    let walker = this;
+
+    while (List.isList(walker) && !List.isEmptyList(walker.next) && walker.next !== undefined) {
+        walker = walker.next;
+        i++;
+    } 
+
+    return i;
+};
+
+List.prototype.cons = function(appendage) {
+    let clone = List.clonList(this);
+    clone.__last().next = appendage;
+
+    return clone;
+};
+
+List.prototype.values = function() {
+    let walker = this;
+    let values = [this.val];
+
+    while (List.isList(walker) && !List.isEmptyList(walker.next) && walker.next !== undefined) {
+        walker = walker.next;
+        values.push(List.isList(walker) ? walker.val : walker);
+    } 
+
+    return values;  
+};
