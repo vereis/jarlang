@@ -1,4 +1,4 @@
-var BigNumber = require("bignumber.js");
+//var BigNumber = require("bignumber.js");
 
 
 // Constructor
@@ -93,5 +93,7 @@ ErlNumber.prototype.match = function(val) {
     return val;
 }
 
-
-exports.ErlNumber = ErlNumber;
+//This is to prevent errors if the code is loaded in a browser
+if(typeof exports != "undefined"){
+    exports.ErlNumber = ErlNumber;
+}
