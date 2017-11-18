@@ -9,8 +9,8 @@ function List (car, ...cdr) {
 
 // Static Methods
 List.isList = (list) => list instanceof List;
-List.isEmptyList = (list) => List.isList(list) && list.value === undefined && list.next === undefined;
-List.clonList = (list) => new List(...list);
+List.isEmptyList = (list) => List.isList(list) && list.val === undefined && list.next === undefined;
+List.cloneList = (list) => new List(...list);
 
 
 // Internal Usage Prototype Methods
@@ -38,7 +38,8 @@ List.prototype[Symbol.iterator] = function() {
             let isLastNode = this.iterator.next === undefined || List.isEmptyList(this.iterator.next);
             let v = List.isList(this.iterator) ? this.iterator.val : this.iterator;
             
-            if (this.iterator === "done") {
+            if (this.iterator === "done" || List.isEmptyList(this)) {
+                this.iterator = this;
                 return {                    
                     done: true
                 }
@@ -66,32 +67,41 @@ List.prototype.nth = function(n) {
 };
 
 List.prototype.size = function() {
-    let i = 1;
-    let walker = this;
-
-    while (List.isList(walker) && !List.isEmptyList(walker.next) && walker.next !== undefined) {
-        walker = walker.next;
-        i++;
-    } 
-
-    return i;
+    return [...this].length;
 };
 
 List.prototype.cons = function(appendage) {
-    let clone = List.clonList(this);
+    let clone = List.cloneList(this);
     clone.__last().next = appendage;
 
     return clone;
 };
 
-List.prototype.values = function() {
-    let walker = this;
-    let values = [this.val];
-
-    while (List.isList(walker) && !List.isEmptyList(walker.next) && walker.next !== undefined) {
-        walker = walker.next;
-        values.push(List.isList(walker) ? walker.val : walker);
-    } 
-
-    return values;  
+List.prototype.value = function() {
+    return [...this];  
 };
+
+List.prototype.toString = function() {
+    let buffer = [...this];
+
+    if (buffer.length) {
+        let textBuffer = "";
+        let isImproperList = !List.isList(this.__nthNode(Math.max(0, buffer.length - 1)));
+        
+        for (let i = 0; i < buffer.length; i++) {
+            if (i > 0) {
+                if (i === buffer.length - 1 && isImproperList) {
+                    textBuffer += "|";
+                }
+                else {
+                    textBuffer += ",";
+                }
+            }
+            textBuffer += buffer[i];
+        }
+
+        return `[${textBuffer}]`;
+    }
+    
+    return '[]';
+}

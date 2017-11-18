@@ -1,16 +1,18 @@
-class Unbound {
-    constructor() {
-    }
+// Constructor 
+function Unbound() {}
 
-    toString() {
-        throw `variable is unbound`;
-    }
-    
-    isUnbound(){
-        return true;
-    }
-    
-    match(Var){
-        return Var;
-    }
+// Static Methods
+Unbound.isUnbound = (X) => X instanceof Unbound;
+
+// Prototype Methods
+Unbound.prototype.toString = function() {
+    throw `variable is unbound`;
+}
+
+Unbound.prototype.match = function(X) {
+    return X;
+}
+
+Unbound.prototype.value = function() {
+    return undefined;
 }

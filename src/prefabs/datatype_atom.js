@@ -1,26 +1,31 @@
-class Atom {
-    constructor(value) {
-        this.value = value;
-    }
+// Constructor
+function Atom(name) {
+    this.value = name;
+}
 
-    toString() {
-        return value.toString();
-    }
+// Static Methods
+Atom.isAtom = (atom) => atom instanceof Atom;
+Atom.cloneAtom = (atom) => atom;
 
-    static isAtom(atom) {
-        return atom instanceof Atom;
-    }
+// Prototype Methods
+Atom.prototype.value = function() {
+    return this.value;
+}
 
-    static cloneAtom(atom) {
-        return atom;
-    }
+Atom.prototype.toString = function() {
+    return this.value.toString();
+}
 
-    isUnbound(){
-        return false;
-    }
+Atom.prototype.isUnbound = function() {
+    return false;
+}
 
-    match(Var){
-        if(!Atom.isAtom(Var) || !value.equals(Var))return undefined;
-        return Var;
+Atom.prototype.match = function(X) {
+    // Since 'false' is a legitimate atom in Erlang, we return undefined instead of false for a failure case
+    if (!Atom.isAtom(X) || !this.value.equals(X)) {
+        return undefined;
+    }
+    else {
+        return V;
     }
 }
