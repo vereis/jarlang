@@ -206,23 +206,42 @@ const erlang = function () {
     const functions = {
         
         'addition/2': function (_cor1, _cor0) {
-            return _cor1 + _cor0;
+            if(ErlNumber.isErlNumber(_cor1) && ErlNumber.isErlNumber(_cor0)){
+                return _cor1.add(_cor0);
+            }
+            throw '** exception error: an error occurred when evaluating an arithmetic expression in operator +/2 called as '+_cor1+' + '+_cor0;
         },
         'subtraction/2': function (_cor1, _cor0) {
-            return _cor1 - _cor0;
+            if(ErlNumber.isErlNumber(_cor1) && ErlNumber.isErlNumber(_cor0)){
+                return _cor1.subtract(_cor0);
+            }
+            throw '** exception error: an error occurred when evaluating an arithmetic expression in operator -/2 called as '+_cor1+' - '+_cor0;
         },
         'multiplication/2': function (_cor1, _cor0) {
-            return _cor1 * _cor0;
+            if(ErlNumber.isErlNumber(_cor1) && ErlNumber.isErlNumber(_cor0)){
+                return _cor1.multiply(_cor0);
+            }
+            throw '** exception error: an error occurred when evaluating an arithmetic expression in operator */2 called as '+_cor1+' * '+_cor0;
         },
         'division/2': function (_cor1, _cor0) {
-            return _cor1 / _cor0;
+            if(ErlNumber.isErlNumber(_cor1) && ErlNumber.isErlNumber(_cor0)){
+                return _cor1.divide(_cor0);
+            }
+            throw '** exception error: an error occurred when evaluating an arithmetic expression in operator \'/\'/2 called as '+_cor1+' / '+_cor0;
         },
         'remainder/2': function (_cor1, _cor0) {
-            return _cor1 % _cor0;
+            if(ErlNumber.isErlNumber(_cor1) && ErlNumber.isErlNumber(_cor0)){
+                return _cor1.remainder(_cor0);
+            }
+            throw '** exception error: an error occurred when evaluating an arithmetic expression in operator rem/2 called as '+_cor1+' rem '+_cor0;
         },
         'intDivision/2': function (_cor1, _cor0) {
-            return Math.floor(_cor1 / _cor0);
+            if(ErlNumber.isErlNumber(_cor1) && ErlNumber.isErlNumber(_cor0)){
+                return _cor1.intDivide(_cor0);
+            }
+            throw '** exception error: an error occurred when evaluating an arithmetic expression in operator div/2 called as '+_cor1+' div '+_cor0;
         },
+        
         
         
         'equality/2': function (_cor1, _cor0) {
