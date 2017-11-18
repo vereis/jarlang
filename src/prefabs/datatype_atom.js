@@ -22,10 +22,10 @@ Atom.prototype.isUnbound = function() {
 
 Atom.prototype.match = function(X) {
     // Since 'false' is a legitimate atom in Erlang, we return undefined instead of false for a failure case
-    if (!Atom.isAtom(X) || !this.value.equals(X)) {
-        return undefined;
+    if (Atom.isAtom(X) ? this.value === X.value : this.value === X) {
+        return X;
     }
     else {
-        return V;
+        return undefined;
     }
 }
