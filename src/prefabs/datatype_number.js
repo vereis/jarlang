@@ -8,12 +8,12 @@ function ErlNumber(val) {
 
 
 // Static Methods
-ErlNumber.isErlNumber = function(num) {
-    return num instanceof ErlNumber;
+ErlNumber.isErlNumber = function(val) {
+    return val instanceof ErlNumber;
 }
 
-ErlNumber.cloneNumber = function(num) {
-    return new ErlNumber(num.getValue());
+ErlNumber.cloneNumber = function(val) {
+    return new ErlNumber(val.getValue());
 }
 
 
@@ -67,30 +67,30 @@ ErlNumber.prototype.remainder = function(val) {
 }
 
 ErlNumber.prototype.equals = function(val) {
-    return this.value.equals(val);
+    return this.value.equals(val instanceof ErlNumber ? val.getValue() : val);
 }
 
 ErlNumber.prototype.lessThan = function(val) {
-    return this.value.lessThan(val);
+    return this.value.lessThan(val instanceof ErlNumber ? val.getValue() : val);
 }
 
 ErlNumber.prototype.lessThanOrEq = function(val) {
-    return this.value.lessThanOrEqualTo(val);
+    return this.value.lessThanOrEqualTo(val instanceof ErlNumber ? val.getValue() : val);
 }
 
 ErlNumber.prototype.greaterThan = function(val) {
-    return this.value.greaterThan(val);
+    return this.value.greaterThan(val instanceof ErlNumber ? val.getValue() : val);
 }
 
 ErlNumber.prototype.greaterThanOrEq = function(val) {
-    return this.value.greaterThanOrEqualTo(val);
+    return this.value.greaterThanOrEqualTo(val instanceof ErlNumber ? val.getValue() : val);
 }
 
-ErlNumber.prototype.match = function(value) {
-    if (!this.value.equals(value)) {
+ErlNumber.prototype.match = function(val) {
+    if (!this.equals(val)) {
         return undefined;
     }
-    return value;
+    return val;
 }
 
 
