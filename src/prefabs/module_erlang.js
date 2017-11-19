@@ -256,22 +256,22 @@ const erlang = function () {
         
         
         'equality/2': function (_cor1, _cor0) {
-            return _cor1.equals(_cor0);
+            return compare(_cor1,_cor0) == 0;
         },
         'notEquality/2': function (_cor1, _cor0) {
-            return !_cor1.equals(_cor0);
+            return compare(_cor1,_cor0) != 0;
         },
         'lessThan/2': function (_cor1, _cor0) {
-            return _cor1 < _cor0;
+            return compare(_cor1,_cor0)<0;
         },
         'lessThanOrEq/2': function (_cor1, _cor0) {
-            return _cor1 <= _cor0;
+            return compare(_cor1,_cor0) <=0;
         },
         'moreThan/2': function (_cor1, _cor0) {
-            return _cor1 > _cor0;
+            return compare(_cor1,_cor0) > 0;
         },
         'moreThanOrEq/2': function (_cor1, _cor0) {
-            return _cor1 >= _cor0;
+            return compare(_cor1,_cor0) >= 0;
         },
         'exactlyEq/2': function (_cor1, _cor0) {
             return _cor1 === _cor0;
