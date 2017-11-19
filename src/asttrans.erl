@@ -306,7 +306,7 @@ assembleCaseCondition(Vars,Match,Evaluate)->
     esast:logicalExpression(<<"&&">>,assembleCaseCondition(Vars,Match),parseFunctionBody(noreturn,Evaluate)).
 
 assembleCaseCondition([V],[M])->
-        parseFunctionBody(noreturn,{c_call, a, {a, a, erlang}, {a, a, 'match'}, [V,M]});
+        parseFunctionBody(noreturn,{c_call, a, {a, a, erlang}, {a, a, 'match'}, [M,V]});
 assembleCaseCondition([V|Vars],[M|Match])->
     esast:logicalExpression(<<"&&">>,
         assembleCaseCondition([V],[M]),

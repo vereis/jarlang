@@ -120,6 +120,7 @@ const erlang = function () {
         },
         
         
+        
         'compare': function () {
             switch (arguments.length) {
             case 2:
@@ -128,7 +129,14 @@ const erlang = function () {
             }
             throw '** exception error: undefined function' + ('compare' + ('/' + arguments.length));
         },
-        
+        'match': function () {
+            switch (arguments.length) {
+            case 2:
+                return functions['match/2'](...arguments);
+                break;
+            }
+            throw '** exception error: undefined function' + ('match' + ('/' + arguments.length));
+        },
         
         
         
@@ -282,6 +290,8 @@ const erlang = function () {
         
         //returns negative if _cor1 evaluates to less than _cor0, returns 0 if they evaluate equal. Magnitude is not representative of anything
         'compare/2': compare,
+        //returns true or false, contrary to erlang matching behavior
+        'match/2': match,
         
         'or/2': function (_cor1, _cor0) {
             return _cor1 || _cor0;
@@ -319,6 +329,43 @@ const erlang = function () {
             ;
         }
     };
+    
+    //returns true or false, contrary to erlang matching behavior
+    function match(_cor1, _cor0) {
+        if(_cor1 == undefined) return true;
+        else if(_cor1 instanceof ErlNumber){
+            return _cor0 instanceof ErlNumber && _cor1.equals(_cor0);
+        }
+        else if(_cor1 instanceof Atom){
+            return _cor0 instanceof Atom && _cor1.value==_cor0.value;
+        }
+        else if(_cor1 instanceof Reference){
+            throw "Reference is not implemented yet";
+        }
+        else if(_cor1 instanceof Fun){
+            throw "Fun is not implemented yet";
+        }
+        else if(_cor1 instanceof Port){
+            throw "Port is not implemented yet";
+        }
+        else if(_cor1 instanceof Pid){
+            throw "Pid is not implemented yet";
+        }
+        //else if(_cor1 instanceof Tuple){
+            //throw "Tuple is not implemented yet";
+        //}
+        else if(_cor1 instanceof Map){
+            throw "Map is not implemented yet";
+        }
+        else if(_cor1 instanceof List){
+            throw "List is not implemented yet";
+        }
+        else if(_cor1 instanceof BitString){
+            throw "BitString is not implemented yet";
+        }
+        throw "Tried to match on unrecognized type: "+_cor1.toString();
+    }
+    
     
     //returns negative if _cor1 evaluates to less than _cor0, returns 0 if they evaluate equal. Magnitude is not representative of anything
     function compare(_cor1, _cor0) {
