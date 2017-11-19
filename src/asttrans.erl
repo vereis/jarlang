@@ -252,12 +252,14 @@ parseFunctionBody(return,{c_apply, _, _A, _B})->
     %io:format("        Apply statement: ~n");
     io:format("",[]);
     
-parseFunctionBody(ReturnAtom,{c_literal,_,Value}) when is_atom(Value)->
-    parseFunctionBody(ReturnAtom,{c_literal,a,atom_to_list(Value)});
 parseFunctionBody(return,{c_literal,_,Value})->
-    esast:returnStatement(esast:literal(Value));
-parseFunctionBody(_,{c_literal,_,Value})->
-    esast:literal(Value);
+    esast:returnStatement(parseFunctionBody(noreturn,{c_literal,[],Value}));
+parseFunctionBody(noreturn,{c_literal,_,Value}) when is_number(Value)->
+    esast:newExpression(esast:identifier(<<"ErlNumber">>),esast:literal(Value));
+parseFunctionBody(noreturn,{c_literal,_,Value}) when is_atom(Value)->
+    esast:newExpression(esast:identifier(<<"Atom">>),esast:literal(atom_to_list(Value)));
+parseFunctionBody(noreturn,{c_literal,_,Value}) when is_list(Value)->
+    esast:newExpression(esast:identifier(<<"List">>),esast:literal(Value));
 
 parseFunctionBody(return,{c_tuple,_,_Values})->
     %io:format("        Tuple ~p~n", [tupleList_getVars_3(Values)]);
@@ -270,30 +272,46 @@ parseFunctionBody(return,{c_primop,_,{_,_,Type},_Details})->
 
 
 parseFunctionBody(ReturnAtom,{c_case, _, {c_var,_,Var}, Clauses})->
-    esast:switchStatement(
-        parseFunctionBody(noreturn,{c_var,a,Var}),
-        lists:map(
-            fun({c_clause,_,[MatchVal],_trueLiteral,Body})->
-                esast:switchCase(
-                    parseFunctionBody(noreturn,MatchVal),
-                    encapsulateExpressions(assembleSequence(
-                        parseFunctionBody(ReturnAtom,Body),
-                        esast:breakStatement(null)
-                    ))
-                )
-            end,
-            Clauses
-        ),
-        false
-    );
+    parseFunctionBody(ReturnAtom,{c_case, a, {c_values,a,[{c_var,a,Var}]}, Clauses});
 
-parseFunctionBody(_,{c_case, _, _Condition, _Clauses})->
-    io:format("Error: this type of case statement is not implemented"),
-    io:format("",[]);
+parseFunctionBody(ReturnAtom,{c_case, _, {c_values,_,Vars}, Clauses})->
+    parseCaseClauses(ReturnAtom, Vars, Clauses);
 
 
 parseFunctionBody(_,T)->
     io:format("Unrecognised Token in function body: ~p", [T]).
+
+
+
+parseCaseClauses(ReturnAtom, Vars, [])->
+    null;
+parseCaseClauses(ReturnAtom, Vars, [{c_clause,_,Match,Evaluate,Consequent}|Clauses])->
+    esast:ifStatement(
+        assembleCaseCondition(Vars,Match,Evaluate),%test
+        esast:blockStatement(%consequent
+            encapsulateExpressions(
+                listCheck(
+                    parseFunctionBody(ReturnAtom,Consequent)
+                )
+            )
+        ),
+        parseCaseClauses(ReturnAtom, Vars, Clauses)%alternate
+    ).
+
+assembleCaseCondition(_,[],Evaluate)->
+    parseFunctionBody(noreturn,Evaluate);
+assembleCaseCondition(Vars,Match,{c_literal,_,true})->
+    assembleCaseCondition(Vars,Match);
+assembleCaseCondition(Vars,Match,Evaluate)->
+    esast:logicalExpression(<<"&&">>,assembleCaseCondition(Vars,Match),parseFunctionBody(noreturn,Evaluate)).
+
+assembleCaseCondition([V],[M])->
+        parseFunctionBody(noreturn,{c_call, a, {a, a, erlang}, {a, a, 'match'}, [V,M]});
+assembleCaseCondition([V|Vars],[M|Match])->
+    esast:logicalExpression(<<"&&">>,
+        assembleCaseCondition([V],[M]),
+        assembleCaseCondition(Vars,Match)
+    ).
 
 
 assembleSequence(L,R) when is_list(L) and is_list(R)->
