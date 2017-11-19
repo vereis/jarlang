@@ -120,6 +120,16 @@ const erlang = function () {
         },
         
         
+        'compare': function () {
+            switch (arguments.length) {
+            case 2:
+                return functions['compare/2'](...arguments);
+                break;
+            }
+            throw '** exception error: undefined function' + ('compare' + ('/' + arguments.length));
+        },
+        
+        
         
         
         'or': function () {
@@ -244,11 +254,12 @@ const erlang = function () {
         
         
         
+        
         'equality/2': function (_cor1, _cor0) {
-            return _cor1 == _cor0;
+            return _cor1.equals(_cor0);
         },
         'notEquality/2': function (_cor1, _cor0) {
-            return _cor1 != _cor0;
+            return !_cor1.equals(_cor0);
         },
         'lessThan/2': function (_cor1, _cor0) {
             return _cor1 < _cor0;
@@ -269,6 +280,8 @@ const erlang = function () {
             return _cor1 !== _cor0;
         },
         
+        //returns negative if _cor1 evaluates to less than _cor0, returns 0 if they evaluate equal. Magnitude is not representative of anything
+        'compare/2': compare,
         
         'or/2': function (_cor1, _cor0) {
             return _cor1 || _cor0;
@@ -306,5 +319,108 @@ const erlang = function () {
             ;
         }
     };
+    
+    //returns negative if _cor1 evaluates to less than _cor0, returns 0 if they evaluate equal. Magnitude is not representative of anything
+    function compare(_cor1, _cor0) {
+        if(_cor1 instanceof ErlNumber){
+            if(_cor0 instanceof ErlNumber){
+                return _cor1.subtract(_cor0);
+            }
+            else return -1;
+        }
+        else if(_cor1 instanceof Atom){
+            if(_cor0 instanceof ErlNumber)return 1;
+            else if(_cor0 instanceof Atom){
+                if(_cor1.value<_cor0.value)return -1;
+                else if(_cor1.value>_cor0.value)return 1;
+                else return 0;
+            }
+            else return -1;
+        }
+        else if(_cor1 instanceof Reference){
+            if(_cor0 instanceof ErlNumber || _cor0 instanceof Atom)return 1;
+            else if(_cor0 instanceof Reference){
+                if(_cor1.value<_cor0.value)return -1;
+                else if(_cor1.value>_cor0.value)return 1;
+                else return 0;
+            }
+            else return -1;
+        }
+        else if(_cor1 instanceof Fun){
+            if(_cor0 instanceof ErlNumber || _cor0 instanceof Atom || _cor0 instanceof Reference)return 1;
+            else if(_cor0 instanceof Fun){
+                throw "Fun is not implemented yet";
+            }
+            else return -1;
+        }
+        else if(_cor1 instanceof Port){
+            if(_cor0 instanceof ErlNumber || _cor0 instanceof Atom || _cor0 instanceof Reference || _cor0 instanceof Fun)return 1;
+            else if(_cor0 instanceof Port){
+                throw "Port is not implemented yet";
+            }
+            else return -1;
+        }
+        else if(_cor1 instanceof Pid){
+            if(_cor0 instanceof ErlNumber || _cor0 instanceof Atom || _cor0 instanceof Reference || _cor0 instanceof Fun || _cor0 instanceof Port)return 1;
+            else if(_cor0 instanceof Pid){
+                throw "Pid is not implemented yet";
+            }
+            else return -1;
+        }
+        //else if(_cor1 instanceof Tuple){
+        //    if(_cor0 instanceof ErlNumber || _cor0 instanceof Atom || _cor0 instanceof Reference || _cor0 instanceof Fun || _cor0 instanceof Port || _cor0 instanceof Pid)return 1;
+        //    else if(_cor0 instanceof Tuple){
+        //        throw "Tuple is not implemented yet";
+        //    }
+        //    else return -1;
+        //}
+        else if(_cor1 instanceof Map){
+            if(_cor0 instanceof ErlNumber || _cor0 instanceof Atom || _cor0 instanceof Reference || _cor0 instanceof Fun
+               || _cor0 instanceof Port || _cor0 instanceof Pid /* || _cor0 instanceof Tuple */)return 1;
+            else if(_cor0 instanceof Map){
+                throw "Map is not implemented yet";
+            }
+            else return -1;
+        }
+        else if(_cor1 instanceof List){
+            if(_cor0 instanceof ErlNumber || _cor0 instanceof Atom || _cor0 instanceof Reference || _cor0 instanceof Fun
+               || _cor0 instanceof Port || _cor0 instanceof Pid /* || _cor0 instanceof Tuple */ || _cor0 instanceof Map)return 1;
+            else if(_cor0 instanceof List){
+                if(List.isEmptyList(_cor1)){
+                    if(!List.isEmptyList(_cor0))return -1;
+                    else return 0;
+                }else{
+                    if(List.isEmptyList(_cor0))return 1;
+                    else {
+                        var len = (_cor1.size()<_cor0.size())? _cor1.size():_cor0.size();
+                        for(var i=0;i<len;i++){
+                            var c = compare(_cor1.nth(i),_cor0.nth(i));
+                            if(c==0)continue;
+                            else return c;
+                        }
+                        //if one list is the sublist of the other then the shortest list goes first
+                        if(_cor1.size()<_cor0.size())return -1;
+                        else if(_cor1.size()>_cor0.size())return 1;
+                        else return 0;
+                    }
+                }
+            }
+            else return -1;
+        }
+        else if(_cor1 instanceof BitString){
+            if(_cor0 instanceof ErlNumber || _cor0 instanceof Atom || _cor0 instanceof Reference || _cor0 instanceof Fun
+               || _cor0 instanceof Port || _cor0 instanceof Pid /* || _cor0 instanceof Tuple */ || _cor0 instanceof Map || _cor0 instanceof List)return 1;
+            else if(_cor0 instanceof BitString){
+                throw "BitString is not implemented yet";
+            }
+            else return -1;
+        }
+        else {//If _cor1 is not an Erlang datatype wrapper then fail over to js comparisons and hope for the best
+            if(_cor1<_cor0)return -1;
+            else if(_cor1>_cor0)return 1;
+            else return 0;
+        }
+    }
+    
     return exports;
 }();
