@@ -1,4 +1,4 @@
-//var BigNumber = require("bignumber.js");
+var BigNumber = typeof BigNumber == "undefined" ? require("bignumber.js") : BigNumber;
 
 
 // Constructor
