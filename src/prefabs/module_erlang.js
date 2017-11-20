@@ -351,9 +351,18 @@ const erlang = function () {
         else if(_cor1 instanceof Pid){
             throw "Pid is not implemented yet";
         }
-        //else if(_cor1 instanceof Tuple){
-            //throw "Tuple is not implemented yet";
-        //}
+        else if(_cor1 instanceof Tuple){
+            if(_cor1.size() != _cor0.size())return false;
+            else {
+                var len = _cor1.size();
+                for(var i=0;i<len;i++){
+                    var c = match(_cor1.nth(i),_cor0.nth(i));
+                    if(c)continue;
+                    else return false;
+                }
+                return true;
+            }
+        }
         else if(_cor1 instanceof Map){
             throw "Map is not implemented yet";
         }
@@ -414,16 +423,26 @@ const erlang = function () {
             }
             else return -1;
         }
-        //else if(_cor1 instanceof Tuple){
-        //    if(_cor0 instanceof ErlNumber || _cor0 instanceof Atom || _cor0 instanceof Reference || _cor0 instanceof Fun || _cor0 instanceof Port || _cor0 instanceof Pid)return 1;
-        //    else if(_cor0 instanceof Tuple){
-        //        throw "Tuple is not implemented yet";
-        //    }
-        //    else return -1;
-        //}
+        else if(_cor1 instanceof Tuple){
+            if(_cor0 instanceof ErlNumber || _cor0 instanceof Atom || _cor0 instanceof Reference || _cor0 instanceof Fun || _cor0 instanceof Port || _cor0 instanceof Pid)return 1;
+            else if(_cor0 instanceof Tuple){
+                if(_cor1.size()<_cor0.size())return -1;
+                else if(_cor1.size()>_cor0.size())return 1;
+                else {
+                    var len = (_cor1.size()<_cor0.size())? _cor1.size():_cor0.size();
+                    for(var i=0;i<len;i++){
+                        var c = compare(_cor1.nth(i),_cor0.nth(i));
+                        if(c==0)continue;
+                        else return c;
+                    }
+                    return 0;
+                }
+            }
+            else return -1;
+        }
         else if(_cor1 instanceof Map){
             if(_cor0 instanceof ErlNumber || _cor0 instanceof Atom || _cor0 instanceof Reference || _cor0 instanceof Fun
-               || _cor0 instanceof Port || _cor0 instanceof Pid /* || _cor0 instanceof Tuple */)return 1;
+               || _cor0 instanceof Port || _cor0 instanceof Pid || _cor0 instanceof Tuple )return 1;
             else if(_cor0 instanceof Map){
                 throw "Map is not implemented yet";
             }
@@ -431,7 +450,7 @@ const erlang = function () {
         }
         else if(_cor1 instanceof List){
             if(_cor0 instanceof ErlNumber || _cor0 instanceof Atom || _cor0 instanceof Reference || _cor0 instanceof Fun
-               || _cor0 instanceof Port || _cor0 instanceof Pid /* || _cor0 instanceof Tuple */ || _cor0 instanceof Map)return 1;
+               || _cor0 instanceof Port || _cor0 instanceof Pid || _cor0 instanceof Tuple || _cor0 instanceof Map)return 1;
             else if(_cor0 instanceof List){
                 if(List.isEmptyList(_cor1)){
                     if(!List.isEmptyList(_cor0))return -1;
@@ -456,7 +475,7 @@ const erlang = function () {
         }
         else if(_cor1 instanceof BitString){
             if(_cor0 instanceof ErlNumber || _cor0 instanceof Atom || _cor0 instanceof Reference || _cor0 instanceof Fun
-               || _cor0 instanceof Port || _cor0 instanceof Pid /* || _cor0 instanceof Tuple */ || _cor0 instanceof Map || _cor0 instanceof List)return 1;
+               || _cor0 instanceof Port || _cor0 instanceof Pid || _cor0 instanceof Tuple || _cor0 instanceof Map || _cor0 instanceof List)return 1;
             else if(_cor0 instanceof BitString){
                 throw "BitString is not implemented yet";
             }
