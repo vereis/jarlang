@@ -248,12 +248,12 @@ is_conditionalExpression(_) ->
 
 % Generate a new expression
 newExpression(Callee, Arguments) ->
-    ?spec([{Callee, expression}, {Arguments, expression}]),
+    ?spec([{Callee, expression}, {Arguments, list_of_expression}]),
     updateRecord(expression(), [{"type", <<"NewExpression">>}, {"callee", Callee}, {"arguments", Arguments}]).
 
 newExpression_test() ->
     ?assertEqual(newExpression(thisExpression(), thisExpression()), #{
-        "arguments" => #{"type" => <<"ThisExpression">>},
+        "arguments" => #{"type" => [<<"ThisExpression">>]},
         "callee" => #{"type" => <<"ThisExpression">>},
         "type" => <<"NewExpression">>
     }).

@@ -1,4 +1,4 @@
--module('targetTestErlang').
+-module('TargetTestErlang').
 -export([boolean/0,
     integer/0,
     string/0,

@@ -255,11 +255,11 @@ parseFunctionBody(return,{c_apply, _, _A, _B})->
 parseFunctionBody(return,{c_literal,_,Value})->
     esast:returnStatement(parseFunctionBody(noreturn,{c_literal,[],Value}));
 parseFunctionBody(noreturn,{c_literal,_,Value}) when is_number(Value)->
-    esast:newExpression(esast:identifier(<<"ErlNumber">>),esast:literal(Value));
+    esast:newExpression(esast:identifier(<<"ErlNumber">>),[esast:literal(Value)]);
 parseFunctionBody(noreturn,{c_literal,_,Value}) when is_atom(Value)->
-    esast:newExpression(esast:identifier(<<"Atom">>),esast:literal(atom_to_list(Value)));
+    esast:newExpression(esast:identifier(<<"Atom">>),[esast:literal(atom_to_binary(Value, utf8))]);
 parseFunctionBody(noreturn,{c_literal,_,Value}) when is_list(Value)->
-    esast:newExpression(esast:identifier(<<"List">>),esast:literal(Value));
+    esast:newExpression(esast:identifier(<<"List">>),[esast:literal(Value)]);
 
 parseFunctionBody(return,{c_tuple,_,_Values})->
     %io:format("        Tuple ~p~n", [tupleList_getVars_3(Values)]);
