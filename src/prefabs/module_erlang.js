@@ -1,7 +1,6 @@
 const erlang = function () {
     'use_strict';
     const exports = {
-
         'addition': function () {
             switch (arguments.length) {
                 case 2:
@@ -207,7 +206,6 @@ const erlang = function () {
         }
     };
 
-
     const functions = {
         'addition/2': function (_cor1, _cor0) {
             if (ErlNumber.isErlNumber(_cor1) && ErlNumber.isErlNumber(_cor0)) {
@@ -305,7 +303,7 @@ const erlang = function () {
         }
     };
 
-    // Private Methods
+    // Private Methods -----------------------------------------------------------------------------------------------
 
     //returns true or false, contrary to erlang matching behavior
     function match(_cor1, _cor0) {
@@ -336,9 +334,9 @@ const erlang = function () {
                 return false;
             }
             else {
-                var len = _cor1.size();
-                for (var i = 0; i < len; i++) {
-                    var c = match(_cor1.nth(i), _cor0.nth(i));
+                let len = _cor1.size();
+                for (let i = 0; i < len; i++) {
+                    let c = match(_cor1.nth(i), _cor0.nth(i));
                     if (c) {
                         continue;
                     }
@@ -462,9 +460,9 @@ const erlang = function () {
                     return 1;
                 }
                 else {
-                    var len = Math.min(_cor1.size(), _cor0.size());
-                    for (var i = 0; i < len; i++) {
-                        var c = compare(_cor1.nth(i), _cor0.nth(i));
+                    let len = Math.min(_cor1.size(), _cor0.size());
+                    for (let i = 0; i < len; i++) {
+                        let c = compare(_cor1.nth(i), _cor0.nth(i));
                         if (c == 0) {
                             continue;
                         }
@@ -519,9 +517,9 @@ const erlang = function () {
                         return 1;
                     }
                     else {
-                        var len = Math.min(_cor1.size(), _cor0.size());
-                        for (var i = 0; i < len; i++) {
-                            var c = compare(_cor1.nth(i), _cor0.nth(i));
+                        let len = Math.min(_cor1.size(), _cor0.size());
+                        for (let i = 0; i < len; i++) {
+                            let c = compare(_cor1.nth(i), _cor0.nth(i));
                             if (c == 0) {
                                 continue;
                             }
