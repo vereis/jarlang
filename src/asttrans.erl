@@ -1,6 +1,5 @@
 % Author: Andrew Johnson
 % Walks down a CoreErlang AST and calls EStree.
-
 -module(asttrans).
 -export([erast2esast/1]).
 
@@ -10,11 +9,8 @@ erast2esast(AST) ->
 
 %Read the module token (first token)
 parseModule({c_module, _A, {_, _, ModuleName}, Exports, _Attributes, Functions})->
-    io:format("module: ~s ~n", [ModuleName]),
-    io:format("    exports: ~p ~n", [tupleList_getVars_3(Exports)]),
     FormattedFunctions = parseFunctions(Functions),
     FormattedExports = lists:map(fun({N,A})->{atom_to_list(N),A} end,tupleList_getVars_3(Exports)),
-    %io:format("~p~n~n~n~n~n~n", [FormattedFunctions]),
     esast:c_module(atom_to_list(ModuleName),FormattedExports,FormattedFunctions);
     
 parseModule(T)->
@@ -23,14 +19,17 @@ parseModule(T)->
 % Concurrently transpile core erlang asts for functions into javascript asts for functions
 parseFunctions(Functions)->
     Self = self(),
-    lists:map(fun(X) -> 
-        spawn_link(fun() -> Self ! parseFunction(X) end) 
+    Pids = lists:map(fun(X) -> 
+        spawn_link(fun() -> Self ! {self(), parseFunction(X)} end) 
     end, Functions),
+    
     [
         receive 
-            TranspiledFunction ->
+            {Pid, TranspiledFunction} ->
                 TranspiledFunction
         end
+        ||
+        Pid <- Pids
     ].
 
 %Read a function
