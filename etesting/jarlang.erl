@@ -18,11 +18,7 @@ main() ->
                 0 ->
                     io:format("usage: jarlang.sh filename.erl filename2.erl ... filenameN.erl~n~n");
                 _ ->
-                    Self = self(),
-                    Pids = lists:map(fun(F) -> 
-                        spawn_link(fun() -> Self ! {self(), esast:test(er2(estree, F), maps:get(escodegen, Args))} end)
-                    end, maps:get(files, Args)),
-                    [receive {Pid, Result} -> Result end || Pid <- Pids]
+                    lists:map(fun(F) -> esast:test(er2(estree, F), maps:get(escodegen, Args)) end, maps:get(files, Args))
             end;
         "eunit" ->
             lists:map(fun(M) -> 

@@ -1,6 +1,6 @@
 // Constructor
 function List (car, ...cdr) {
-    this.val = car;
+    this.value = car;
     this.next = car !== undefined ? new List(...cdr) : undefined;
 
     this.iterator = this;
@@ -9,7 +9,7 @@ function List (car, ...cdr) {
 
 // Static Methods
 List.isList = (list) => list instanceof List;
-List.isEmptyList = (list) => List.isList(list) && list.val === undefined && list.next === undefined;
+List.isEmptyList = (list) => List.isList(list) && list.value === undefined && list.next === undefined;
 List.cloneList = (list) => new List(...list);
 
 
@@ -36,7 +36,7 @@ List.prototype[Symbol.iterator] = function() {
             // If the next node of the current iterator isn't another list OR is an empty list, then we know
             // we have reached the end of the linked list
             let isLastNode = this.iterator.next === undefined || List.isEmptyList(this.iterator.next);
-            let v = List.isList(this.iterator) ? this.iterator.val : this.iterator;
+            let v = List.isList(this.iterator) ? this.iterator.value : this.iterator;
             
             if (this.iterator === "done" || List.isEmptyList(this)) {
                 this.iterator = this;
@@ -63,7 +63,7 @@ List.prototype.__last = function() {
 // Prototype Methods
 List.prototype.nth = function(n) {
     let nth = this.__nthNode(n);
-    return List.isList(nth) ? nth.val : nth;
+    return List.isList(nth) ? nth.value : nth;
 };
 
 List.prototype.size = function() {
