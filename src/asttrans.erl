@@ -235,12 +235,23 @@ parseFunctionBody(noreturn,Params,{c_seq, _, A, B})->
         parseFunctionBody(noreturn,Params,B));
 
 
-
-parseFunctionBody(return,Params,{c_let, _, [{_, _, _Variable}], _A, _B})->
-    %io:format("        Let statement: ~s~n", [Variable]),
-    %parseFunctionBody(A),
-    %parseFunctionBody(B);
-    io:format("",[]);
+% A let statement is the core representation of implicit variable declarations (the result of some function as an argument of another function
+parseFunctionBody(return,Params,{c_let, _, [{_, _, Variable}], Value, UsedBy})->
+    assembleSequence(
+        esast:variableDeclaration([esast:variableDeclarator(esast:identifier(atom_to_binary(Variable,utf8)),parseFunctionBody(noreturn,Params,Value))],<<"let">>),
+        parseFunctionBody(noreturn,Params,UsedBy));
+parseFunctionBody(return,Params,{c_let, _})->
+    meepMeep;
+parseFunctionBody(return,Params,{c_let, _,_})->
+    meepMeep;
+parseFunctionBody(return,Params,{c_let, _,_,_})->
+    meepMeep;
+parseFunctionBody(return,Params,{c_let, _,_,_,_})->
+    meepMeep;
+parseFunctionBody(return,Params,{c_let, _,_,_,_,_})->
+    meepMeep;
+parseFunctionBody(return,Params,{c_let, _,_,_,_,_,_})->
+    meepMeep;
     
 % Is apply a local function call? Assignment from function? Assignment with pattern matching?
 parseFunctionBody(return,Params,{c_apply, _, {_,_,{_FName,_Arity}}, _Params})->
@@ -248,9 +259,8 @@ parseFunctionBody(return,Params,{c_apply, _, {_,_,{_FName,_Arity}}, _Params})->
     %io:format("~p)~n", [tupleList_getVars_3(Params)]);
     io:format("",[]);
 
-parseFunctionBody(return,Params,{c_apply, _, _A, _B})->
-    %io:format("        Apply statement: ~n");
-    io:format("",[]);
+parseFunctionBody(return,Params,{c_apply, _, {_, _, FunctionName}, Parameters})->
+    parseFunctionBody(noreturn,Params,{c_call, [], {a, a, exports}, {a, a, FunctionName}, Parameters});
     
 parseFunctionBody(return,Params,{c_literal,_,Value})->
     esast:returnStatement(parseFunctionBody(noreturn,Params,{c_literal,[],Value}));
@@ -275,7 +285,11 @@ parseFunctionBody(ReturnAtom,Params,{c_case, _, {c_var,_,Var}, Clauses})->
     parseFunctionBody(ReturnAtom,Params,{c_case, a, {c_values,a,[{c_var,a,Var}]}, Clauses});
 
 parseFunctionBody(ReturnAtom,Params,{c_case, _, {c_values,_,Vars}, Clauses})->
-    parseCaseClauses(ReturnAtom,Params, Vars, Clauses);
+    {UnboundVars,CaseClauses} = parseCaseClauses(ReturnAtom,Params, Vars, Clauses),
+    case UnboundVars of
+        [] -> CaseClauses;
+        _  -> assembleSequence(esast:variableDeclaration(UnboundVars,<<"let">>),CaseClauses)
+    end;
 
 
 parseFunctionBody(_,Params,T)->
@@ -284,9 +298,15 @@ parseFunctionBody(_,Params,T)->
 
 
 parseCaseClauses(ReturnAtom,Params, Vars, [])->
-    null;
+    {[],[]};
 parseCaseClauses(ReturnAtom,Params, Vars, [{c_clause,_,Match,Evaluate,Consequent}|Clauses])->
-    esast:ifStatement(
+    {UnboundVars,ElseClauses} = parseCaseClauses(ReturnAtom,Params, Vars, Clauses),%alternate
+    case ElseClauses of
+        [] -> ElseClausesActual = null;
+        _  -> ElseClausesActual = ElseClauses
+    end,
+    {lists:append(declaratorsFromList(Match),UnboundVars),
+     esast:ifStatement(
         assembleCaseCondition(Params,Vars,Match,Evaluate),%test
         esast:blockStatement(%consequent
             encapsulateExpressions(
@@ -295,8 +315,8 @@ parseCaseClauses(ReturnAtom,Params, Vars, [{c_clause,_,Match,Evaluate,Consequent
                 )
             )
         ),
-        parseCaseClauses(ReturnAtom,Params, Vars, Clauses)%alternate
-    ).
+        ElseClausesActual %alternate
+    )}.
 
 assembleCaseCondition(Params,_,[],Evaluate)->
     parseFunctionBody(noreturn,Params,Evaluate);
@@ -335,6 +355,16 @@ tupleList_getVars_3([{_,_, Val} | Body])->
     [Val | tupleList_getVars_3(Body)];
 tupleList_getVars_3([{_, _, Val, _} | Body])->
     [Val | tupleList_getVars_3(Body)].
+
+
+declaratorsFromList(List)->
+    lists:filtermap(fun(Elem)->
+        case Elem of
+            {c_var,_,Name} -> {true,esast:variableDeclarator(esast:identifier(atom_to_binary(Name,utf8)),esast:identifier(<<"undefined">>))};
+            _              -> false
+        end
+    end,List).
+
 
 %rAtomToList([A|Rest])->
 %    [rAtomToList(A)|rAtomToList(Rest)];
