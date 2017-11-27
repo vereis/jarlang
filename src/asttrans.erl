@@ -267,7 +267,7 @@ parseFunctionBody(return,{c_tuple,_,_Values})->
     
 parseFunctionBody(return,{c_primop,_,{_,_,Type},_Details})->
     % io:format("        Error? ~p~n~p~n", [Type,Details]),
-    esast:error(atom_to_list(Type),"TODO Errors dont parse nicely",esast:literal("Message"));
+    esast:error(atom_to_list(Type),"TODO Errors dont parse nicely\n",esast:literal(<<"Message">>));
     % io:format("",[]);
 
 
