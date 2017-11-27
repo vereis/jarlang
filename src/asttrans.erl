@@ -236,31 +236,17 @@ parseFunctionBody(noreturn,Params,{c_seq, _, A, B})->
 
 
 % A let statement is the core representation of implicit variable declarations (the result of some function as an argument of another function
-parseFunctionBody(return,Params,{c_let, _, [{_, _, Variable}], Value, UsedBy})->
+parseFunctionBody(ReturnAtom,Params,{c_let, _, [{_, _, Variable}], Value, UsedBy})->
     assembleSequence(
         esast:variableDeclaration([esast:variableDeclarator(esast:identifier(atom_to_binary(Variable,utf8)),parseFunctionBody(noreturn,Params,Value))],<<"let">>),
-        parseFunctionBody(noreturn,Params,UsedBy));
-parseFunctionBody(return,Params,{c_let, _})->
-    meepMeep;
-parseFunctionBody(return,Params,{c_let, _,_})->
-    meepMeep;
-parseFunctionBody(return,Params,{c_let, _,_,_})->
-    meepMeep;
-parseFunctionBody(return,Params,{c_let, _,_,_,_})->
-    meepMeep;
-parseFunctionBody(return,Params,{c_let, _,_,_,_,_})->
-    meepMeep;
-parseFunctionBody(return,Params,{c_let, _,_,_,_,_,_})->
-    meepMeep;
+        parseFunctionBody(ReturnAtom,Params,UsedBy));
     
 % Is apply a local function call? Assignment from function? Assignment with pattern matching?
-parseFunctionBody(return,Params,{c_apply, _, {_,_,{_FName,_Arity}}, _Params})->
-    %io:format("Call local function ~s(",[FName]),
-    %io:format("~p)~n", [tupleList_getVars_3(Params)]);
-    io:format("",[]);
+parseFunctionBody(ReturnAtom,Params,{c_apply, _, {_,_,{FunctionName,Arity}}, Parameters})->
+    parseFunctionBody(ReturnAtom,Params,{c_call, [], {a, a, exports}, {a, a, FunctionName}, Parameters});
 
-parseFunctionBody(return,Params,{c_apply, _, {_, _, FunctionName}, Parameters})->
-    parseFunctionBody(noreturn,Params,{c_call, [], {a, a, exports}, {a, a, FunctionName}, Parameters});
+parseFunctionBody(ReturnAtom,Params,{c_apply, _, {_, _, FunctionName}, Parameters})->
+    parseFunctionBody(ReturnAtom,Params,{c_call, [], {a, a, exports}, {a, a, FunctionName}, Parameters});
     
 parseFunctionBody(return,Params,{c_literal,_,Value})->
     esast:returnStatement(parseFunctionBody(noreturn,Params,{c_literal,[],Value}));
@@ -293,7 +279,7 @@ parseFunctionBody(ReturnAtom,Params,{c_case, _, {c_values,_,Vars}, Clauses})->
 
 
 parseFunctionBody(_,Params,T)->
-    io:format("Unrecognised Token in function body: ~p", [T]).
+    io:format("Unrecognised Token in function body: ~p~n", [T]).
 
 
 
