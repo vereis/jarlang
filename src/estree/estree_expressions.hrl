@@ -168,6 +168,25 @@ is_unaryExpression(?NODETYPE(<<"UnaryExpression">>)) ->
 is_unaryExpression(_) ->
     false.
 
+assignmentExpression(Operator, Left, Right) ->
+    ?spec([{Operator, anything},
+           {Left, expression},
+           {Right, expression}]),
+    updateRecord(expression(), [{"type", <<"AssignmentExpression">>}, {"operator", Operator}, {"left", Left}, {"right", Right}]).
+
+assignmentExpressionTest() ->
+    ?assertEqual(assignmentExpression(<<"+">>, literal(10), literal(10)), #{
+        "left" => #{"type" => <<"Literal">>, "value" => 10},
+        "operator" => <<"+">>,
+        "right" => #{"type" => <<"Literal">>, "value" => 10},
+        "type" => <<"AssignmentExpression">>
+    }).
+
+is_assignmentExpression(?NODETYPE(<<"AssignmentExpression">>)) ->
+    true;
+is_assignmentExpression(_) ->
+    false.
+
 % Generate a binary operation expression
 binaryExpression(Operator, Left, Right) when ?IS_BINARY_OPERATOR(Operator) ->
     ?spec([{Operator, anything},
