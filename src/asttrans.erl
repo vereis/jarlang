@@ -295,9 +295,19 @@ parseCaseClauses(ReturnAtom,Params, Vars, [{c_clause,_,Match,Evaluate,Consequent
      esast:ifStatement(
         assembleCaseCondition(Params,Vars,Match,Evaluate),%test
         esast:blockStatement(%consequent
-            encapsulateExpressions(
-                listCheck(
-                    parseFunctionBody(ReturnAtom,Params,Consequent)
+            assembleSequence(
+                lists:filter(fun(Elem)->
+                        case Elem of
+                            ok -> false;
+                            _  -> true
+                        end
+                    end,
+                    assignMatchedVars(Vars,Match)
+                ),
+                encapsulateExpressions(
+                    listCheck(
+                        parseFunctionBody(ReturnAtom,Params,Consequent)
+                    )
                 )
             )
         ),
@@ -317,6 +327,24 @@ assembleCaseCondition(Params,[V|Vars],[M|Match])->
     esast:logicalExpression(<<"&&">>,
         assembleCaseCondition(Params,[V],[M]),
         assembleCaseCondition(Params,Vars,Match)
+    ).
+
+assignMatchedVars(Params,[V],[M])->
+        assignMatchedVars(Params,V,M);
+assignMatchedVars(Params,[V|Vars],[M|Match])->
+    assembleSequence(
+        assignMatchedVars(Params,[V],[M]),
+        assignMatchedVars(Params,Vars,Match)
+    );
+assignMatchedVars(Params,V,{c_literal,_,_})->
+    ok;
+assignMatchedVars(Params,{c_var,_,Variable},{c_var,_,Match})->
+    esast:expressionStatement(
+        esast:assignmentExpression(
+            esast:identifier(atom_to_binary(Match,utf8)),
+            esast:identifier(atom_to_binary(Variable,utf8)),
+            <<"=">>
+        )
     ).
 
 
