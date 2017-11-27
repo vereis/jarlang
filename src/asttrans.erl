@@ -27,16 +27,16 @@ parseFunctions(Functions)->
     lists:map(fun(X)->parseFunction(X) end,Functions).
 
 %Read a function
-parseFunction({{_, _, {FunctionName, Arity}}, {_, [compiler_generated], _, _}})->
+parseFunction({{_, _, {FunctionName, Arity}}, {_c_fun, [compiler_generated], _, _}})->
     {atom_to_list(FunctionName)++"/"++integer_to_list(Arity),esast:functionExpression(null,[],esast:blockStatement([esast:emptyStatement()]),false)};
-parseFunction({{_, _, {FunctionName, Arity}}, {_, _, ParamNames, Body}})->
+parseFunction({{_, _, {FunctionName, Arity}}, {_c_fun, _, ParamNames, Body}})->
     {atom_to_list(FunctionName)++"/"++integer_to_list(Arity),esast:functionExpression(
         null,
-        tupleListToIdentifierList(ParamNames),
+        tupleListToIdentifierList(ParamNames,tupleList_getVars_3(ParamNames)),
         esast:blockStatement(
             encapsulateExpressions(
                 listCheck(
-                    parseFunctionBody(return,Body)
+                    parseFunctionBody(return,tupleList_getVars_3(ParamNames),Body)
                 )
             )
         ),
@@ -67,8 +67,8 @@ listCheck(L)->
 
 %Parse the function body
 
-parseFunctionBody(return,{c_call, A, {B, C, Module}, {D, E, FunctionName}, Params})->
-    esast:returnStatement(parseFunctionBody(noreturn,{c_call, A, {B, C, Module}, {D, E, FunctionName}, Params}));
+parseFunctionBody(return,Params,{c_call, A, {B, C, Module}, {D, E, FunctionName}, Parameters})->
+    esast:returnStatement(parseFunctionBody(noreturn,Params,{c_call, A, {B, C, Module}, {D, E, FunctionName}, Parameters}));
 
 
 
@@ -76,241 +76,241 @@ parseFunctionBody(return,{c_call, A, {B, C, Module}, {D, E, FunctionName}, Param
 
 
 
-parseFunctionBody(noreturn,{c_call, _, {_, _, erlang}, {_, _, '+'}, [L,R]})->
+parseFunctionBody(noreturn,Params,{c_call, _, {_, _, erlang}, {_, _, '+'}, [L,R]})->
     esast:callExpression(
          esast:memberExpression(esast:identifier(<<"erlang">>),esast:identifier(<<"addition">>),false),
-         [parseFunctionBody(noreturn,L),parseFunctionBody(noreturn,R)]
+         [parseFunctionBody(noreturn,Params,L),parseFunctionBody(noreturn,Params,R)]
      );
-parseFunctionBody(noreturn,{c_call, _, {_, _, erlang}, {_, _, '-'}, [L,R]})->
+parseFunctionBody(noreturn,Params,{c_call, _, {_, _, erlang}, {_, _, '-'}, [L,R]})->
     esast:callExpression(
          esast:memberExpression(esast:identifier(<<"erlang">>),esast:identifier(<<"subtraction">>),false),
-         [parseFunctionBody(noreturn,L),parseFunctionBody(noreturn,R)]
+         [parseFunctionBody(noreturn,Params,L),parseFunctionBody(noreturn,Params,R)]
      );
-parseFunctionBody(noreturn,{c_call, _, {_, _, erlang}, {_, _, '*'}, [L,R]})->
+parseFunctionBody(noreturn,Params,{c_call, _, {_, _, erlang}, {_, _, '*'}, [L,R]})->
     esast:callExpression(
          esast:memberExpression(esast:identifier(<<"erlang">>),esast:identifier(<<"multiplication">>),false),
-         [parseFunctionBody(noreturn,L),parseFunctionBody(noreturn,R)]
+         [parseFunctionBody(noreturn,Params,L),parseFunctionBody(noreturn,Params,R)]
      );
-parseFunctionBody(noreturn,{c_call, _, {_, _, erlang}, {_, _, '/'}, [L,R]})->
+parseFunctionBody(noreturn,Params,{c_call, _, {_, _, erlang}, {_, _, '/'}, [L,R]})->
     esast:callExpression(
          esast:memberExpression(esast:identifier(<<"erlang">>),esast:identifier(<<"division">>),false),
-         [parseFunctionBody(noreturn,L),parseFunctionBody(noreturn,R)]
+         [parseFunctionBody(noreturn,Params,L),parseFunctionBody(noreturn,Params,R)]
      );
-parseFunctionBody(noreturn,{c_call, _, {_, _, erlang}, {_, _, 'rem'}, [L,R]})->
+parseFunctionBody(noreturn,Params,{c_call, _, {_, _, erlang}, {_, _, 'rem'}, [L,R]})->
     esast:callExpression(
          esast:memberExpression(esast:identifier(<<"erlang">>),esast:identifier(<<"remainder">>),false),
-         [parseFunctionBody(noreturn,L),parseFunctionBody(noreturn,R)]
+         [parseFunctionBody(noreturn,Params,L),parseFunctionBody(noreturn,Params,R)]
      );
-parseFunctionBody(noreturn,{c_call, _, {_, _, erlang}, {_, _, 'div'}, [L,R]})->
+parseFunctionBody(noreturn,Params,{c_call, _, {_, _, erlang}, {_, _, 'div'}, [L,R]})->
     esast:callExpression(
          esast:memberExpression(esast:identifier(<<"erlang">>),esast:identifier(<<"intDivision">>),false),
-         [parseFunctionBody(noreturn,L),parseFunctionBody(noreturn,R)]
+         [parseFunctionBody(noreturn,Params,L),parseFunctionBody(noreturn,Params,R)]
      );
 
 
 
-parseFunctionBody(noreturn,{c_call, _, {_, _, erlang}, {_, _, '=='}, [L,R]})->
+parseFunctionBody(noreturn,Params,{c_call, _, {_, _, erlang}, {_, _, '=='}, [L,R]})->
     esast:callExpression(
          esast:memberExpression(esast:identifier(<<"erlang">>),esast:identifier(<<"equality">>),false),
-         [parseFunctionBody(noreturn,L),parseFunctionBody(noreturn,R)]
+         [parseFunctionBody(noreturn,Params,L),parseFunctionBody(noreturn,Params,R)]
      );
-parseFunctionBody(noreturn,{c_call, _, {_, _, erlang}, {_, _, '/='}, [L,R]})->
+parseFunctionBody(noreturn,Params,{c_call, _, {_, _, erlang}, {_, _, '/='}, [L,R]})->
     esast:callExpression(
          esast:memberExpression(esast:identifier(<<"erlang">>),esast:identifier(<<"notEquality">>),false),
-         [parseFunctionBody(noreturn,L),parseFunctionBody(noreturn,R)]
+         [parseFunctionBody(noreturn,Params,L),parseFunctionBody(noreturn,Params,R)]
      );
-parseFunctionBody(noreturn,{c_call, _, {_, _, erlang}, {_, _, '<'}, [L,R]})->
+parseFunctionBody(noreturn,Params,{c_call, _, {_, _, erlang}, {_, _, '<'}, [L,R]})->
     esast:callExpression(
          esast:memberExpression(esast:identifier(<<"erlang">>),esast:identifier(<<"lessThan">>),false),
-         [parseFunctionBody(noreturn,L),parseFunctionBody(noreturn,R)]
+         [parseFunctionBody(noreturn,Params,L),parseFunctionBody(noreturn,Params,R)]
      );
-parseFunctionBody(noreturn,{c_call, _, {_, _, erlang}, {_, _, '=<'}, [L,R]})->
+parseFunctionBody(noreturn,Params,{c_call, _, {_, _, erlang}, {_, _, '=<'}, [L,R]})->
     esast:callExpression(
          esast:memberExpression(esast:identifier(<<"erlang">>),esast:identifier(<<"lessThanOrEq">>),false),
-         [parseFunctionBody(noreturn,L),parseFunctionBody(noreturn,R)]
+         [parseFunctionBody(noreturn,Params,L),parseFunctionBody(noreturn,Params,R)]
      );
-parseFunctionBody(noreturn,{c_call, _, {_, _, erlang}, {_, _, '>'}, [L,R]})->
+parseFunctionBody(noreturn,Params,{c_call, _, {_, _, erlang}, {_, _, '>'}, [L,R]})->
     esast:callExpression(
          esast:memberExpression(esast:identifier(<<"erlang">>),esast:identifier(<<"moreThan">>),false),
-         [parseFunctionBody(noreturn,L),parseFunctionBody(noreturn,R)]
+         [parseFunctionBody(noreturn,Params,L),parseFunctionBody(noreturn,Params,R)]
      );
-parseFunctionBody(noreturn,{c_call, _, {_, _, erlang}, {_, _, '>='}, [L,R]})->
+parseFunctionBody(noreturn,Params,{c_call, _, {_, _, erlang}, {_, _, '>='}, [L,R]})->
     esast:callExpression(
          esast:memberExpression(esast:identifier(<<"erlang">>),esast:identifier(<<"moreThanOrEq">>),false),
-         [parseFunctionBody(noreturn,L),parseFunctionBody(noreturn,R)]
+         [parseFunctionBody(noreturn,Params,L),parseFunctionBody(noreturn,Params,R)]
      );
-parseFunctionBody(noreturn,{c_call, _, {_, _, erlang}, {_, _, '=:='}, [L,R]})->
+parseFunctionBody(noreturn,Params,{c_call, _, {_, _, erlang}, {_, _, '=:='}, [L,R]})->
     esast:callExpression(
          esast:memberExpression(esast:identifier(<<"erlang">>),esast:identifier(<<"exactlyEq">>),false),
-         [parseFunctionBody(noreturn,L),parseFunctionBody(noreturn,R)]
+         [parseFunctionBody(noreturn,Params,L),parseFunctionBody(noreturn,Params,R)]
      );
-parseFunctionBody(noreturn,{c_call, _, {_, _, erlang}, {_, _, '=/='}, [L,R]})->
+parseFunctionBody(noreturn,Params,{c_call, _, {_, _, erlang}, {_, _, '=/='}, [L,R]})->
     esast:callExpression(
          esast:memberExpression(esast:identifier(<<"erlang">>),esast:identifier(<<"exactlyNotEq">>),false),
-         [parseFunctionBody(noreturn,L),parseFunctionBody(noreturn,R)]
+         [parseFunctionBody(noreturn,Params,L),parseFunctionBody(noreturn,Params,R)]
      );
 
 
 
 
-parseFunctionBody(noreturn,{c_call, _, {_, _, erlang}, {_, _, 'or'}, [L,R]})->
+parseFunctionBody(noreturn,Params,{c_call, _, {_, _, erlang}, {_, _, 'or'}, [L,R]})->
     esast:callExpression(
          esast:memberExpression(esast:identifier(<<"erlang">>),esast:identifier(<<"or">>),false),
-         [parseFunctionBody(noreturn,L),parseFunctionBody(noreturn,R)]
+         [parseFunctionBody(noreturn,Params,L),parseFunctionBody(noreturn,Params,R)]
      );
-parseFunctionBody(noreturn,{c_call, _, {_, _, erlang}, {_, _, 'and'}, [L,R]})->
+parseFunctionBody(noreturn,Params,{c_call, _, {_, _, erlang}, {_, _, 'and'}, [L,R]})->
     esast:callExpression(
          esast:memberExpression(esast:identifier(<<"erlang">>),esast:identifier(<<"and">>),false),
-         [parseFunctionBody(noreturn,L),parseFunctionBody(noreturn,R)]
+         [parseFunctionBody(noreturn,Params,L),parseFunctionBody(noreturn,Params,R)]
      );
-parseFunctionBody(noreturn,{c_call, _, {_, _, erlang}, {_, _, 'not'}, [T]})->
+parseFunctionBody(noreturn,Params,{c_call, _, {_, _, erlang}, {_, _, 'not'}, [T]})->
     esast:callExpression(
          esast:memberExpression(esast:identifier(<<"erlang">>),esast:identifier(<<"not">>),false),
-         [parseFunctionBody(noreturn,T)]
+         [parseFunctionBody(noreturn,Params,T)]
      );
-parseFunctionBody(noreturn,{c_call, _, {_, _, erlang}, {_, _, 'xor'}, [L,R]})->
+parseFunctionBody(noreturn,Params,{c_call, _, {_, _, erlang}, {_, _, 'xor'}, [L,R]})->
     esast:callExpression(
          esast:memberExpression(esast:identifier(<<"erlang">>),esast:identifier(<<"xor">>),false),
-         [parseFunctionBody(noreturn,L),parseFunctionBody(noreturn,R)]
+         [parseFunctionBody(noreturn,Params,L),parseFunctionBody(noreturn,Params,R)]
      );
 
 
 
-parseFunctionBody(noreturn,{c_call, _, {_, _, erlang}, {_, _, 'band'}, [L,R]})->
+parseFunctionBody(noreturn,Params,{c_call, _, {_, _, erlang}, {_, _, 'band'}, [L,R]})->
     esast:callExpression(
          esast:memberExpression(esast:identifier(<<"erlang">>),esast:identifier(<<"band">>),false),
-         [parseFunctionBody(noreturn,L),parseFunctionBody(noreturn,R)]
+         [parseFunctionBody(noreturn,Params,L),parseFunctionBody(noreturn,Params,R)]
      );
-parseFunctionBody(noreturn,{c_call, _, {_, _, erlang}, {_, _, 'bor'}, [L,R]})->
+parseFunctionBody(noreturn,Params,{c_call, _, {_, _, erlang}, {_, _, 'bor'}, [L,R]})->
     esast:callExpression(
          esast:memberExpression(esast:identifier(<<"erlang">>),esast:identifier(<<"bor">>),false),
-         [parseFunctionBody(noreturn,L),parseFunctionBody(noreturn,R)]
+         [parseFunctionBody(noreturn,Params,L),parseFunctionBody(noreturn,Params,R)]
      );
-parseFunctionBody(noreturn,{c_call, _, {_, _, erlang}, {_, _, 'bxor'}, [L,R]})->
+parseFunctionBody(noreturn,Params,{c_call, _, {_, _, erlang}, {_, _, 'bxor'}, [L,R]})->
     esast:callExpression(
          esast:memberExpression(esast:identifier(<<"erlang">>),esast:identifier(<<"bxor">>),false),
-         [parseFunctionBody(noreturn,L),parseFunctionBody(noreturn,R)]
+         [parseFunctionBody(noreturn,Params,L),parseFunctionBody(noreturn,Params,R)]
      );
-parseFunctionBody(noreturn,{c_call, _, {_, _, erlang}, {_, _, 'bnot'}, [T]})->
+parseFunctionBody(noreturn,Params,{c_call, _, {_, _, erlang}, {_, _, 'bnot'}, [T]})->
     esast:callExpression(
          esast:memberExpression(esast:identifier(<<"erlang">>),esast:identifier(<<"bnot">>),false),
-         [parseFunctionBody(noreturn,T)]
+         [parseFunctionBody(noreturn,Params,T)]
      );
 
 
 
 %Bodge job: external module calls
-%parseFunctionBody(noreturn,{c_call, _, {_, _, io}, {_, _, format}, [T]})->
+%parseFunctionBody(noreturn,Params,{c_call, _, {_, _, io}, {_, _, format}, [T]})->
 %    esast:callExpression(
 %         esast:memberExpression(esast:identifier(<<"console">>),esast:identifier(<<"log">>),false),
-%         [parseFunctionBody(noreturn,T)]
+%         [parseFunctionBody(noreturn,Params,T)]
 %     );
 
 
-parseFunctionBody(noreturn,{c_call, _, {_, _, Module}, {_, _, FunctionName}, Params})->
+parseFunctionBody(noreturn,Params,{c_call, _, {_, _, Module}, {_, _, FunctionName}, Parameters})->
     esast:callExpression(
          esast:memberExpression(esast:identifier(atom_to_binary(Module,utf8)),esast:identifier(atom_to_binary(FunctionName,utf8)),false),
-         lists:map(fun(T)->parseFunctionBody(noreturn,T) end,Params)
+         lists:map(fun(T)->parseFunctionBody(noreturn,Parameters,T) end,Parameters)
      );
 
 
-parseFunctionBody(return,{c_values, _, _Values})->
+parseFunctionBody(return,Params,{c_values, _, _Values})->
     %io:format("~p~n", [tupleList_getVars_3(Values)]);
     io:format("",[]);
 
-parseFunctionBody(return,{c_var, A, Var})->
-    esast:returnStatement(parseFunctionBody(noreturn,{c_var, A, Var}));
-parseFunctionBody(noreturn,{c_var, _, Var})->
+parseFunctionBody(return,Params,{c_var, A, Var})->
+    esast:returnStatement(parseFunctionBody(noreturn,Params,{c_var, A, Var}));
+parseFunctionBody(noreturn,Params,{c_var, _, Var})->
     esast:identifier(atom_to_binary(Var,utf8));
     %io:format("",[]);
 
 
-parseFunctionBody(return,{c_seq, _, A, B})->
+parseFunctionBody(return,Params,{c_seq, _, A, B})->
     assembleSequence(
-        parseFunctionBody(noreturn,A),
-        parseFunctionBody(return,B));
-parseFunctionBody(noreturn,{c_seq, _, A, B})->
+        parseFunctionBody(noreturn,Params,A),
+        parseFunctionBody(return,Params,B));
+parseFunctionBody(noreturn,Params,{c_seq, _, A, B})->
     assembleSequence(
-        parseFunctionBody(noreturn,A),
-        parseFunctionBody(noreturn,B));
+        parseFunctionBody(noreturn,Params,A),
+        parseFunctionBody(noreturn,Params,B));
 
 
 
-parseFunctionBody(return,{c_let, _, [{_, _, _Variable}], _A, _B})->
+parseFunctionBody(return,Params,{c_let, _, [{_, _, _Variable}], _A, _B})->
     %io:format("        Let statement: ~s~n", [Variable]),
     %parseFunctionBody(A),
     %parseFunctionBody(B);
     io:format("",[]);
     
 % Is apply a local function call? Assignment from function? Assignment with pattern matching?
-parseFunctionBody(return,{c_apply, _, {_,_,{_FName,_Arity}}, _Params})->
+parseFunctionBody(return,Params,{c_apply, _, {_,_,{_FName,_Arity}}, _Params})->
     %io:format("Call local function ~s(",[FName]),
     %io:format("~p)~n", [tupleList_getVars_3(Params)]);
     io:format("",[]);
 
-parseFunctionBody(return,{c_apply, _, _A, _B})->
+parseFunctionBody(return,Params,{c_apply, _, _A, _B})->
     %io:format("        Apply statement: ~n");
     io:format("",[]);
     
-parseFunctionBody(return,{c_literal,_,Value})->
-    esast:returnStatement(parseFunctionBody(noreturn,{c_literal,[],Value}));
-parseFunctionBody(noreturn,{c_literal,_,Value}) when is_number(Value)->
+parseFunctionBody(return,Params,{c_literal,_,Value})->
+    esast:returnStatement(parseFunctionBody(noreturn,Params,{c_literal,[],Value}));
+parseFunctionBody(noreturn,Params,{c_literal,_,Value}) when is_number(Value)->
     esast:newExpression(esast:identifier(<<"ErlNumber">>),[esast:literal(Value)]);
-parseFunctionBody(noreturn,{c_literal,_,Value}) when is_atom(Value)->
+parseFunctionBody(noreturn,Params,{c_literal,_,Value}) when is_atom(Value)->
     esast:newExpression(esast:identifier(<<"Atom">>),[esast:literal(atom_to_binary(Value, utf8))]);
-parseFunctionBody(noreturn,{c_literal,_,Value}) when is_list(Value)->
+parseFunctionBody(noreturn,Params,{c_literal,_,Value}) when is_list(Value)->
     esast:newExpression(esast:identifier(<<"List">>),[esast:literal(Value)]);
 
-parseFunctionBody(return,{c_tuple,_,_Values})->
+parseFunctionBody(return,Params,{c_tuple,_,_Values})->
     %io:format("        Tuple ~p~n", [tupleList_getVars_3(Values)]);
     io:format("",[]);
     
-parseFunctionBody(return,{c_primop,_,{_,_,Type},_Details})->
+parseFunctionBody(return,Params,{c_primop,_,{_,_,Type},_Details})->
     % io:format("        Error? ~p~n~p~n", [Type,Details]),
-    esast:error(atom_to_list(Type),"TODO Errors dont parse nicely\n",esast:literal(<<"Message">>));
+    esast:error(atom_to_list(Type),"TODO Errors dont parse nicely\\n",esast:literal(<<"Message">>));
     % io:format("",[]);
 
 
-parseFunctionBody(ReturnAtom,{c_case, _, {c_var,_,Var}, Clauses})->
-    parseFunctionBody(ReturnAtom,{c_case, a, {c_values,a,[{c_var,a,Var}]}, Clauses});
+parseFunctionBody(ReturnAtom,Params,{c_case, _, {c_var,_,Var}, Clauses})->
+    parseFunctionBody(ReturnAtom,Params,{c_case, a, {c_values,a,[{c_var,a,Var}]}, Clauses});
 
-parseFunctionBody(ReturnAtom,{c_case, _, {c_values,_,Vars}, Clauses})->
-    parseCaseClauses(ReturnAtom, Vars, Clauses);
+parseFunctionBody(ReturnAtom,Params,{c_case, _, {c_values,_,Vars}, Clauses})->
+    parseCaseClauses(ReturnAtom,Params, Vars, Clauses);
 
 
-parseFunctionBody(_,T)->
+parseFunctionBody(_,Params,T)->
     io:format("Unrecognised Token in function body: ~p", [T]).
 
 
 
-parseCaseClauses(ReturnAtom, Vars, [])->
+parseCaseClauses(ReturnAtom,Params, Vars, [])->
     null;
-parseCaseClauses(ReturnAtom, Vars, [{c_clause,_,Match,Evaluate,Consequent}|Clauses])->
+parseCaseClauses(ReturnAtom,Params, Vars, [{c_clause,_,Match,Evaluate,Consequent}|Clauses])->
     esast:ifStatement(
-        assembleCaseCondition(Vars,Match,Evaluate),%test
+        assembleCaseCondition(Params,Vars,Match,Evaluate),%test
         esast:blockStatement(%consequent
             encapsulateExpressions(
                 listCheck(
-                    parseFunctionBody(ReturnAtom,Consequent)
+                    parseFunctionBody(ReturnAtom,Params,Consequent)
                 )
             )
         ),
-        parseCaseClauses(ReturnAtom, Vars, Clauses)%alternate
+        parseCaseClauses(ReturnAtom,Params, Vars, Clauses)%alternate
     ).
 
-assembleCaseCondition(_,[],Evaluate)->
-    parseFunctionBody(noreturn,Evaluate);
-assembleCaseCondition(Vars,Match,{c_literal,_,true})->
-    assembleCaseCondition(Vars,Match);
-assembleCaseCondition(Vars,Match,Evaluate)->
-    esast:logicalExpression(<<"&&">>,assembleCaseCondition(Vars,Match),parseFunctionBody(noreturn,Evaluate)).
+assembleCaseCondition(Params,_,[],Evaluate)->
+    parseFunctionBody(noreturn,Params,Evaluate);
+assembleCaseCondition(Params,Vars,Match,{c_literal,_,true})->
+    assembleCaseCondition(Params,Vars,Match);
+assembleCaseCondition(Params,Vars,Match,Evaluate)->
+    esast:logicalExpression(<<"&&">>,assembleCaseCondition(Params,Vars,Match),parseFunctionBody(noreturn,Params,Evaluate)).
 
-assembleCaseCondition([V],[M])->
-        parseFunctionBody(noreturn,{c_call, a, {a, a, erlang}, {a, a, 'match'}, [M,V]});
-assembleCaseCondition([V|Vars],[M|Match])->
+assembleCaseCondition(Params,[V],[M])->
+        parseFunctionBody(noreturn,Params,{c_call, a, {a, a, erlang}, {a, a, 'match'}, [M,V]});
+assembleCaseCondition(Params,[V|Vars],[M|Match])->
     esast:logicalExpression(<<"&&">>,
-        assembleCaseCondition([V],[M]),
-        assembleCaseCondition(Vars,Match)
+        assembleCaseCondition(Params,[V],[M]),
+        assembleCaseCondition(Params,Vars,Match)
     ).
 
 
@@ -324,8 +324,8 @@ assembleSequence(L,R)->
     [L,R].
 
 
-tupleListToIdentifierList(List)->
-    lists:map(fun({c_var,[],A})->parseFunctionBody(noreturn,{c_var,[],A}) end,List).
+tupleListToIdentifierList(List,Params)->
+    lists:map(fun({c_var,[],A})->parseFunctionBody(noreturn,Params,{c_var,[],A}) end,List).
 
 
 
