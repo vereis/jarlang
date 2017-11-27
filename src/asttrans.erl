@@ -308,7 +308,7 @@ parseCaseClauses(ReturnAtom,Params, Vars, [{c_clause,_,Match,Evaluate,Consequent
                             _  -> true
                         end
                     end,
-                    assignMatchedVars(Vars,Match)
+                    assignMatchedVars(Params,Vars,Match)
                 ),
                 encapsulateExpressions(
                     listCheck(
@@ -342,16 +342,16 @@ assignMatchedVars(Params,[V|Vars],[M|Match])->
         assignMatchedVars(Params,[V],[M]),
         assignMatchedVars(Params,Vars,Match)
     );
-assignMatchedVars(Params,V,{c_literal,_,_})->
-    ok;
 assignMatchedVars(Params,{c_var,_,Variable},{c_var,_,Match})->
     esast:expressionStatement(
         esast:assignmentExpression(
+            <<"=">>,
             esast:identifier(atom_to_binary(Match,utf8)),
-            esast:identifier(atom_to_binary(Variable,utf8)),
-            <<"=">>
+            esast:identifier(atom_to_binary(Variable,utf8))
         )
-    ).
+    );
+assignMatchedVars(Params,_,_)->
+    [ok].
 
 
 assembleSequence(L,R) when is_list(L) and is_list(R)->
