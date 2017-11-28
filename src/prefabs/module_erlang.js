@@ -307,7 +307,7 @@ const erlang = function () {
 
     //returns true or false, contrary to erlang matching behavior
     function match(_cor1, _cor0) {
-        if (_cor1 = i == undefined) {
+        if (_cor1 == undefined) {
             return true;
         }
         else if (_cor1 instanceof ErlNumber) {

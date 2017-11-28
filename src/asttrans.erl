@@ -343,13 +343,13 @@ assignMatchedVars(Params,[V|Vars],[M|Match])->
         assignMatchedVars(Params,Vars,Match)
     );
 assignMatchedVars(Params,{c_var,_,Variable},{c_var,_,Match})->
-    esast:expressionStatement(
+    [esast:expressionStatement(
         esast:assignmentExpression(
             <<"=">>,
             esast:identifier(atom_to_binary(Match,utf8)),
             esast:identifier(atom_to_binary(Variable,utf8))
         )
-    );
+    )];
 assignMatchedVars(Params,_,_)->
     [ok].
 
