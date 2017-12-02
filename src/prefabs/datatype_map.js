@@ -1,30 +1,92 @@
 // Constructor
-function Map() {
-    this.value = undefined;
+function ErlMap(map) {
+    this.value = typeof map == "object" ? map : {};
 }
 
 // Static Methods
-Map.isMap = (map) => map instanceof Map;
+ErlMap.isErlMap = (map) => map instanceof ErlMap;
 
 // Prototype Methods
-Map.prototype.value = function() {
-    throw "Map is not implemented yet";
-}
+ErlMap.prototype.getValue = function() {
+    return this.value;
+};
 
-Map.prototype.toString = function() {
-    throw "Map is not implemented yet";
-}
+ErlMap.prototype.get = function(key) {
+    if (typeof key != "string") {
+        key = JSON.stringify(key);
+    }
 
-Map.prototype.isUnbound = function() {
+    return this.value[key];
+};
+
+ErlMap.prototype.put = function(key, value) {
+    if (typeof key != "string") {
+        key = JSON.stringify(key);
+    }
+
+    this.value[key] = value;
+};
+
+ErlMap.prototype.update = function(key, value) {
+    if (typeof key != "string") {
+        key = JSON.stringify(key);
+    }
+
+    if (this.value[key]) {
+        this.value[key] = value;
+    }
+};
+
+ErlMap.prototype.remove = function(key) {
+    if (typeof key != "string") {
+        key = JSON.stringify(key);
+    }
+
+    delete this.value[key];
+};
+
+ErlMap.prototype.size = function() {
+    var size = 0, k;
+
+    for (k in this.value) {
+        if (this.value.hasOwnProperty(k)) {
+            size++;
+        }
+    }
+
+    return size;
+};
+
+ErlMap.prototype.toString = function() {
+    var pairs = [], k;
+
+    for (k in this.value) {
+        if (this.value.hasOwnProperty(k)) {
+            pairs.push(k + "=>" + JSON.stringify(this.value[k]));
+        }
+    }
+
+    return "#{" + pairs.join(",") + "}";
+};
+
+ErlMap.prototype.typeOf = function() {
+    return "ErlMap";
+};
+
+ErlMap.prototype.isUnbound = function() {
     return false;
-}
+};
 
-Map.prototype.match = function(X) {
+ErlMap.prototype.match = function(X) {
     // Since 'false' is a legitimate atom in Erlang, we return undefined instead of false for a failure case
-    if (Map.isMap(X) && this.value === X.value) {
+    if (ErlMap.isErlMap(X) && this.value === X.value) {
         return X;
     }
     else {
         return undefined;
     }
+};
+
+if (typeof exports != "undefined") {
+    exports.ErlMap = ErlMap;
 }
