@@ -110,6 +110,10 @@ test:
 	@ echo "    Done\n"
 clean:
 	@ echo "$(ORANGE)==> Cleaning builds"
+	@ find . -name "*.beam" -delete
+	@ echo "==> Removing all BEAM files from workspace"
+	@ find . -name "*.dump" -delete
+	@ echo "==> Removing all DUMP files from workspace"
 	@ rm -rf $(OUTDIR)
 	@ echo "==> Removing $(OUTDIR)/"
 	@ rm -rf $(DEBUGDIR)
