@@ -1,54 +1,55 @@
-% Author: Chris Bailey & Andrew Johnson
-% Has the ability to compile Erlang into CoreErlang and also compile
-% from Erlang straight to a CoreErlang AST.
-
+%% Module Description:
+%% Compiles Erlang Source code to Core Erlang
 -module(coregen).
--export([er2best/1,
-		 er2ce/1,
-         er2ce/2,
-         er2ast/1,
-         er2ast/2]).
+-author(["Chris Bailey", "Andrew Johnson"]).
+-vsn(1.0).
 
-er2best(Module) ->
-	{ok,AST}=er2ast(Module, return_AST),
-	asttrans:erast2esast(AST).
+-export([to_core_erlang/1,
+         to_core_erlang/2,
+         to_core_erlang_ast/1,
+         to_core_erlang_ast/2]).
 
-% Compiles a given Erlang source file to a CoreErlang file
-er2ce(Module) ->
-    code:add_path("lib/"),
-    er2ce(Module, filepath:path(Module)).
+%% Compiles a given Erlang source file to a CoreErlang file, and writes the resultant
+%% CoreErlang output to a file in the same directory as the given module
+to_core_erlang(Module) ->
+    to_core_erlang(Module, filepath:path(Module)).
 
-er2ce(Module,return_CE)->
-	compile:file(Module, [to_core,binary]);
+%% Compiles a given Erlang source file to a CoreErlang file, and returns the raw result
+%% to the caller of this function.
+to_core_erlang(Module, return) ->
+    compile:file(Module, [to_core, binary]);
 
-er2ce(Module, OutputDirectory) ->
+%% Compiles a given Erlang source file to a CoreErlang file, and writes the resultant
+%% CoreErlang output to the given OutputDirectory
+to_core_erlang(Module, OutputDirectory) ->
     case re:run(OutputDirectory, ".*/$") of
         nomatch ->
             {error, output_directory_not_valid};
         _ ->
-            code:add_path("lib/"),
             compile:file(Module, to_core),
 
             % Compiling always generates output in working directory so lets
             % move it into the directory where source code exists
             FileName = filepath:name(Module),
-            filepath:move(FileName ++ ".core", OutputDirectory ++ FileName ++ ".core"),
+            OldLocation = FileName ++ ".core",
+            NewLocation = OutputDirectory ++ OldLocation,
+
+            filepath:move(OldLocation, NewLocation),
             {ok, core_compiled}
     end.
 
-% Compiles a given Erlang source file to a CoreErlang AST file
-er2ast(Module) ->
-    code:add_path("lib/"),
-    er2ast(Module, filepath:path(Module)).
+%% Compiles a given Erlang source file to a CoreErlang AST file, and writes the resultant
+%% CoreErlang AST output to a file in the same directory as the given module
+to_core_erlang_ast(Module) ->
+    to_core_erlang_ast(Module, filepath:path(Module)).
 
-er2ast(Module, return_AST) ->
-    code:add_path("lib/"),
-    er2ce(Module, "./"),
+%% Compiles a given Erlang source file to a CoreErlang AST file, and returns the raw result
+%% to the caller of this function.
+to_core_erlang_ast(Module, return) ->
+    ModuleName = filepath:name(Module),        
+    to_core_erlang(Module, "./"), % Write Core Erlang source for given module so we can 
+                                  % read it to scan and parse
 
-    % Parse core erlang and generate AST, credits to
-    % http://www.robertjakob.de/posts/ceast.html :)
-    % for general method to generate AST
-    ModuleName = filepath:name(Module),
     case file:read_file(ModuleName ++ ".core") of
         {ok, Bin} ->
             case core_scan:string(binary_to_list(Bin)) of
@@ -61,23 +62,22 @@ er2ast(Module, return_AST) ->
             {error, {read, E}}
     end;
 
-
-
-er2ast(Module, OutputDirectory) ->
-    code:add_path("lib/"),
+%% Compiles a given Erlang source file to a CoreErlang AST file, and writes the resultant
+%% CoreErlang AST output to a file in the given output directory
+to_core_erlang_ast(Module, OutputDirectory) ->
     ModuleName = filepath:name(Module),
-	case er2ast(Module, return_AST) of
+	case to_core_erlang_ast(Module, return) of
 		{ok, AST} ->
-			% Move file to wherever user specified. This has an aftereffect of ensuring dir exists
-			% so we can write the AST straight to directory
-			filepath:move(ModuleName ++ ".core", OutputDirectory ++ ModuleName ++ ".core"),
-			file:write_file(OutputDirectory ++ ModuleName ++ ".ast", tuple_to_string(AST)),
+            % Move compiled core erlang file to output directory
+            OldLocation = ModuleName ++ ".core",
+            NewLocation = OutputDirectory ++ OldLocation,
+            filepath:move(OldLocation, NewLocation),
+            
+            % Write AST
+            file:write_file(OutputDirectory ++ ModuleName ++ ".ast", 
+                            lists:flatten(io_lib:format("~p", [AST]))),
+
 			{ok, ast_compiled};
 		{error, E} ->
 			{error, E}
 	end.
-
-
-% Surprisingly, no tuple_to_string functions exist as a BIF
-tuple_to_string(T) ->
-    lists:flatten(io_lib:format("~p", [T])).
