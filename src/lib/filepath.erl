@@ -1,6 +1,6 @@
-%% Library to extract components from filepaths and useful
-%% shortcuts into the file module to allow manipulation of files 
-%% and filepaths
+%%% Library to extract components from filepaths and useful
+%%% shortcuts into the file module to allow manipulation of files 
+%%% and filepaths
 -module(filepath).
 -author(["Chris Bailey"]).
 -vsn(1.0).

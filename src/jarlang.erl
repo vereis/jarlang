@@ -1,4 +1,4 @@
-%% Main entrypoint into compiler
+%%% Main entrypoint into compiler
 -module(jarlang).
 -author(["Chris Bailey", "Andrew Johnson"]).
 -vsn(1.0).

@@ -1,3 +1,16 @@
+%% Erlang implementation of the MDN documentation for the
+%% JavaScript AST which you can find here: https://developer.mozilla.org/en-US/docs/Mozilla/Projects/SpiderMonkey/Parser_API
+%%
+%% Note, JS AST functions are named the same as the equivalent builder function in
+%% Mozilla's Spidermonkey JavaScript parser and thus are written in camelcase rather than
+%% the more idiomatic allman case. Non-node generating functions are cased normally as
+%% per erlang idioms.
+%%
+%% eunit tests are name the same as the function they're testing, plus _test as eunit
+%% dictates. Thus you get a weird combination of allman case and camelcase for nodes
+%% such as binaryExpression_test(...)
+-author(["Chris Bailey"]).
+
 % Macros for use in guards in certain places
 -define(IS_LITERAL(X),
     is_list(X) ; is_binary(X) ; X =:= null ; X =:= undefined ; is_integer(X) ; is_float(X) ; is_boolean(X)).

@@ -3,7 +3,7 @@ SHELL = /bin/sh
 # Compilation Variables
 ERLC = $(shell which erlc)
 ERLFLAGS = -Wall -v -o
-DEBUGFLAGS = +debug_info -W0 -o
+DEBUGFLAGS = -Ddebug +debug_info -W0 -o
 JSMINIFY = cp
 JSMINIFYFLAGS = -f
 

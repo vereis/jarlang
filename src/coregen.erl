@@ -1,5 +1,5 @@
-%% Module Description:
-%% Compiles Erlang Source code to Core Erlang
+%%% Module Description:
+%%% Compiles Erlang Source code to Core Erlang
 -module(coregen).
 -author(["Chris Bailey", "Andrew Johnson"]).
 -vsn(1.0).

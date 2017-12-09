@@ -1,3 +1,9 @@
+%% Run-time type checking library which is disabled unless the attribute -debug(true) exists within
+%% the compiled module where this is used.
+%% Also provides a useful typeof(X) function, alongside a useful is_bif(X) function
+-author(["Chris Bailey"]).
+
+-ifdef(debug).
 % Returns a tuple that looks like {CurrentFunctionName, Arity}
 -define(CURRENT_FUNCTION,
     {
@@ -66,6 +72,9 @@
         _ ->
             ok
     end).
+-else.
+-define(spec(X), true).
+-endif.
 
 badArgs(Function, Expected, Got, As) ->
     error({badargs, Function, {expected, Expected}, {got, Got}, {as, As}}).

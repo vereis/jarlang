@@ -1,4 +1,4 @@
-%% Provides a means of extracting token data from a given file.
+%%% Provides a means of extracting token data from a given file.
 -module(tokdata).
 -author(["Nick Laine", "Chris Bailey"]).
 -vsn(1.0).
