@@ -1,5 +1,6 @@
 # jarlang
-Jarlang is an Erlang to JavaScript transpiler, which itself is mostly written in Erlang. Our main goal is to be able to support as much of Erlang as possible and not just focus on being able to transpile a subset of it. A long term goal of the project is to be able to transpile the transpiler itself, and be able to write Erlang in the browser.
+Jarlang is an Erlang to JavaScript transpiler, which is mostly written in Erlang, with a little bit of JavaScript on the side. 
+Our main goal is to be able to support transpilation of as much of Erlang as possible. A long term goal of the project is to be able to transpile the transpiler itself, and be able to write Erlang in the browser; however the only thing which we expect to hold this stretch goal back is our use of erlc to compile native Erlang to an intermediate representation.
 
 Jarlang works similarly to other similar projects such as [LuvvieScript](https://github.com/hypernumbers/LuvvieScript) and [ElixirScript](https://github.com/elixirscript/elixirscript) by performing a sideways translation from some AST representing Erlang code to the documented [JSTree AST](https://developer.mozilla.org/en-US/docs/Mozilla/Projects/SpiderMonkey/Parser_API). We then offload the work of actually generating JavaScript to projects such as [escodegen](https://github.com/estools/escodegen).
 
@@ -7,7 +8,7 @@ Jarlang works similarly to other similar projects such as [LuvvieScript](https:/
 Jarlang is still in development and can't at this time can only transpile trivial pieces of Erlang to JavaScript. The following instructions will help you get an environment set up for development and testing purposes only. This tool is not at all ready for any real world usage.
 
 ### Requirements
-- Erlang 18 (Other versions may work, but any development and testing so far has only been done using 18)
+- Erlang 18 (Other versions may work, but any development and testing so far has only been done using version 18)
 - NodeJS v8.8.0 (Other versions may work, but any developmetn and testing so far has only been done using v8.8.0)
 
 ### Installing
@@ -22,17 +23,12 @@ Run the command ```make test``` which will compile the project into the ```etest
 - Eunit tests in all modules if specified
 - XRef analyses of module code
 - Dialyzer performing static analysis of Jarlang
+- Elvis to lint our code to confirm to a given style
 
 Eventually, we will need to add some rudimentary testing on the JavaScript side, as well as testing to ensure the results of running Erlang code and transpiled JavaScript code are functionally the same.
 
 ## Contribution Guidelines
 Please ensure automatic testing passes, when implemented, before pushing commits. Otherwise, try to ensure you can successfully run ```make``` to build ```Jarlang``` successfully before pushing commits. Please DON'T BREAK THE BUILD.
-
-Eventually, we'll be integrating [Elvis](https://github.com/inaka/elvis) to detect and enforce code style.
-
-
-## Versioning
-We use [SemVer](http://semver.org/) for versioning.
 
 ## Acknowledgements
 - The escodegen guys for making generating JavaScript code so painless.
