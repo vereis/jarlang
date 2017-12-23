@@ -9,7 +9,7 @@ Jarlang is still in development and can't at this time can only transpile trivia
 
 ### Requirements
 - Erlang 18 (Other versions may work, but any development and testing so far has only been done using version 18)
-- NodeJS v8.8.0 (Other versions may work, but any developmetn and testing so far has only been done using v8.8.0)
+- NodeJS v8.8.0 (Other versions may work, but any development and testing so far has only been done using v8.8.0)
 
 ### Installing
 1) Clone the repo with ```git clone https://github.com/vereis/jarlang``` on the commandline which should create a ```jarlang``` folder containing all our source code
