@@ -2,7 +2,7 @@ SHELL = /bin/sh
 
 # Compilation Variables
 ERLC = $(shell which erlc)
-ERLFLAGS = -Wall -v -o
+ERLFLAGS = -Werror -v -o
 DEBUGFLAGS = -Ddebug +debug_info -W0 -o
 JSMINIFY = cp
 JSMINIFYFLAGS = -f
@@ -14,6 +14,11 @@ MISCDIR = misc
 OUTDIR = ebin
 DEBUGDIR = edebug
 TESTDIR = etesting
+UTILDIR = util
+
+# Utility Variables
+DIALYZER = $(shell which dialyzer)
+ELVIS = $(UTILDIR)/elvis rock --config $(UTILDIR)/elvis.config
 
 # Colors
 RED = \033[0;31m
@@ -76,9 +81,9 @@ debug:
 	@ echo "    Done\n"
 test:
 	@ echo "$(PURPLE)==> Building TEST$(NORMAL)"
-	@ echo "    Compiling giles with debug_info enabled"
+	@ echo "    Compiling files with debug_info enabled"
 	@ echo "    Compiling files with warnings ignored"
-	@ echo "    Compiling giles will fail if any errors occur"
+	@ echo "    Compiling files will fail if any errors occur"
 	@ mkdir -p $(TESTDIR)
 	@ rm -f $(TESTDIR)/*.beam
 	@ rm -f $(TESTDIR)/*.sh
@@ -104,10 +109,19 @@ test:
 	@ echo "$(PURPLE)==> Running EUnit tests and XREF analyses$(NORMAL)"
 	@ ./$(TESTDIR)/run_tests.sh
 	@ echo "$(PURPLE)==> Running Dialyzer$(NORMAL)"
-	@ dialyzer $(TESTDIR)/*.beam || true
+	@ $(DIALYZER) $(TESTDIR)/*.beam || true
+	@ echo "$(PURPLE)==> Running Elvis$(NORMAL)"
+	@ $(ELVIS) || true
 	@ echo "$(PURPLE)==> Finished Testing, results are printed to console$(NORMAL)"
 	@ echo "    You can re-run tests for this build with './$(TESTDIR)/run_tests.sh'"
+	@ echo "    You can re-run Elvis for linting with '$(ELVIS)'"
+	@ echo "    You can re-run Dialyzer with '$(DIALYZER) $(TESTDIR)/*.beam'"
 	@ echo "    Done\n"
+.PHONY: lint
+lint:
+	@ echo "==> Linting Project with Elvis"
+	@ $(ELVIS) || true
+.PHONY: clean
 clean:
 	@ echo "$(ORANGE)==> Cleaning builds"
 	@ find . -name "*.beam" -delete

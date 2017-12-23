@@ -37,7 +37,6 @@ main() ->
                 coregen,
                 esast,
                 jarlang,
-                json,
                 filepath,
                 tokdata
             ],
