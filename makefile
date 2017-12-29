@@ -3,6 +3,7 @@ SHELL = /bin/sh
 # Compilation Variables
 ERLC = $(shell which erlc)
 ERLFLAGS = -Werror -v -o
+ERLFLAGS_NONSTRICT = -Wall -v -o
 DEBUGFLAGS = -Ddebug +debug_info -W0 -o
 JSMINIFY = cp
 JSMINIFYFLAGS = -f
@@ -29,7 +30,11 @@ PURPLE = \033[0;35m
 CYAN = \033[0;36m
 NORMAL = \033[0m
 
-release:
+define check_exec
+	@ test -x $(1) || chmod +x $(1)
+endef
+
+define build
 	@ echo "$(GREEN)==> Building RELEASE$(NORMAL)"
 	@ echo "    Compiling files with debug_info enabled"
 	@ echo "    Compiling files with warnings being considered errors"
@@ -39,10 +44,10 @@ release:
 	@ rm -f $(OUTDIR)/*.sh
 	@ rm -f $(OUTDIR)/*.js
 	@ echo "$(GREEN)==> Compiling Library Files$(RED)"
-	@ $(ERLC) $(ERLFLAGS) $(OUTDIR) $(LIBDIR)/*.erl
+	@ $(ERLC) $(1) $(OUTDIR) $(LIBDIR)/*.erl
 	@ echo "$(NORMAL)    Done"
 	@ echo "$(GREEN)==> Compiling Source Files$(RED)"
-	@ $(ERLC) $(ERLFLAGS) $(OUTDIR) $(SRCDIR)/*.erl
+	@ $(ERLC) $(1) $(OUTDIR) $(SRCDIR)/*.erl
 	@ echo "$(NORMAL)    Done"
 	@ echo "$(GREEN)==> Bootstrapping NodeJS Environment onto build$(RED)"
 	@ $(JSMINIFY) $(JSMINIFYFLAGS) $(SRCDIR)/*.js $(OUTDIR) 2> /dev/null || true
@@ -54,6 +59,12 @@ release:
 	@ echo "$(GREEN)==> RELEASE release successfully built in './$(OUTDIR)/'$(NORMAL)"
 	@ echo "    You can run jarlang with './$(OUTDIR)/jarlang.sh FILE1 FILE2 FILE3...'"
 	@ echo "    Done\n"
+endef
+
+release:
+	$(call build,$(ERLFLAGS))
+nonstrict:
+	$(call build,$(ERLFLAGS_NONSTRICT))
 debug:
 	@ echo "$(BLUE)==> Building DEBUG$(NORMAL)"
 	@ echo "    Compiling files with debug_info enabled"
@@ -107,6 +118,7 @@ test:
 	@ cp -f $(MISCDIR)/* $(TESTDIR) 2> /dev/null || true
 	@ echo "-mode eunit" >> $(TESTDIR)/jarlang.sh && mv $(TESTDIR)/jarlang.sh $(TESTDIR)/run_tests.sh
 	@ echo "$(PURPLE)==> Running EUnit tests and XREF analyses$(NORMAL)"
+	$(call check_exec,$(TESTDIR)/run_tests.sh)
 	@ ./$(TESTDIR)/run_tests.sh
 	@ echo "$(PURPLE)==> Running Dialyzer$(NORMAL)"
 	@ $(DIALYZER) $(TESTDIR)/*.beam || true
@@ -120,6 +132,7 @@ test:
 .PHONY: lint
 lint:
 	@ echo "==> Linting Project with Elvis"
+	$(call check_exec,$(UTILDIR)/elvis)
 	@ $(ELVIS) || true
 .PHONY: clean
 clean:
