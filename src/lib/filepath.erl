@@ -1,5 +1,5 @@
 %%% Library to extract components from filepaths and useful
-%%% shortcuts into the file module to allow manipulation of files 
+%%% shortcuts into the file module to allow manipulation of files
 %%% and filepaths
 -module(filepath).
 -author(["Chris Bailey"]).
@@ -47,9 +47,9 @@ move(Origin, Target) ->
     assertDir(path(Target)),
     file:rename(Origin, Target).
 
-%% Delete a file 
+%% Delete a file
 delete(Target) ->
-    file:delete(Target).    
+    file:delete(Target).
 
 %% Write data to a file, if a directory is given which doesnt exist, create it
 write(Data, Target) ->
@@ -79,11 +79,11 @@ parse([], [F | P]) ->
             Path = Result ++ "/"
     end,
 
-    [Name | Extensions] = binlist_to_strlist(re:split(F, "\\.")),  
+    [Name | Extensions] = binlist_to_strlist(re:split(F, "\\.")),
 
     {
-        {filename, Name}, 
-        {filepath, Path}, 
+        {filename, Name},
+        {filepath, Path},
         {extension, string:join(Extensions, ".")}
     };
 parse([Head | Tails], PathList) ->

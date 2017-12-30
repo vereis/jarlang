@@ -3,7 +3,7 @@
 -author(["Chris Bailey"]).
 -vsn(1.0).
 
--compile(export_all). 
+-compile(export_all).
 -compile({no_auto_import, [node/0]}).
 
 -include_lib("eunit/include/eunit.hrl").
@@ -14,7 +14,7 @@
 c_module(ModuleName, ExportList, FunctionList) ->
     % Export list looks like [{"Funcname", Arity}...]
     % Function list looks like [{"Funcname/Arity", esast:functionDeclaration or esast:functionExpression}]
-    ?spec([{ModuleName, list}, {ExportList, list_of_tuple}, {FunctionList, list_of_tuple}]),   
+    ?spec([{ModuleName, list}, {ExportList, list_of_tuple}, {FunctionList, list_of_tuple}]),
     program([
         constDeclaration(
             list_to_binary(ModuleName),
@@ -46,14 +46,14 @@ c_module(ModuleName, ExportList, FunctionList) ->
 c_exports(ExportList) ->
     MappedByFuncName = c_exports_mapfuncs(ExportList, #{}),
     constDeclaration(
-        <<"exports">>, 
+        <<"exports">>,
         objectExpression(
             lists:map(fun({FuncName, Arities}) ->
                 property(
-                    literal(list_to_binary(FuncName)), 
+                    literal(list_to_binary(FuncName)),
                     functionExpression(null, [], blockStatement(c_exports_gencases({FuncName, Arities})), false)
-                )       
-            end, maps:to_list(MappedByFuncName))                                 
+                )
+            end, maps:to_list(MappedByFuncName))
         )
     ).
 
@@ -82,19 +82,19 @@ c_exports_gencases({FuncName, Arities}) when is_list(FuncName) ->
                     [returnStatement(
                         callExpression(
                             memberExpression(
-                                identifier(<<"functions">>), 
-                                literal(iolist_to_binary([FuncName, "/", integer_to_binary(Arity)])), 
+                                identifier(<<"functions">>),
+                                literal(iolist_to_binary([FuncName, "/", integer_to_binary(Arity)])),
                                 true
                             ),
                             [esast:spreadElement(identifier(<<"arguments">>))]
-                        )   
-                    ), breakStatement(null)]     
-                )       
+                        )
+                    ), breakStatement(null)]
+                )
             end, Arities),
             false
-        ),        
-        error("exception error", "undefined function", 
-            binaryExpression(<<"+">>, 
+        ),
+        error("exception error", "undefined function",
+            binaryExpression(<<"+">>,
                 literal(list_to_binary(FuncName)),
                 binaryExpression(<<"+">>,
                     literal(<<"/">>),
@@ -114,7 +114,7 @@ c_functions([{FuncNameWithArity, Function} | Rest]) ->
         objectExpression(
             lists:map(fun({FuncName, FuncBody}) ->
                 property(
-                    literal(list_to_binary(FuncName)), 
+                    literal(list_to_binary(FuncName)),
                     FuncBody
                 )
             end , FunctionList)
@@ -135,12 +135,13 @@ test(Ast, File, Codegen) ->
     TempFileName = filename:basename(filename:rootname(File)),
     TempFile = lists:flatten([WorkingDirectory, "/", TempFileName, ".json"]),
     filepath:write(Json, TempFile),
-    
+
     %% Pass json file into escodegen to generate JavaScript
-    try io:format("Compiling ~s.erl:~nAST Translation ok!~n~s", [TempFileName, os:cmd("node " ++ Codegen ++ " " ++ TempFile)]) of
-        _ -> 
+    try io:format("Compiling ~s.erl:~nAST Translation ok!~n~s",
+                  [TempFileName, os:cmd("node " ++ Codegen ++ " " ++ TempFile)]) of
+        _ ->
             ok
     catch
-        E -> 
+        E ->
             {err, E}
     end.

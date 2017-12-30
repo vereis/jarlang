@@ -13,7 +13,7 @@ const generate = function(input) {
         console.log(input);
         console.log("Error: ");
         console.log(e);
-        return false;    
+        return false;
     }
 
     return console.log(escodegen.generate(data));
@@ -27,7 +27,7 @@ if (!args.length) {
 args.forEach(arg => {
     let isFilepath = !!fs.existsSync(arg);
     let input = "";
-    
+
     // If given argument is a filepath, read contents of file to pass into escodegen.generate, otherwise
     // arguments will be taken as string input instead
     if (isFilepath) {
@@ -38,7 +38,7 @@ args.forEach(arg => {
                 console.log("Aborting...");
                 return false;
             }
-            
+
             console.log(`Attempting JavaScript code generation...\n`);
             generate(data);
         });

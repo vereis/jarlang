@@ -97,8 +97,8 @@ transpile(Files) ->
 %% Spawns a process which performs transpilation for any given file.
 %% Returns output to the spawning process
 spawn_transpilation_process(File, MainProcess, Codegen) ->
-    spawn_link(fun() -> 
-        MainProcess ! {self(), esast:test(pipeline(js_ast, File), File, Codegen)} 
+    spawn_link(fun() ->
+        MainProcess ! {self(), esast:test(pipeline(js_ast, File), File, Codegen)}
     end).
 
 %% Shorthand for calling pipeline/2 where the function called is pipeline going as far as
@@ -109,7 +109,7 @@ pipeline(Module) ->
 %% Calls different modules, all of which implement different parts of our compiler pipeline,
 %% and returns the result of that stage of the pipeline to the calling function.
 %% The first parameter should be an atom representing what stage of the pipeline you would like
-%% to run and produce, such as 'core' or 'core_ast' to generate core_erlang or 
+%% to run and produce, such as 'core' or 'core_ast' to generate core_erlang or
 %% a core_erlang_ast respectively.
 pipeline(core, Module) ->
     {ok, _ModuleName, BinaryData} = coregen:to_core_erlang(Module, return),

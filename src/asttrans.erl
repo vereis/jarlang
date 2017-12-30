@@ -12,19 +12,19 @@ parseModule({c_module, _A, {_, _, ModuleName}, Exports, _Attributes, Functions})
     FormattedFunctions = parseFunctions(Functions),
     FormattedExports = lists:map(fun({N,A})->{atom_to_list(N),A} end,tupleList_getVars_3(Exports)),
     esast:c_module(atom_to_list(ModuleName),FormattedExports,FormattedFunctions);
-    
+
 parseModule(T)->
     io:format("Unrecognised Token in module section: ~p", [T]).
 
 % Concurrently transpile core erlang asts for functions into javascript asts for functions
 parseFunctions(Functions)->
     Self = self(),
-    Pids = lists:map(fun(X) -> 
-        spawn_link(fun() -> Self ! {self(), parseFunction(X)} end) 
+    Pids = lists:map(fun(X) ->
+        spawn_link(fun() -> Self ! {self(), parseFunction(X)} end)
     end, Functions),
-    
+
     [
-        receive 
+        receive
             {Pid, TranspiledFunction} ->
                 TranspiledFunction
         end
@@ -246,14 +246,14 @@ parseFunctionBody(ReturnAtom,Params,{c_let, _, [{_, _, Variable}], Value, UsedBy
     assembleSequence(
         esast:variableDeclaration([esast:variableDeclarator(esast:identifier(atom_to_binary(Variable,utf8)),parseFunctionBody(noreturn,Params,Value))],<<"let">>),
         parseFunctionBody(ReturnAtom,Params,UsedBy));
-    
+
 % Is apply a local function call? Assignment from function? Assignment with pattern matching?
 parseFunctionBody(ReturnAtom,Params,{c_apply, _, {_,_,{FunctionName,Arity}}, Parameters})->
     parseFunctionBody(ReturnAtom,Params,{c_call, [], {a, a, exports}, {a, a, FunctionName}, Parameters});
 
 parseFunctionBody(ReturnAtom,Params,{c_apply, _, {_, _, FunctionName}, Parameters})->
     parseFunctionBody(ReturnAtom,Params,{c_call, [], {a, a, exports}, {a, a, FunctionName}, Parameters});
-    
+
 parseFunctionBody(return,Params,{c_literal,_,Value})->
     esast:returnStatement(parseFunctionBody(noreturn,Params,{c_literal,[],Value}));
 parseFunctionBody(noreturn,Params,{c_literal,_,Value}) when is_number(Value)->
@@ -266,7 +266,7 @@ parseFunctionBody(noreturn,Params,{c_literal,_,Value}) when is_list(Value)->
 parseFunctionBody(return,Params,{c_tuple,_,_Values})->
     %io:format("        Tuple ~p~n", [tupleList_getVars_3(Values)]);
     io:format("",[]);
-    
+
 parseFunctionBody(return,Params,{c_primop,_,{_,_,Type},_Details})->
     % io:format("        Error? ~p~n~p~n", [Type,Details]),
     esast:error(atom_to_list(Type),"TODO Errors dont parse nicely\\n",esast:literal(<<"Message">>));

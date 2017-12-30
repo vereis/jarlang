@@ -68,7 +68,7 @@ match_export_lines([_ | Toks], ExpList, ExpMap) ->
 match_export_lines(_Toks, [], ExpMap) ->
     ExpMap;
 match_export_lines([], ExpList, ExpMap) -> % Should be unreachable
-    io:format("Unfound exports: ~p~n", [ExpList]),
+    %io:format("Unfound exports: ~p~n", [ExpList]),
     ExpMap.
 
 %% Processes tokens that are believed to belong to a function definition, and builds a definition string accordingly.
@@ -84,7 +84,7 @@ process_export_string([_ | Toks], Name, 0) ->
 process_export_string([_ | Toks], Name, Arity) ->
     process_export_string(Toks, Name, Arity).
 
-%% Checks whether a definition string matches an exported function, and removes it from the list of export strings if found.
+%% Checks whether a definition string matches an exported function, and removes it from the list of export strings.
 match_export_string(notdef, Exp, []) ->
     {Exp, false};
 match_export_string(DefAtom, [DefAtom | Exp], Checked) ->
