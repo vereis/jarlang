@@ -4,14 +4,13 @@ SHELL = /bin/sh
 ERLC = $(shell which erlc)
 ERLFLAGS = -Werror -v -o
 ERLFLAGS_NONSTRICT = -Wall -v -o
-DEBUGFLAGS = -Ddebug +debug_info -W0 -o
+ERLFLAGS_DEBUG = -Ddebug +debug_info -W0 -o
 JSMINIFY = cp
 JSMINIFYFLAGS = -f
 
 # Directory Variables
 SRCDIR = src
 LIBDIR = src/lib
-MISCDIR = misc
 OUTDIR = ebin
 DEBUGDIR = edebug
 TESTDIR = etesting
@@ -20,6 +19,7 @@ UTILDIR = util
 # Utility Variables
 DIALYZER = $(shell which dialyzer)
 ELVIS = $(UTILDIR)/elvis rock --config $(UTILDIR)/elvis.config
+ERLPKG = $(UTILDIR)/erlpkg
 
 # Colors
 RED = \033[0;31m
@@ -30,105 +30,81 @@ PURPLE = \033[0;35m
 CYAN = \033[0;36m
 NORMAL = \033[0m
 
-define build
-	@ echo "$(GREEN)==> Building RELEASE$(NORMAL)"
+define compile
+	@ $(eval COMPILE_MODE = $(1))
+	@ $(eval OUTPUT_DIR = $(2))
+	@ $(eval COLOR = $(3))
 	@ echo "    Compiling files with debug_info enabled"
 	@ echo "    Compiling files with warnings being considered errors"
 	@ echo "    Compiling files will fail if any errors occur"
-	@ mkdir -p $(OUTDIR)
-	@ rm -f $(OUTDIR)/*.beam
-	@ rm -f $(OUTDIR)/*.sh
-	@ rm -f $(OUTDIR)/*.js
-	@ echo "$(GREEN)==> Compiling Library Files$(RED)"
-	@ $(ERLC) $(1) $(OUTDIR) $(LIBDIR)/*.erl
+	@ mkdir -p $(OUTPUT_DIR)
+	@ rm -f $(OUTPUT_DIR)/*
+
+	@ echo "$(COLOR)==> Compiling Library Files$(RED)"
+	@ $(ERLC) $(COMPILE_MODE) $(OUTPUT_DIR) $(LIBDIR)/*.erl
 	@ echo "$(NORMAL)    Done"
-	@ echo "$(GREEN)==> Compiling Source Files$(RED)"
-	@ $(ERLC) $(1) $(OUTDIR) $(SRCDIR)/*.erl
+
+	@ echo "$(COLOR)==> Compiling Source Files$(RED)"
+	@ $(ERLC) $(COMPILE_MODE) $(OUTPUT_DIR) $(SRCDIR)/*.erl
 	@ echo "$(NORMAL)    Done"
-	@ echo "$(GREEN)==> Bootstrapping NodeJS Environment onto build$(RED)"
-	@ $(JSMINIFY) $(JSMINIFYFLAGS) $(SRCDIR)/*.js $(OUTDIR) 2> /dev/null || true
-	@ $(JSMINIFY) $(JSMINIFYFLAGS) $(LIBDIR)/*.js $(OUTDIR) 2> /dev/null || true
+
+	@ echo "$(COLOR)==> Bootstrapping NodeJS Environment onto build$(RED)"
+	@ $(JSMINIFY) $(JSMINIFYFLAGS) $(SRCDIR)/*.js $(OUTPUT_DIR) 2> /dev/null || true
+	@ $(JSMINIFY) $(JSMINIFYFLAGS) $(LIBDIR)/*.js $(OUTPUT_DIR) 2> /dev/null || true
 	@ echo "$(NORMAL)    Done"
-	@ echo "$(GREEN)==> Creating launch script in './$(OUTDIR)/'$(NORMAL)"
-	@ cp -f $(MISCDIR)/* $(OUTDIR) 2> /dev/null || true
-	@ echo "$(NORMAL)    Done"
-	@ echo "$(GREEN)==> RELEASE release successfully built in './$(OUTDIR)/'$(NORMAL)"
-	@ echo "    You can run jarlang with './$(OUTDIR)/jarlang.sh FILE1 FILE2 FILE3...'"
+
+	@ echo "$(COLOR)==> Compiling complete in: './$(OUTPUT_DIR)/'$(NORMAL)"
+	@ echo "    Done\n"
+endef
+
+define package
+	@ $(eval OUTPUT_DIR = $(1))
+	@ $(eval COLOR = $(2))
+	@ echo "$(COLOR)==> Creating erlpkg package in './$(OUTPUT_DIR)/'$(NORMAL)"
+	@ $(ERLPKG) $(OUTPUT_DIR)/*.beam $(OUTPUT_DIR)/*.js node_modules/ -e jarlang -o $(OUTPUT_DIR)/jarlang
+
+	@ echo "$(COLOR)==> Packaging complete in: './$(OUTPUT_DIR)/'$(NORMAL)"
+	@ echo "    Done\n"
+endef
+
+define dialyze
+	@ $(eval TARGET_DIR = $(1))
+	@ $(eval COLOR = $(2))
+	@ echo "$(COLOR)==> Running Dialyzer$(NORMAL)"
+	@ $(DIALYZER) $(TARGET_DIR)/*.beam || true
+
+	@ echo "$(COLOR)==> Dialyzing complete in: './$(TARGET_DIR)/'$(NORMAL)"
 	@ echo "    Done\n"
 endef
 
 release:
-	$(call build,$(ERLFLAGS))
+	@ echo "$(GREEN)==> Building RELEASE$(NORMAL)"
+	$(call compile, $(ERLFLAGS), $(OUTDIR), $(GREEN))
+	$(call package, $(OUTDIR), $(GREEN))
+
 nonstrict:
-	$(call build,$(ERLFLAGS_NONSTRICT))
+	@ echo "$(GREEN)==> Building RELEASE NONSTRICT$(NORMAL)"
+	$(call compile, $(ERLFLAGS_NONSTRICT), $(OUTDIR), $(GREEN))
+	$(call package, $(OUTDIR), $(GREEN))
+
 debug:
 	@ echo "$(BLUE)==> Building DEBUG$(NORMAL)"
-	@ echo "    Compiling files with debug_info enabled"
-	@ echo "    Compiling files with warnings ignored"
-	@ echo "    Compiling files will fail if any errors occur"
-	@ mkdir -p $(DEBUGDIR)
-	@ rm -f $(DEBUGDIR)/*.beam
-	@ rm -f $(DEBUGDIR)/*.sh
-	@ rm -f $(DEBUGDIR)/*.js
-	@ echo "$(BLUE)==> Compiling Library Files$(RED)"
-	@ $(ERLC) $(DEBUGFLAGS) $(DEBUGDIR) $(LIBDIR)/*.erl
-	@ echo "$(NORMAL)    Done"
-	@ echo "$(BLUE)==> Compiling Source Files$(RED)"
-	@ $(ERLC) $(DEBUGFLAGS) $(DEBUGDIR) $(SRCDIR)/*.erl
-	@ echo "$(NORMAL)    Done"
-	@ echo "$(BLUE)==> Bootstrapping NodeJS Environment onto build$(RED)"
-	@ $(JSMINIFY) $(JSMINIFYFLAGS) $(SRCDIR)/*.js $(DEBUGDIR) 2> /dev/null || true
-	@ $(JSMINIFY) $(JSMINIFYFLAGS) $(LIBDIR)/*.js $(DEBUGDIR) 2> /dev/null || true
-	@ echo "$(NORMAL)    Done"
-	@ echo "$(BLUE)==> Creating launch script in './$(DEBUGDIR)/'$(NORMAL)"
-	@ cp -f $(MISCDIR)/* $(DEBUGDIR) 2> /dev/null || true
-	@ echo "$(NORMAL)    Done"
-	@ echo "$(BLUE)==> DEBUG release successfully built in './$(DEBUGDIR)/'$(NORMAL)"
-	@ echo "    You can run jarlang with './$(DEBUGDIR)/jarlang.sh FILE1 FILE2 FILE3...'"
-	@ echo "    Done\n"
-test:
-	@ echo "$(PURPLE)==> Building TEST$(NORMAL)"
-	@ echo "    Compiling files with debug_info enabled"
-	@ echo "    Compiling files with warnings ignored"
-	@ echo "    Compiling files will fail if any errors occur"
-	@ mkdir -p $(TESTDIR)
-	@ rm -f $(TESTDIR)/*.beam
-	@ rm -f $(TESTDIR)/*.sh
-	@ rm -f $(TESTDIR)/*.js
-	@ echo "$(PURPLE)==> Compiling Library Files$(RED)"
-	@ $(ERLC) $(DEBUGFLAGS) $(TESTDIR) $(LIBDIR)/*.erl
-	@ echo "$(NORMAL)    Done"
-	@ echo "$(PURPLE)==> Compiling Source Files$(RED)"
-	@ $(ERLC) $(DEBUGFLAGS) $(TESTDIR) $(SRCDIR)/*.erl
-	@ echo "$(NORMAL)    Done"
-	@ echo "$(PURPLE)==> Bootstrapping Source Files onto build$(RED)"
-	@ cp $(SRCDIR)/*.erl $(TESTDIR) 2> /dev/null || true
-	@ cp $(LIBDIR)/*.erl $(TESTDIR) 2> /dev/null || true
-	@ echo "$(NORMAL)    Done"
-	@ echo "$(PURPLE)==> Bootstrapping NodeJS Environment onto build$(RED)"
-	@ $(JSMINIFY) $(JSMINIFYFLAGS) $(SRCDIR)/*.js $(TESTDIR) 2> /dev/null || true
-	@ $(JSMINIFY) $(JSMINIFYFLAGS) $(LIBDIR)/*.js $(TESTDIR) 2> /dev/null || true
-	@ echo "$(NORMAL)    Done"
-	@ echo "$(PURPLE)==> Creating test script in './$(TESTDIR)/'$(NORMAL)"
-	@ echo "$(NORMAL)    Done"
-	@ cp -f $(MISCDIR)/* $(TESTDIR) 2> /dev/null || true
-	@ echo "-mode eunit" >> $(TESTDIR)/jarlang.sh && mv $(TESTDIR)/jarlang.sh $(TESTDIR)/run_tests.sh
-	@ echo "$(PURPLE)==> Running EUnit tests and XREF analyses$(NORMAL)"
-	@ test -x $(TESTDIR)/run_tests.sh || chmod +x $(TESTDIR)/run_tests.sh
-	@ ./$(TESTDIR)/run_tests.sh
-	@ echo "$(PURPLE)==> Running Dialyzer$(NORMAL)"
-	@ $(DIALYZER) $(TESTDIR)/*.beam || true
-	@ echo "$(PURPLE)==> Running Elvis$(NORMAL)"
-	@ $(ELVIS) || true
-	@ echo "$(PURPLE)==> Finished Testing, results are printed to console$(NORMAL)"
-	@ echo "    You can re-run tests for this build with './$(TESTDIR)/run_tests.sh'"
-	@ echo "    You can re-run Elvis for linting with '$(ELVIS)'"
-	@ echo "    You can re-run Dialyzer with '$(DIALYZER) $(TESTDIR)/*.beam'"
-	@ echo "    Done\n"
+	$(call compile, $(ERLFLAGS_DEBUG), $(DEBUGDIR), $(BLUE))
+	$(call package, $(DEBUGDIR), $(BLUE))
+
 .PHONY: lint
 lint:
-	@ echo "==> Linting Project with Elvis"
+	@ echo "$(ORANGE)==> Linting Project with Elvis$(NORMAL)"
 	@ $(ELVIS) || true
+	@ echo "    Done\n"
+
+.PHONY: dialyze
+dialyze:
+	@ echo "$(ORANGE)==> Building DIALYZE$(NORMAL)"
+	$(call compile, $(ERLFLAGS_DEBUG), $(TESTDIR), $(ORANGE))
+	$(call dialyze, $(TESTDIR), $(ORANGE))
+
+
 .PHONY: clean
 clean:
 	@ echo "$(ORANGE)==> Cleaning builds"
