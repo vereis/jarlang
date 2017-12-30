@@ -122,26 +122,25 @@ c_functions([{FuncNameWithArity, Function} | Rest]) ->
     ).
 
 %%% Misc Functions
-test(Map) ->
-    test(Map, "codegen.js").
-
-test(Map, Escodegen) ->
+test(Ast) ->
     code:add_path("lib/"),
-    Json = jsone:encode(Map),
+    test(Ast, "temp", "./codegen.js").
 
-    % codegen.js has to take a file since its non-trivial parsing JSON on the command line
-    % and different shells may react differently, so we write out to a temp file and delete it
-    % afterwards
-    Temp = "temp.estreejson",
-    filepath:write(Json, Temp),
-    io:format("~p~n", [file:get_cwd()]),
-    % We generally don't care what happens here, both cases ensure dir exists
-    try io:format("~s", [os:cmd("node " ++ Escodegen ++ " " ++ Temp)]) of
+test(Ast, File, Codegen) ->
+    Json = jsone:encode(Ast),
+
+    %% We need to write our json into a temp file so that we can easily pass it into codegen.js
+    %% We'll dump the temp file into the same directory as codegen.js
+    WorkingDirectory = filename:dirname(Codegen),
+    TempFileName = filename:basename(filename:rootname(File)),
+    TempFile = lists:flatten([WorkingDirectory, "/", TempFileName, ".json"]),
+    filepath:write(Json, TempFile),
+    
+    %% Pass json file into escodegen to generate JavaScript
+    try io:format("Compiling ~s.erl:~nAST Translation ok!~n~s", [TempFileName, os:cmd("node " ++ Codegen ++ " " ++ TempFile)]) of
         _ -> 
-            filepath:delete(Temp),
             ok
     catch
-        _ -> 
-            filepath:delete(Temp),
-            {err, "codegen.js failed for some reason"}
+        E -> 
+            {err, E}
     end.

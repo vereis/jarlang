@@ -63,6 +63,10 @@ define package
 	@ echo "$(COLOR)==> Creating erlpkg package in './$(OUTPUT_DIR)/'$(NORMAL)"
 	@ $(ERLPKG) $(OUTPUT_DIR)/*.beam $(OUTPUT_DIR)/*.js node_modules/ -e jarlang -o $(OUTPUT_DIR)/jarlang
 
+	@ echo "$(COLOR)==> Cleaning directory './$(OUTPUT_DIR)/'$(NORMAL)"
+	@ rm $(OUTPUT_DIR)/*.beam
+	@ rm $(OUTPUT_DIR)/*.js
+
 	@ echo "$(COLOR)==> Packaging complete in: './$(OUTPUT_DIR)/'$(NORMAL)"
 	@ echo "    Done\n"
 endef
@@ -103,7 +107,6 @@ dialyze:
 	@ echo "$(ORANGE)==> Building DIALYZE$(NORMAL)"
 	$(call compile, $(ERLFLAGS_DEBUG), $(TESTDIR), $(ORANGE))
 	$(call dialyze, $(TESTDIR), $(ORANGE))
-
 
 .PHONY: clean
 clean:

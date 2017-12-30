@@ -1,75 +1,105 @@
+%%% Module Description:
 %%% Main entrypoint into compiler
 -module(jarlang).
 -author(["Chris Bailey", "Andrew Johnson"]).
--vsn(1.0).
 
--export([main/0,
-         pipeline/1,
-         pipeline/2]).
+-define(VERSION, "1.1.0").
 
--include_lib("eunit/include/eunit.hrl").
+-vsn(?VERSION).
 
-%% Command line script entrypoint
-%% Looks at arguments and based on arguments either performs transpilation of Erlang
-%% source files to JavaScript, or runs tests such as eunit, xref...
-%% TODO: 
-%%      - Instead of using maps:get to talk to Args, we should write a argument parsing
-%%        library
-main() ->
-    Args = parse_args(init:get_plain_arguments()),
-    case maps:get(mode, Args) of
-        "transpile" ->
-            case length(maps:get(files, Args)) of
-                0 ->
-                    io:format("usage: jarlang.sh filename.erl filename2.erl ... filenameN.erl~n~n");
-                _ ->
-                    Self = self(),
-                    EscodegenDir = maps:get(escodegen, Args),
+%%% Export all functions if we compiled with erlc -dTEST or c(?MODULE, {d, 'TEST'}).
+%%% This is so that we can run external eunit tests
+-ifdef(TEST).
+    -compile(export_all).
+-else.
+    -export([main/1,
+            pipeline/1,
+            pipeline/2]).
+-endif.
 
-                    % Spawn transpilation processes for all files given as arguments
-                    % And create recieve blocks for all created processes
-                    Pids = [spawn_transpilation_process(File, Self, EscodegenDir) || File <- maps:get(files, Args)],
-                    [receive {Pid, Result} -> Result end || Pid <- Pids]
-            end;
-        "eunit" ->
-            ModulesToTest = [
-                asttrans,
-                coregen,
-                esast,
-                jarlang,
-                filepath,
-                tokdata
-            ],
-            [run_tests(Module) || Module <- ModulesToTest]
+%%% ---------------------------------------------------------------------------------------------%%%
+%%% - PUBLIC FUNCTIONS --------------------------------------------------------------------------%%%
+%%% ---------------------------------------------------------------------------------------------%%%
+
+%%% Define the arguments that this program can take
+-define(DEFAULT_ARGS, [
+    {["-o", "--output"], o_output, singleton, "./", "Sets the output directory for compiled code. " ++
+                                                       "If the directory doesn't exist, we will create it."},
+
+    {["-h", "--help"], o_help, is_set, false, "Displays this help message and exits."},
+
+    {["-v", "--version"], o_vsn, is_set, false, "Displays current build version."}
+]).
+
+main(Args) ->
+    % Normalize args to strings if they're atoms, and parse them.
+    NArgs = [case is_atom(Arg) of true -> atom_to_list(Arg); false -> Arg end || Arg <- Args],
+    ParsedArgs = pkgargs:parse(NArgs, ?DEFAULT_ARGS),
+
+    % Read ParsedArgs for arguments
+    ShowHelp = pkgargs:get(o_help, ParsedArgs),
+    ShowVsn  = pkgargs:get(o_vsn, ParsedArgs),
+    OutDir   = pkgargs:get(o_output, ParsedArgs),
+    Files    = perform_wildcard_matches(pkgargs:get(default,  ParsedArgs)),
+
+    try branch(ShowHelp, ShowVsn, OutDir, Files) of
+        _ -> ok
+    catch
+        throw:usage ->
+            usage(),
+            help();
+        throw:help ->
+            help();
+        throw:vsn ->
+            version()
     end,
-    halt().
 
-%% Spawns a process which performs the transpilation process for any given file.
+    % Clean up and stop
+    init:stop().
+
+
+
+
+
+%%% ---------------------------------------------------------------------------------------------%%%
+%%% - ENTRYPOINT CODE ---------------------------------------------------------------------------%%%
+%%% ---------------------------------------------------------------------------------------------%%%
+
+%% Determines which function to run depending on arguments given.
+branch(_Help = false, _Vsn = false, _Outdir, Files) when length(Files) > 0 ->
+    transpile(Files);
+branch(_Help = true, _Vsn = false, _OutDir, _Files = []) ->
+    throw(help);
+branch(_Help = false, _Vsn = true, _OutDir, _Files = []) ->
+    throw(vsn);
+branch(_Help, _Vsn, _OutDir, _Files) ->
+    throw(usage).
+
+
+
+
+
+%%% ---------------------------------------------------------------------------------------------%%%
+%%% - COMPILER PIPELINE -------------------------------------------------------------------------%%%
+%%% ---------------------------------------------------------------------------------------------%%%
+
+%% Convinience function for asynchronously transpiling erl files in js files, and synchronously
+%% returning after all processes finish.
+%% Also sets up compilation environment by extracting files to a tmp directory. Once transpilation
+%% finishes, it then cleans up said directory
+transpile(Files) ->
+    Codegen = pkgutils:pkg_extract_file("codegen.js"),
+              pkgutils:pkg_extract_dir("node_modules.zip"),
+    Pids = [spawn_transpilation_process(File, self(), Codegen) || File <- Files],
+    [receive {Pid, Result} -> Result end || Pid <- Pids],
+    pkgutils:pkg_clean_tmp_dir().
+
+%% Spawns a process which performs transpilation for any given file.
 %% Returns output to the spawning process
-spawn_transpilation_process(File, MainProcess, EscodegenDir) ->
-    spawn_link(fun() -> MainProcess ! {self(), esast:test(pipeline(js_ast, File), EscodegenDir)} end).
-
-%% Synchronously performs all types of testing on a given module
-%% Output is printed via io:format instead of returned
-run_tests(Module) ->
-    % Perform XREF Analysis for module
-    io:format("Running XREF analysis for module '~p'~n", [Module]),
-    [{_, DeprecatedFuns}, {_, UndefFuns}, _] = xref:m(Module),
-    case {length(DeprecatedFuns), length(UndefFuns)} of
-        {0, 0} ->
-            io:format("  No Undefined or Deprecated functions used in module '~p'~n", [Module]);
-        _ ->
-            lists:map(fun({Func, Arity}) ->
-                io:format("  Deprecated Function '~p/~p' used in module '~p'~n", [Func, Arity, Module])    
-            end, DeprecatedFuns),
-            lists:map(fun({Func, Arity}) ->
-                io:format("  Undefined Function '~p/~p' used in module '~p'~n", [Func, Arity, Module])    
-            end, UndefFuns)
-    end,        
-
-    % Perform EUNIT testing for module    
-    io:format("Running any and all tests in module '~p'~n", [Module]),    
-    eunit:test(Module).
+spawn_transpilation_process(File, MainProcess, Codegen) ->
+    spawn_link(fun() -> 
+        MainProcess ! {self(), esast:test(pipeline(js_ast, File), File, Codegen)} 
+    end).
 
 %% Shorthand for calling pipeline/2 where the function called is pipeline going as far as
 %% the pipeline is currently implemented.
@@ -94,30 +124,46 @@ pipeline(js, Module) ->
     AST = pipeline(js_ast, Module),
     esast:test(AST).
 
-%% Parses the results of init:get_plain_args and returns a map of everything we expect, keyed
-%% by either:
-%%    - files, for all arguments which don't fall into the following categories
-%%    - escodegen, an argument immediately following the flag '-escodegen'
-%%    - mode, an argument immediately following the flag '-mode'
-parse_args(Args) ->
-    parse_args(Args, #{files => [], escodegen => null, mode => "transpile"}, null).
 
-%% Return after parse complete
-parse_args([], ArgsMap, _Prev) ->
-    ArgsMap;
 
-%% Adds to 'mode' key
-parse_args(["-mode" | Args], ArgsMap, _Prev) ->
-    parse_args(Args, ArgsMap, mode);
-parse_args([Arg | Args], ArgsMap, mode) ->
-    parse_args(Args, maps:update(mode, Arg, ArgsMap), null);
 
-%% Adds to 'escodegen' key
-parse_args(["-escodegen" | Args], ArgsMap, _Prev) ->
-    parse_args(Args, ArgsMap, escodegen);
-parse_args([Arg | Args], ArgsMap, escodegen) ->
-    parse_args(Args, maps:update(escodegen, Arg, ArgsMap), null);
 
-%% Adds to 'files' key
-parse_args([Arg | Args], ArgsMap, _Prev) ->
-    parse_args(Args, maps:update(files, [Arg | maps:get(files, ArgsMap)], ArgsMap), Arg).
+%%% ---------------------------------------------------------------------------------------------%%%
+%%% - MISC FUNCTIONS ----------------------------------------------------------------------------%%%
+%%% ---------------------------------------------------------------------------------------------%%%
+
+%% Displays usage information
+usage() ->
+    SelfName = pkgutils:pkg_name(),
+    io:format("Usage: ~s FILEs... [-o <dirname>]~n" ++
+              "Compiles the Erlang source files FILEs you specify into JavaScript.~n" ++
+              "Example: ~s src/*.erl -o js/~n~n",
+              [SelfName,
+               SelfName]).
+
+%% Displays help information
+help() ->
+    io:format("Valid Configuration Parameters:~n" ++
+              "~s~n",
+              [pkgargs:create_help_string(?DEFAULT_ARGS, 1, 55)]).
+
+%% Displays version information
+version() ->
+    io:format("Current ~s version: v~s~n~n",
+              [pkgutils:pkg_name(),
+              ?VERSION]).
+
+%% Looks through a list of file names and expands any wildcards that may exist.
+%% None wildcards will just be added to the accumulator so that we can crash gracefully
+%% later on.
+perform_wildcard_matches([]) ->
+    [];
+perform_wildcard_matches(FileList) ->
+    lists:foldl(fun(PotentialWildcard, Accumulator) ->
+        case filelib:wildcard(PotentialWildcard) of
+            [] ->
+                Accumulator ++ [PotentialWildcard];
+            Matches ->
+                Accumulator ++ Matches
+        end
+    end, [], FileList).
