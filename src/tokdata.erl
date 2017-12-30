@@ -36,6 +36,8 @@ find_exports([_ | Toks]) ->
 find_exports([]) ->
     ok;
 find_exports(error) ->
+    error;
+find_exports(_) ->
     error.
 
 %% Returns a list of strings representing exported functions, i.e. the keys in the map of export data.

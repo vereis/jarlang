@@ -120,4 +120,3 @@ c_functions([{FuncNameWithArity, Function} | Rest]) ->
             end , FunctionList)
         )
     ).
-

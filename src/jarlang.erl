@@ -95,9 +95,9 @@ transpile(Files, Outdir) ->
 
     %% Pass transpilated results into codegen.js to get JavaScript which we can write to a file
     [
-        receive {Pid, {Module, Ast}} -> 
-            gen_js(Ast, Module, Codegen, Outdir) 
-        end 
+        receive {Pid, {Module, Ast}} ->
+            gen_js(Ast, Module, Codegen, Outdir)
+        end
         || Pid <- Pids
     ],
     pkgutils:pkg_clean_tmp_dir().
@@ -106,7 +106,7 @@ transpile(Files, Outdir) ->
 %% Returns output to the spawning process
 spawn_transpilation_process(File, MainProcess) ->
     spawn_link(fun() ->
-        MainProcess ! {self(), pipeline(File)}    
+        MainProcess ! {self(), pipeline(File)}
     end).
 
 %% Shorthand for calling pipeline/2 where the function called is pipeline going as far as
@@ -131,10 +131,6 @@ pipeline(js_ast, Module) ->
 
 %% Generate javascript by writing out a javascript AST to a file and passing it into codegen.js
 %% Then proceeds to read the output of codegen.js and writes it to a file
-gen_js(Ast) ->
-    code:add_path("lib/"),
-    gen_js(Ast, "temp", "./codegen.js", "./").
-
 gen_js(Ast, File, Codegen, Outdir) ->
     Json = jsone:encode(Ast),
 

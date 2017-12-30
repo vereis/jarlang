@@ -41,11 +41,11 @@ define compile
 	@ rm -f $(OUTPUT_DIR)/*
 
 	@ echo "$(COLOR)==> Compiling Library Files$(RED)"
-	@ $(ERLC) $(COMPILE_MODE) $(OUTPUT_DIR) $(LIBDIR)/*.erl
+	@ $(ERLC) $(COMPILE_MODE) $(OUTPUT_DIR) $(LIBDIR)/*.erl >> /dev/null
 	@ echo "$(NORMAL)    Done"
 
 	@ echo "$(COLOR)==> Compiling Source Files$(RED)"
-	@ $(ERLC) $(COMPILE_MODE) $(OUTPUT_DIR) $(SRCDIR)/*.erl
+	@ $(ERLC) $(COMPILE_MODE) $(OUTPUT_DIR) $(SRCDIR)/*.erl >> /dev/null
 	@ echo "$(NORMAL)    Done"
 
 	@ echo "$(COLOR)==> Bootstrapping NodeJS Environment onto build$(RED)"
@@ -112,13 +112,13 @@ dialyze:
 .PHONY: clean
 clean:
 	@ echo "$(ORANGE)==> Cleaning builds"
-	@ find . -name "*.beam" -not -path "./doc/*" -delete 
+	@ find . -name "*.beam" -not -path "./doc/*" -delete
 	@ echo "==> Removing all BEAM files from workspace"
-	@ find . -name "*.core" -not -path "./doc/*" -delete 
+	@ find . -name "*.core" -not -path "./doc/*" -delete
 	@ echo "==> Removing all CORE files from workspace"
-	@ find . -name "*.ast" -not -path "./doc/*" -delete 
+	@ find . -name "*.ast" -not -path "./doc/*" -delete
 	@ echo "==> Removing all AST files from workspace"
-	@ find . -name "*.dump" -not -path "./doc/*" -delete 
+	@ find . -name "*.dump" -not -path "./doc/*" -delete
 	@ echo "==> Removing all DUMP files from workspace"
 	@ rm -rf $(OUTDIR)
 	@ echo "==> Removing $(OUTDIR)/"

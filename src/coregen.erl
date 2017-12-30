@@ -54,13 +54,16 @@ to_core_erlang_ast(Module, return) ->
         {ok, Bin} ->
             case core_scan:string(binary_to_list(Bin)) of
                 {ok, Toks, _} ->
-                    core_parse:parse(Toks);
+                    Result = core_parse:parse(Toks);
                 {error, E, _} ->
-                    {error, {scan, E}}
+                    Result = {error, {scan, E}}
             end;
         {error, E} ->
-            {error, {read, E}}
-    end;
+            Result = {error, {read, E}}
+    end,
+
+    file:delete(ModuleName ++ ".core"),
+    Result;
 
 %% Compiles a given Erlang source file to a CoreErlang AST file, and writes the resultant
 %% CoreErlang AST output to a file in the given output directory
@@ -68,10 +71,8 @@ to_core_erlang_ast(Module, OutputDirectory) ->
     ModuleName = filepath:name(Module),
     case to_core_erlang_ast(Module, return) of
         {ok, AST} ->
-            % Move compiled core erlang file to output directory
-            OldLocation = ModuleName ++ ".core",
-            NewLocation = OutputDirectory ++ OldLocation,
-            filepath:move(OldLocation, NewLocation),
+            % Write the .core file
+            to_core_erlang(Module, OutputDirectory),
 
             % Write AST
             file:write_file(OutputDirectory ++ ModuleName ++ ".ast",
