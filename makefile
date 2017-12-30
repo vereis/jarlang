@@ -1,10 +1,15 @@
 SHELL = /bin/sh
 
+# ========================== #
+# === Makefile Variables === #
+# ========================== #
+
 # Compilation Variables
 ERLC = $(shell which erlc)
 ERLFLAGS = -Werror -v -o
 ERLFLAGS_NONSTRICT = -Wall -v -o
 ERLFLAGS_DEBUG = -Ddebug +debug_info -W0 -o
+ERLFLAGS_TEST = -DTEST -Ddebug +debug_info -W0 -o
 JSMINIFY = cp
 JSMINIFYFLAGS = -f
 
@@ -20,6 +25,8 @@ UTILDIR = util
 DIALYZER = $(shell which dialyzer)
 ELVIS = $(UTILDIR)/elvis rock --config $(UTILDIR)/elvis.config
 ERLPKG = $(UTILDIR)/erlpkg
+STDOUT = &1
+DEVNULL = /dev/null
 
 # Colors
 RED = \033[0;31m
@@ -30,27 +37,97 @@ PURPLE = \033[0;35m
 CYAN = \033[0;36m
 NORMAL = \033[0m
 
+# ====================== #
+# === Target recipes === #
+# ====================== #
+
+release:
+	@ echo "$(GREEN)==> Building RELEASE$(NORMAL)"
+	@ echo "    Any warnings or errors will stop the build."
+	$(call compile, $(ERLFLAGS), $(OUTDIR), $(GREEN), $(DEVNULL))
+	$(call package, $(OUTDIR), $(GREEN))
+
+nonstrict:
+	@ echo "$(GREEN)==> Building RELEASE NONSTRICT$(NORMAL)"
+	@ echo "    Any warnings or errors will be ignored during build, if they can be."
+	$(call compile, $(ERLFLAGS_NONSTRICT), $(OUTDIR), $(GREEN), $(STDOUT))
+	$(call package, $(OUTDIR), $(GREEN))
+
+debug:
+	@ echo "$(BLUE)==> Building DEBUG$(NORMAL)"
+	@ echo "    Compiling with debug options enabled."
+	@ echo "    Debug macro enabled."
+	$(call compile, $(ERLFLAGS_DEBUG), $(DEBUGDIR), $(BLUE), $(STDOUT))
+	$(call package, $(DEBUGDIR), $(BLUE))
+
+test:
+	@ echo "$(CYAN)==> Building TEST$(NORMAL)"
+	@ echo "    Compiling with debug options enabled."
+	@ echo "    Debug macro enabled."
+	@ echo "    Test macro enabled."
+	$(call compile, $(ERLFLAGS_TEST), $(TESTDIR), $(CYAN), $(STDOUT))
+
+.PHONY: lint
+lint:
+	@ echo "$(PURPLE)==> Linting Project with Elvis$(NORMAL)"
+	@ $(ELVIS) || true
+	@ echo "    Done\n"
+
+.PHONY: dialyze
+dialyze:
+	@ echo "$(ORANGE)==> Building DIALYZE$(NORMAL)"
+	@ echo "    Compiling with debug options enabled."
+	@ echo "    Debug macro enabled."
+	@ echo "    Test macro enabled."
+	$(call compile, $(ERLFLAGS_DEBUG), $(TESTDIR), $(ORANGE), $(STDOUT))
+	$(call dialyze, $(TESTDIR), $(ORANGE))
+
+.PHONY: clean
+clean:
+	@ echo "$(RED)==> Cleaning builds"
+	@ find . -name "*.beam" -not -path "./doc/*" -delete
+	@ echo "==> Removing all BEAM files from workspace"
+	@ find . -name "*.core" -not -path "./doc/*" -delete
+	@ echo "==> Removing all CORE files from workspace"
+	@ find . -name "*.ast" -not -path "./doc/*" -delete
+	@ echo "==> Removing all AST files from workspace"
+	@ find . -name "*.dump" -not -path "./doc/*" -delete
+	@ echo "==> Removing all DUMP files from workspace"
+	@ rm -rf $(OUTDIR)
+	@ echo "==> Removing $(OUTDIR)/"
+	@ echo "    Done"
+	@ rm -rf $(DEBUGDIR)
+	@ echo "==> Removing $(DEBUGDIR)/"
+	@ echo "    Done"
+	@ rm -rf $(TESTDIR)
+	@ echo "==> Removing $(TESTDIR)/"
+	@ echo "    Done"
+	@ echo "==> Cleaned\n$(NORMAL)"
+
+# ========================= #
+# === Recipe Procedures === #
+# ========================= #
+
 define compile
 	@ $(eval COMPILE_MODE = $(1))
 	@ $(eval OUTPUT_DIR = $(2))
 	@ $(eval COLOR = $(3))
-	@ echo "    Compiling files with debug_info enabled"
-	@ echo "    Compiling files with warnings being considered errors"
-	@ echo "    Compiling files will fail if any errors occur"
+	@ $(eval PIPE_TO = $(4))
+
 	@ mkdir -p $(OUTPUT_DIR)
 	@ rm -f $(OUTPUT_DIR)/*
 
 	@ echo "$(COLOR)==> Compiling Library Files$(RED)"
-	@ $(ERLC) $(COMPILE_MODE) $(OUTPUT_DIR) $(LIBDIR)/*.erl >> /dev/null
+	@ $(ERLC) $(COMPILE_MODE) $(OUTPUT_DIR) $(LIBDIR)/*.erl >$(PIPE_TO)
 	@ echo "$(NORMAL)    Done"
 
 	@ echo "$(COLOR)==> Compiling Source Files$(RED)"
-	@ $(ERLC) $(COMPILE_MODE) $(OUTPUT_DIR) $(SRCDIR)/*.erl >> /dev/null
+	@ $(ERLC) $(COMPILE_MODE) $(OUTPUT_DIR) $(SRCDIR)/*.erl >$(PIPE_TO)
 	@ echo "$(NORMAL)    Done"
 
 	@ echo "$(COLOR)==> Bootstrapping NodeJS Environment onto build$(RED)"
-	@ $(JSMINIFY) $(JSMINIFYFLAGS) $(SRCDIR)/*.js $(OUTPUT_DIR) 2> /dev/null || true
-	@ $(JSMINIFY) $(JSMINIFYFLAGS) $(LIBDIR)/*.js $(OUTPUT_DIR) 2> /dev/null || true
+	@ $(JSMINIFY) $(JSMINIFYFLAGS) $(SRCDIR)/*.js $(OUTPUT_DIR) 2>$(DEVNULL) || true
+	@ $(JSMINIFY) $(JSMINIFYFLAGS) $(LIBDIR)/*.js $(OUTPUT_DIR) 2>$(DEVNULL) || true
 	@ echo "$(NORMAL)    Done"
 
 	@ echo "$(COLOR)==> Compiling complete in: './$(OUTPUT_DIR)/'$(NORMAL)"
@@ -67,6 +144,7 @@ define package
 	@ echo "$(COLOR)==> Cleaning directory './$(OUTPUT_DIR)/'$(NORMAL)"
 	@ rm $(OUTPUT_DIR)/*.beam
 	@ rm $(OUTPUT_DIR)/*.js
+	@ echo "    Done\n"
 
 	@ echo "$(COLOR)==> Packaging complete in: './$(OUTPUT_DIR)/'$(NORMAL)"
 	@ echo "    Done\n"
@@ -81,49 +159,3 @@ define dialyze
 	@ echo "$(COLOR)==> Dialyzing complete in: './$(TARGET_DIR)/'$(NORMAL)"
 	@ echo "    Done\n"
 endef
-
-release:
-	@ echo "$(GREEN)==> Building RELEASE$(NORMAL)"
-	$(call compile, $(ERLFLAGS), $(OUTDIR), $(GREEN))
-	$(call package, $(OUTDIR), $(GREEN))
-
-nonstrict:
-	@ echo "$(GREEN)==> Building RELEASE NONSTRICT$(NORMAL)"
-	$(call compile, $(ERLFLAGS_NONSTRICT), $(OUTDIR), $(GREEN))
-	$(call package, $(OUTDIR), $(GREEN))
-
-debug:
-	@ echo "$(BLUE)==> Building DEBUG$(NORMAL)"
-	$(call compile, $(ERLFLAGS_DEBUG), $(DEBUGDIR), $(BLUE))
-	$(call package, $(DEBUGDIR), $(BLUE))
-
-.PHONY: lint
-lint:
-	@ echo "$(ORANGE)==> Linting Project with Elvis$(NORMAL)"
-	@ $(ELVIS) || true
-	@ echo "    Done\n"
-
-.PHONY: dialyze
-dialyze:
-	@ echo "$(ORANGE)==> Building DIALYZE$(NORMAL)"
-	$(call compile, $(ERLFLAGS_DEBUG), $(TESTDIR), $(ORANGE))
-	$(call dialyze, $(TESTDIR), $(ORANGE))
-
-.PHONY: clean
-clean:
-	@ echo "$(ORANGE)==> Cleaning builds"
-	@ find . -name "*.beam" -not -path "./doc/*" -delete
-	@ echo "==> Removing all BEAM files from workspace"
-	@ find . -name "*.core" -not -path "./doc/*" -delete
-	@ echo "==> Removing all CORE files from workspace"
-	@ find . -name "*.ast" -not -path "./doc/*" -delete
-	@ echo "==> Removing all AST files from workspace"
-	@ find . -name "*.dump" -not -path "./doc/*" -delete
-	@ echo "==> Removing all DUMP files from workspace"
-	@ rm -rf $(OUTDIR)
-	@ echo "==> Removing $(OUTDIR)/"
-	@ rm -rf $(DEBUGDIR)
-	@ echo "==> Removing $(DEBUGDIR)/"
-	@ rm -rf $(TESTDIR)
-	@ echo "==> Removing $(TESTDIR)/"
-	@ echo "==> Cleaned\n$(NORMAL)"
