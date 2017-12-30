@@ -8,11 +8,11 @@ const generate = function(input) {
     try {
         data = JSON.parse(input);
     } catch (e) {
-        console.log("Error passing file data into escodegen. Please ensure input is valid JSON");
-        console.log("Input: ");
-        console.log(input);
-        console.log("Error: ");
-        console.log(e);
+        console.error("Error passing file data into escodegen. Please ensure input is valid JSON");
+        console.error("Input: ");
+        console.error(input);
+        console.error("Error: ");
+        console.error(e);
         return false;
     }
 
@@ -33,18 +33,18 @@ args.forEach(arg => {
     if (isFilepath) {
         fs.readFile(arg, "utf-8", function(err, data) {
             if (err) {
-                console.log("File reading ran into the following error:");
-                console.log(err);
-                console.log("Aborting...");
+                console.error("File reading ran into the following error:");
+                console.error(err);
+                console.error("Aborting...");
                 return false;
             }
 
-            console.log(`Attempting JavaScript code generation...\n`);
+            //console.log(`Attempting JavaScript code generation...\n`);
             generate(data);
         });
     }
     else {
-        console.log(`'${arg}' is not a valid file, skipping...`);
+        console.error(`'${arg}' is not a valid file, skipping...`);
     }
 });
 

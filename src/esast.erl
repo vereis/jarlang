@@ -121,27 +121,3 @@ c_functions([{FuncNameWithArity, Function} | Rest]) ->
         )
     ).
 
-%%% Misc Functions
-test(Ast) ->
-    code:add_path("lib/"),
-    test(Ast, "temp", "./codegen.js").
-
-test(Ast, File, Codegen) ->
-    Json = jsone:encode(Ast),
-
-    %% We need to write our json into a temp file so that we can easily pass it into codegen.js
-    %% We'll dump the temp file into the same directory as codegen.js
-    WorkingDirectory = filename:dirname(Codegen),
-    TempFileName = filename:basename(filename:rootname(File)),
-    TempFile = lists:flatten([WorkingDirectory, "/", TempFileName, ".json"]),
-    filepath:write(Json, TempFile),
-
-    %% Pass json file into escodegen to generate JavaScript
-    try io:format("Compiling ~s.erl:~nAST Translation ok!~n~s",
-                  [TempFileName, os:cmd("node " ++ Codegen ++ " " ++ TempFile)]) of
-        _ ->
-            ok
-    catch
-        E ->
-            {err, E}
-    end.
