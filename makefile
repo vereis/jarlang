@@ -30,10 +30,6 @@ PURPLE = \033[0;35m
 CYAN = \033[0;36m
 NORMAL = \033[0m
 
-define check_exec
-	@ test -x $(1) || chmod +x $(1)
-endef
-
 define build
 	@ echo "$(GREEN)==> Building RELEASE$(NORMAL)"
 	@ echo "    Compiling files with debug_info enabled"
@@ -118,7 +114,7 @@ test:
 	@ cp -f $(MISCDIR)/* $(TESTDIR) 2> /dev/null || true
 	@ echo "-mode eunit" >> $(TESTDIR)/jarlang.sh && mv $(TESTDIR)/jarlang.sh $(TESTDIR)/run_tests.sh
 	@ echo "$(PURPLE)==> Running EUnit tests and XREF analyses$(NORMAL)"
-	$(call check_exec,$(TESTDIR)/run_tests.sh)
+	@ test -x $(TESTDIR)/run_tests.sh || chmod +x $(TESTDIR)/run_tests.sh
 	@ ./$(TESTDIR)/run_tests.sh
 	@ echo "$(PURPLE)==> Running Dialyzer$(NORMAL)"
 	@ $(DIALYZER) $(TESTDIR)/*.beam || true
@@ -132,7 +128,6 @@ test:
 .PHONY: lint
 lint:
 	@ echo "==> Linting Project with Elvis"
-	$(call check_exec,$(UTILDIR)/elvis)
 	@ $(ELVIS) || true
 .PHONY: clean
 clean:
