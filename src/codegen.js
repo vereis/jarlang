@@ -39,7 +39,7 @@ args.forEach(arg => {
                 return false;
             }
             
-            console.log(`Attempting escodegeneration of '${arg}':`);
+            console.log(`Attempting JavaScript code generation...\n`);
             generate(data);
         });
     }
