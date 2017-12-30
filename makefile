@@ -108,9 +108,13 @@ dialyze:
 .PHONY: clean
 clean:
 	@ echo "$(ORANGE)==> Cleaning builds"
-	@ find . -name "*.beam" -delete
+	@ find . -name "*.beam" -not -path "./doc/*" -delete 
 	@ echo "==> Removing all BEAM files from workspace"
-	@ find . -name "*.dump" -delete
+	@ find . -name "*.core" -not -path "./doc/*" -delete 
+	@ echo "==> Removing all CORE files from workspace"
+	@ find . -name "*.ast" -not -path "./doc/*" -delete 
+	@ echo "==> Removing all AST files from workspace"
+	@ find . -name "*.dump" -not -path "./doc/*" -delete 
 	@ echo "==> Removing all DUMP files from workspace"
 	@ rm -rf $(OUTDIR)
 	@ echo "==> Removing $(OUTDIR)/"
