@@ -8,7 +8,7 @@ Atom.isAtom = (atom) => atom instanceof Atom;
 Atom.cloneAtom = (atom) => atom;
 
 // Prototype Methods
-Atom.prototype.value = function() {
+Atom.prototype.getValue = function() {
     return this.value;
 }
 
@@ -28,4 +28,9 @@ Atom.prototype.match = function(X) {
     else {
         return undefined;
     }
+}
+
+
+if (typeof exports != "undefined") {
+    exports.Atom = Atom;
 }

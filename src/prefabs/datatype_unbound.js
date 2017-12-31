@@ -16,3 +16,8 @@ Unbound.prototype.match = function(X) {
 Unbound.prototype.value = function() {
     return undefined;
 }
+
+
+if (typeof exports != "undefined") {
+    exports.Unbound = Unbound;
+}

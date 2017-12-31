@@ -28,3 +28,8 @@ Pid.prototype.match = function(X) {
         return undefined;
     }
 }
+
+
+if (typeof exports != "undefined") {
+    exports.Pid = Pid;
+}

@@ -29,3 +29,8 @@ Reference.prototype.match = function(X) {
         return undefined;
     }
 }
+
+
+if (typeof exports != "undefined") {
+    exports.Reference = Reference;
+}

@@ -105,3 +105,8 @@ List.prototype.toString = function() {
     
     return '[]';
 }
+
+
+if (typeof exports != "undefined") {
+    exports.List = List;
+}

@@ -33,7 +33,7 @@ Tuple.prototype.__nthNode = function(n) {
 Tuple.prototype[Symbol.iterator] = function() {
     return {
         next: () => {
-            console.log(this, this.iterator);
+            //console.log(this, this.iterator);
             let v = this.iterator.val;
             
             if (this.iterator === undefined || Tuple.isEmptyTuple(this.iterator)) {
@@ -74,4 +74,9 @@ Tuple.prototype.value = function() {
 
 Tuple.prototype.toString = function() {
     return `{${[...this].join(",")}}`;
+}
+
+
+if (typeof exports != "undefined") {
+    exports.Tuple = Tuple;
 }

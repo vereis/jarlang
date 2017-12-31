@@ -28,3 +28,8 @@ BitString.prototype.match = function(X) {
         return undefined;
     }
 }
+
+
+if (typeof exports != "undefined") {
+    exports.BitString = BitString;
+}

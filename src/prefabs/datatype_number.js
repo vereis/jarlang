@@ -93,7 +93,7 @@ ErlNumber.prototype.match = function(val) {
     return val;
 }
 
-//This is to prevent errors if the code is loaded in a browser
-if(typeof exports != "undefined"){
+
+if (typeof exports != "undefined") {
     exports.ErlNumber = ErlNumber;
 }
