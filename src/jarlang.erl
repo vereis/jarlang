@@ -3,7 +3,7 @@
 -module(jarlang).
 -author(["Chris Bailey", "Andrew Johnson"]).
 
--define(VERSION, "1.1.0").
+-define(VERSION, "2.0.0").
 
 -vsn(?VERSION).
 
@@ -25,6 +25,9 @@
 -define(DEFAULT_ARGS, [
     {["-o", "--output"], o_output, singleton, ".", "Sets the output directory for compiled code. " ++
                                                        "If the directory doesn't exist, we will create it."},
+                       
+    {["-t", "--type"], o_type, singleton, ".", "Sets the output type, defualts to js. " ++
+                                                       "Valid options are 'js','js_ast','core_ast'&'core'."},
 
     {["-h", "--help"], o_help, is_set, false, "Displays this help message and exits."},
 
@@ -41,9 +44,10 @@ main(Args) ->
     ShowHelp = pkgargs:get(o_help, ParsedArgs),
     ShowVsn  = pkgargs:get(o_vsn, ParsedArgs),
     OutDir   = pkgargs:get(o_output, ParsedArgs),
+    Type   = list_to_atom(pkgargs:get(o_type, ParsedArgs)),
     Files    = perform_wildcard_matches(pkgargs:get(default,  ParsedArgs)),
 
-    try branch(ShowHelp, ShowVsn, OutDir, Files) of
+    try branch(ShowHelp, ShowVsn, OutDir, Type, Files) of
         _ -> ok
     catch
         throw:usage ->
@@ -67,13 +71,13 @@ main(Args) ->
 %%% ---------------------------------------------------------------------------------------------%%%
 
 %% Determines which function to run depending on arguments given.
-branch(_Help = false, _Vsn = false, Outdir, Files) when length(Files) > 0 ->
-    transpile(Files, Outdir);
-branch(_Help = true, _Vsn = false, _OutDir, _Files = []) ->
+branch(_Help = false, _Vsn = false, Outdir, Type, Files) when (length(Files) > 0) and ( (Type==js) or (Type==js_ast) or (Type==core_ast) or (Type==core) )->
+    transpile(Files, Outdir, Type);
+branch(_Help = true, _Vsn = false, _OutDir, _Type, _Files = []) ->
     throw(help);
-branch(_Help = false, _Vsn = true, _OutDir, _Files = []) ->
+branch(_Help = false, _Vsn = true, _OutDir, _Type, _Files = []) ->
     throw(vsn);
-branch(_Help, _Vsn, _OutDir, _Files) ->
+branch(_Help, _Vsn, _OutDir, _Type, _Files) ->
     throw(usage).
 
 
@@ -84,14 +88,14 @@ branch(_Help, _Vsn, _OutDir, _Files) ->
 %%% - COMPILER PIPELINE -------------------------------------------------------------------------%%%
 %%% ---------------------------------------------------------------------------------------------%%%
 
-%% Convinience function for asynchronously transpiling erl files in js files, and synchronously
+%% Convinience function for asynchronously transpiling erl files into js files, and synchronously
 %% returning after all processes finish.
 %% Also sets up compilation environment by extracting files to a tmp directory. Once transpilation
 %% finishes, it then cleans up said directory
-transpile(Files, Outdir) ->
+transpile(Files, Outdir, js) ->
     Codegen = pkgutils:pkg_extract_file("codegen.js"),
               pkgutils:pkg_extract_dir("node_modules.zip"),
-    Pids = [spawn_transpilation_process(File, self()) || File <- Files],
+    Pids = [spawn_transpilation_process(File, js_ast, self()) || File <- Files],
 
     %% Pass transpilated results into codegen.js to get JavaScript which we can write to a file
     [
@@ -100,13 +104,27 @@ transpile(Files, Outdir) ->
         end
         || Pid <- Pids
     ],
+    pkgutils:pkg_clean_tmp_dir();
+
+%% Convinience function for asynchronously transpiling erl files into core_ast files, and synchronously
+%% returning after all processes finish.
+transpile(Files, Outdir, Type) ->
+    Pids = [spawn_transpilation_process(File, Type, self()) || File <- Files],
+
+    %% Pass transpilated results into codegen.js to get JavaScript which we can write to a file
+    [
+        receive {Pid, {Module, Data}} ->
+            write_other(io_lib:format("~p",[Data]), Module, Type, Outdir)
+        end
+        || Pid <- Pids
+    ],
     pkgutils:pkg_clean_tmp_dir().
 
 %% Spawns a process which performs transpilation for any given file.
 %% Returns output to the spawning process
-spawn_transpilation_process(File, MainProcess) ->
+spawn_transpilation_process(File, Type, MainProcess) ->
     spawn_link(fun() ->
-        MainProcess ! {self(), pipeline(File)}
+        MainProcess ! {self(), pipeline(Type, File)}
     end).
 
 %% Shorthand for calling pipeline/2 where the function called is pipeline going as far as
@@ -121,12 +139,12 @@ pipeline(Module) ->
 %% a core_erlang_ast respectively.
 pipeline(core, Module) ->
     {ok, _ModuleName, BinaryData} = coregen:to_core_erlang(Module, return),
-    BinaryData;
+    {Module, BinaryData};
 pipeline(core_ast, Module) ->
     {ok, AST} = coregen:to_core_erlang_ast(Module, return),
-    AST;
+    {Module, AST};
 pipeline(js_ast, Module) ->
-    AST = pipeline(core_ast, Module),
+    {_Module, AST} = pipeline(core_ast, Module),
     {Module, asttrans:erast2esast(AST)}.
 
 %% Generate javascript by writing out a javascript AST to a file and passing it into codegen.js
@@ -151,13 +169,27 @@ gen_js(Ast, File, Codegen, Outdir) ->
     end.
 
 %% Write results of codegen.js to a file
-write_js(Result, Filename, "io") ->
-    io:format("==> Result of transpilation for: ~s.erl~n~s~n", [Filename, Result]);
 write_js(Result, Filename, Outdir) ->
+    write_file(Result,Filename,"js",Outdir).
+
+write_other(Data, File, core_ast, Outdir) ->
+    Filename = filename:basename(filename:rootname(File)),
+    write_file(Data, Filename, "est", Outdir);
+
+write_other(Data, File, js_ast, Outdir) ->
+    Filename = filename:basename(filename:rootname(File)),
+    write_file(Data, Filename, "jst", Outdir);
+
+write_other(Data, File, core, Outdir) ->
+    Filename = filename:basename(filename:rootname(File)),
+    write_file(Data, Filename, "core", Outdir).
+
+%% Write results of codegen.js to a file
+write_file(Result, Filename, _Ext, "io") ->
+    io:format("==> Result of transpilation for: ~s.erl~n~s~n", [Filename, Result]);
+write_file(Result, Filename, Ext, Outdir) ->
     filelib:ensure_dir(Outdir),
-    ok = file:write_file(lists:flatten([Outdir, "/", Filename, ".js"]), Result).
-
-
+    ok = file:write_file(lists:flatten([Outdir, "/", Filename, ".", Ext]), Result).
 
 
 
@@ -168,8 +200,9 @@ write_js(Result, Filename, Outdir) ->
 %% Displays usage information
 usage() ->
     SelfName = pkgutils:pkg_name(),
-    io:format("Usage: ~s FILEs... [-o <dirname>]~n" ++
+    io:format("Usage: ~s FILEs... [-o <dirname>][-t <type>]~n" ++
               "Compiles the Erlang source files FILEs you specify into JavaScript.~n" ++
+              "Or if Type is set will output a file from that point in the pipeline.~n" ++
               "Example: ~s src/*.erl -o js/~n~n",
               [SelfName,
                SelfName]).

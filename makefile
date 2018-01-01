@@ -89,8 +89,10 @@ clean:
 	@ echo "==> Removing all BEAM files from workspace"
 	@ find . -name "*.core" -not -path "./doc/*" -delete
 	@ echo "==> Removing all CORE files from workspace"
-	@ find . -name "*.ast" -not -path "./doc/*" -delete
-	@ echo "==> Removing all AST files from workspace"
+	@ find . -name "*.est" -not -path "./doc/*" -delete
+	@ echo "==> Removing all EST files from workspace"
+	@ find . -name "*.jst" -not -path "./doc/*" -delete
+	@ echo "==> Removing all JST files from workspace"
 	@ find . -name "*.dump" -not -path "./doc/*" -delete
 	@ echo "==> Removing all DUMP files from workspace"
 	@ rm -rf $(OUTDIR)
