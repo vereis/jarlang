@@ -18,3 +18,8 @@ nest(A,B)->
     [[A],B].
 nest(A,B,C)->
     [[A,[B]],C].
+
+test([a|Rest])->
+    Rest;
+test([a,B|Rest])->
+    B.
