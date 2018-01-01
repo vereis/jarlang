@@ -3,7 +3,7 @@
 -module(jarlang).
 -author(["Chris Bailey", "Andrew Johnson"]).
 
--define(VERSION, "2.0.0").
+-define(VERSION, "2.1.0").
 
 -vsn(?VERSION).
 

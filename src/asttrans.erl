@@ -267,6 +267,23 @@ parseFunctionBody(return,Params,{c_tuple,_,_Values})->
     %io:format("        Tuple ~p~n", [tupleList_getVars_3(Values)]);
     io:format("",[]);
 
+
+
+
+%List constructor
+parseFunctionBody(return,Params,{c_cons,_,A,B})->
+    esast:returnStatement(parseFunctionBody(noreturn,Params,{c_cons,[],A,B}));
+
+parseFunctionBody(noreturn,Params,{c_cons,_,A,B={c_cons,_,C,D}})->
+    esast:newExpression(esast:identifier(<<"List">>),
+        parseConsChain(noreturn,Params,{c_cons,[],A,B})
+   );
+
+parseFunctionBody(noreturn,Params,{c_cons,_,A,B})->
+    esast:newExpression(esast:identifier(<<"List">>),[parseFunctionBody(noreturn,Params,A),parseFunctionBody(noreturn,Params,B)]);
+
+
+
 parseFunctionBody(return,Params,{c_primop,_,{_,_,Type},_Details})->
     % io:format("        Error? ~p~n~p~n", [Type,Details]),
     esast:error(atom_to_list(Type),"TODO Errors dont parse nicely\\n",esast:literal(<<"Message">>));
@@ -283,9 +300,17 @@ parseFunctionBody(ReturnAtom,Params,{c_case, _, {c_values,_,Vars}, Clauses})->
         _  -> assembleSequence(esast:variableDeclaration(UnboundVars,<<"let">>),CaseClauses)
     end;
 
-
 parseFunctionBody(_,Params,T)->
     io:format("Unrecognised Token in function body: ~p~n", [T]).
+
+
+
+parseConsChain(noreturn,Params,{c_cons,[],A,B={c_cons,_,C,D}})->
+    [parseFunctionBody(noreturn,Params,A)|parseConsChain(noreturn,Params,B)];
+parseConsChain(noreturn,Params,{c_cons,[],A,B})->
+    [parseFunctionBody(noreturn,Params,A)|parseFunctionBody(noreturn,Params,B)].
+
+
 
 
 
