@@ -26,7 +26,7 @@
     {["-o", "--output"], o_output, singleton, ".", "Sets the output directory for compiled code. " ++
                                                        "If the directory doesn't exist, we will create it."},
                        
-    {["-t", "--type"], o_type, singleton, ".", "Sets the output type, defualts to js. " ++
+    {["-t", "--type"], o_type, singleton, ".", "Sets the output type, defaults to 'js'. " ++
                                                        "Valid options are 'js','js_ast','core_ast'&'core'."},
 
     {["-h", "--help"], o_help, is_set, false, "Displays this help message and exits."},
