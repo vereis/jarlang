@@ -27,7 +27,7 @@
                                                        "If the directory doesn't exist, we will create it."},
                        
     {["-t", "--type"], o_type, singleton, ".", "Sets the output type, defaults to 'js'. " ++
-                                                       "Valid options are 'js','js_ast','core_ast'&'core'."},
+                                                       "Valid options are 'js','js_ast','core_ast','core' & 'all'."},
 
     {["-h", "--help"], o_help, is_set, false, "Displays this help message and exits."},
 
@@ -71,6 +71,11 @@ main(Args) ->
 %%% ---------------------------------------------------------------------------------------------%%%
 
 %% Determines which function to run depending on arguments given.
+branch(_Help = false, _Vsn = false, Outdir, all, Files) when (length(Files) > 0)->
+    transpile(Files, Outdir, core),
+    transpile(Files, Outdir, core_ast),
+    transpile(Files, Outdir, js_ast),
+    transpile(Files, Outdir, js);
 branch(_Help = false, _Vsn = false, Outdir, Type, Files) when (length(Files) > 0) and ( (Type==js) or (Type==js_ast) or (Type==core_ast) or (Type==core) )->
     transpile(Files, Outdir, Type);
 branch(_Help = true, _Vsn = false, _OutDir, _Type, _Files = []) ->
