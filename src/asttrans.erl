@@ -308,7 +308,7 @@ parseFunctionBody(_,Params,T)->
 parseConsChain(noreturn,Params,{c_cons,[],A,B={c_cons,_,C,D}})->
     [parseFunctionBody(noreturn,Params,A)|parseConsChain(noreturn,Params,B)];
 parseConsChain(noreturn,Params,{c_cons,[],A,B})->
-    [parseFunctionBody(noreturn,Params,A)|parseFunctionBody(noreturn,Params,B)].
+    [parseFunctionBody(noreturn,Params,A)].
 
 
 
