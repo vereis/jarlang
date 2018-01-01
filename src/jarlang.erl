@@ -25,9 +25,9 @@
 -define(DEFAULT_ARGS, [
     {["-o", "--output"], o_output, singleton, ".", "Sets the output directory for compiled code. " ++
                                                        "If the directory doesn't exist, we will create it."},
-                       
+
     {["-t", "--type"], o_type, singleton, "js", "Sets the output type, defaults to 'js'. " ++
-                                                       "Valid options are 'js','js_ast','core_ast','core' & 'all'."},
+                                                       "Valid options are 'js', 'js_ast', 'core_ast', 'core' & 'all'."},
 
     {["-h", "--help"], o_help, is_set, false, "Displays this help message and exits."},
 
@@ -56,7 +56,9 @@ main(Args) ->
         throw:help ->
             help();
         throw:vsn ->
-            version()
+            version();
+        throw:{invalid_type, T} ->
+            io:format("Type '~p' is an invalid output type. Aborting...~n~n", [T])
     end,
 
     % Clean up and stop
@@ -76,7 +78,7 @@ branch(_Help = false, _Vsn = false, Outdir, all, Files) when (length(Files) > 0)
     transpile(Files, Outdir, core_ast),
     transpile(Files, Outdir, js_ast),
     transpile(Files, Outdir, js);
-branch(_Help = false, _Vsn = false, Outdir, Type, Files) when (length(Files) > 0) and ( (Type==js) or (Type==js_ast) or (Type==core_ast) or (Type==core) )->
+branch(_Help = false, _Vsn = false, Outdir, Type, Files) when (length(Files) > 0) ->
     transpile(Files, Outdir, Type);
 branch(_Help = true, _Vsn = false, _OutDir, _Type, _Files = []) ->
     throw(help);
@@ -114,16 +116,16 @@ transpile(Files, Outdir, js) ->
 %% Convinience function for asynchronously transpiling erl files into core_ast files, and synchronously
 %% returning after all processes finish.
 transpile(Files, Outdir, Type) ->
+    ok = is_valid_type(Type),
     Pids = [spawn_transpilation_process(File, Type, self()) || File <- Files],
 
-    %% Pass transpilated results into codegen.js to get JavaScript which we can write to a file
+    % Write results to file
     [
         receive {Pid, {Module, Data}} ->
-            write_other(io_lib:format("~p",[Data]), Module, Type, Outdir)
+            write_other(io_lib:format("~p", [Data]), Module, Type, Outdir)
         end
         || Pid <- Pids
-    ],
-    pkgutils:pkg_clean_tmp_dir().
+    ].
 
 %% Spawns a process which performs transpilation for any given file.
 %% Returns output to the spawning process
@@ -175,7 +177,7 @@ gen_js(Ast, File, Codegen, Outdir) ->
 
 %% Write results of codegen.js to a file
 write_js(Result, Filename, Outdir) ->
-    write_file(Result,Filename,"js",Outdir).
+    write_file(Result, Filename, "js", Outdir).
 
 write_other(Data, File, core_ast, Outdir) ->
     Filename = filename:basename(filename:rootname(File)),
@@ -238,3 +240,23 @@ perform_wildcard_matches(FileList) ->
                 Accumulator ++ Matches
         end
     end, [], FileList).
+
+%% Checks whether a given type is a valid one, and if so, returns ok.
+%% Otherwise throws an error.
+is_valid_type(String) when is_list(String) ->
+    is_valid_type(list_to_atom(String));
+is_valid_type(String) when is_binary(String) ->
+    is_valid_type(binary_to_list(String));
+
+is_valid_type(js) ->
+    ok;
+is_valid_type(js_ast) ->
+    ok;
+is_valid_type(core) ->
+    ok;
+is_valid_type(core_ast) ->
+    ok;
+is_valid_type(all) ->
+    ok;
+is_valid_type(Type) ->
+    throw({invalid_type, Type}).
