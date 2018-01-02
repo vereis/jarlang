@@ -2,7 +2,6 @@ var charParser = typeof charParser == "undefined" ? require("./charparser.js") :
 
 // Constructor
 function List (car, ...cdr) {
-    //this.value = typeof car != "string" && car.length > 1 ? new List(...car.split("")) : car;
     this.value = typeof car != "string" ? car : car.length > 1 ? new List(...car.split("")) : car.charCodeAt();
     this.next = car !== undefined ? new List(...cdr) : undefined;
     this.iterator = this;
@@ -99,7 +98,7 @@ List.prototype.toString = function() {
                     textBuffer += ",";
                 }
             }
-            
+
             if (Number.isInteger(buffer[i]) && charParser.isLatin1Char(buffer[i])) {
                 textBuffer += String.fromCharCode(buffer[i]);
             }
