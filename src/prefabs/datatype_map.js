@@ -11,20 +11,6 @@ ErlMap.prototype.getValue = function() {
     return this.value;
 };
 
-ErlMap.prototype.equals = function(map) {
-    if (!(map instanceof ErlMap) || this.value.size() != map.getValue().size()) {
-        return false;
-    }
-
-    for (k in this.value) {
-        if (this.value.hasOwnProperty(k) && (!map.getValue().hasOwnProperty(k) || !this.value[k].equals(map.getValue()[k]))) {
-            return false;
-        }
-    }
-
-    return true;
-};
-
 ErlMap.prototype.get = function(key) {
     if (typeof key != "string") {
         key = JSON.stringify(key);
@@ -71,6 +57,7 @@ ErlMap.prototype.size = function() {
     return size;
 };
 
+// todo: Ensure keys are ordered as they are in erlang
 ErlMap.prototype.toString = function() {
     var pairs = [], k;
 
