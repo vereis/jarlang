@@ -2,7 +2,19 @@ var charParser = typeof charParser == "undefined" ? require("./charparser.js") :
 
 // Constructor
 function List (car, ...cdr) {
-    this.value = typeof car != "string" ? car : car.length > 1 ? new List(...car.split("")) : car.charCodeAt();
+    if (typeof car == "string") {
+        var chars = car.split("");
+
+        for (var i = 0; i < chars.length; i++) {
+            chars[i] = chars[i].charCodeAt(0);
+        }
+
+        this.value = new List(...chars);
+    }
+    else {
+        this.value = car;
+    }
+
     this.next = car !== undefined ? new List(...cdr) : undefined;
     this.iterator = this;
 };
@@ -90,7 +102,9 @@ List.prototype.toString = function() {
         let isImproperList = !List.isList(this.__nthNode(Math.max(0, buffer.length - 1)));
         
         for (let i = 0; i < buffer.length; i++) {
-            if (i > 0) {
+            var isString = Number.isInteger(buffer[i]) && charParser.isLatin1Char(buffer[i]);
+
+            if (i > 0 && !(isString && Number.isInteger(buffer[i - 1]) && charParser.isLatin1Char(buffer[i - 1]))) {
                 if (i === buffer.length - 1 && isImproperList) {
                     textBuffer += "|";
                 }
@@ -99,7 +113,7 @@ List.prototype.toString = function() {
                 }
             }
 
-            if (Number.isInteger(buffer[i]) && charParser.isLatin1Char(buffer[i])) {
+            if (isString) {
                 textBuffer += String.fromCharCode(buffer[i]);
             }
             else {
