@@ -22,4 +22,6 @@ nest(A,B,C)->
 test([a|Rest])->
     Rest;
 test([a,B|Rest])->
-    B.
+    B;
+test({foo,A})->
+    [A,foo].

@@ -357,7 +357,12 @@ assembleCaseCondition(Params,_,[],Evaluate)->
 assembleCaseCondition(Params,Vars,Match,{c_literal,_,true})->
     assembleCaseCondition(Params,Vars,Match);
 assembleCaseCondition(Params,Vars,Match,Evaluate)->
-    Identifiers = tupleListToIdentifierList(Match,Params),
+    Identifiers = lists:map(fun(Elem)->
+            case Elem of
+                {c_var,_,Name} -> parseFunctionBody(noreturn,Params,{c_var,[],Name});
+                {c_alias,_,{c_var,_,Name},_Value} -> parseFunctionBody(noreturn,Params,{c_var,[],Name})
+            end
+        end,Match),
     esast:logicalExpression(
         <<"&&">>,
         assembleCaseCondition(Params,Vars,Match),
@@ -370,8 +375,10 @@ assembleCaseCondition(Params,Vars,Match,Evaluate)->
              Identifiers)
    ).
 
-assembleCaseCondition(Params,[V],[M])->
+assembleCaseCondition(Params,[V],[M={c_var,_A,_N}])->
         parseFunctionBody(noreturn,Params,{c_call, a, {a, a, erlang}, {a, a, 'match'}, [M,V]});
+assembleCaseCondition(Params,[V],[_M={c_alias,_A,_N,Value}])->
+        parseFunctionBody(noreturn,Params,{c_call, a, {a, a, erlang}, {a, a, 'match'}, [Value,V]});
 assembleCaseCondition(Params,[V|Vars],[M|Match])->
     esast:logicalExpression(<<"&&">>,
         assembleCaseCondition(Params,[V],[M]),
@@ -393,7 +400,16 @@ assignMatchedVars(Params,{c_var,_,Variable},{c_var,_,Match})->
             esast:identifier(atom_to_binary(Variable,utf8))
         )
     )];
-assignMatchedVars(Params,_,_)->
+assignMatchedVars(Params,{c_var,_,Variable},{c_alias,_,{c_var,[],Name},_Value})->
+    [esast:expressionStatement(
+        esast:assignmentExpression(
+            <<"=">>,
+            esast:identifier(atom_to_binary(Name,utf8)),
+            esast:identifier(atom_to_binary(Variable,utf8))
+        )
+    )];
+assignMatchedVars(Params,A,B)->
+    erlang:error(io_lib:format("assignMatchedVars error:~p~n~p",[A,B])),
     [ok].
 
 
@@ -424,6 +440,10 @@ declaratorsFromList(List)->
     lists:filtermap(fun(Elem)->
         case Elem of
             {c_var,_,Name} -> {true,esast:variableDeclarator(esast:identifier(atom_to_binary(Name,utf8)),esast:identifier(<<"undefined">>))};
+            {c_alias,_,{c_var,_,Name},Value} -> {true,
+                                                 esast:variableDeclarator(
+                                                     esast:identifier(atom_to_binary(Name,utf8)),
+                                                     parseFunctionBody(noreturn,[],Value))};
             _              -> false
         end
     end,List).
