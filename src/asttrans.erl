@@ -263,9 +263,10 @@ parseFunctionBody(noreturn,Params,{c_literal,_,Value}) when is_atom(Value)->
 parseFunctionBody(noreturn,Params,{c_literal,_,Value}) when is_list(Value)->
     esast:newExpression(esast:identifier(<<"List">>),[esast:literal(Value)]);
 
-parseFunctionBody(return,Params,{c_tuple,_,_Values})->
-    %io:format("        Tuple ~p~n", [tupleList_getVars_3(Values)]);
-    io:format("",[]);
+parseFunctionBody(return,Params,A={c_tuple,_,Values})->
+    esast:returnStatement(parseFunctionBody(noreturn,Params,A));
+parseFunctionBody(noreturn,Params,{c_tuple,_,Values})->
+    esast:newExpression(esast:identifier(<<"Tuple">>),[parseFunctionBody(noreturn,Params,Value) || Value <- Values]);
 
 
 
@@ -346,11 +347,28 @@ parseCaseClauses(ReturnAtom,Params, Vars, [{c_clause,_,Match,Evaluate,Consequent
     )}.
 
 assembleCaseCondition(Params,_,[],Evaluate)->
-    parseFunctionBody(noreturn,Params,Evaluate);
+    esast:callExpression(
+         esast:functionExpression(
+              null,
+              [],
+              esast:blockStatement([parseFunctionBody(return,Params,Evaluate)]),
+              false),
+         []);
 assembleCaseCondition(Params,Vars,Match,{c_literal,_,true})->
     assembleCaseCondition(Params,Vars,Match);
 assembleCaseCondition(Params,Vars,Match,Evaluate)->
-    esast:logicalExpression(<<"&&">>,assembleCaseCondition(Params,Vars,Match),parseFunctionBody(noreturn,Params,Evaluate)).
+    Identifiers = tupleListToIdentifierList(Match,Params),
+    esast:logicalExpression(
+        <<"&&">>,
+        assembleCaseCondition(Params,Vars,Match),
+        esast:callExpression(
+             esast:functionExpression(
+                  null,
+                  Identifiers,
+                  esast:blockStatement([parseFunctionBody(return,Params,Evaluate)]),
+                  false),
+             Identifiers)
+   ).
 
 assembleCaseCondition(Params,[V],[M])->
         parseFunctionBody(noreturn,Params,{c_call, a, {a, a, erlang}, {a, a, 'match'}, [M,V]});
