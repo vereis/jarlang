@@ -1,8 +1,19 @@
 // Constructor
 function List (car, ...cdr) {
-    this.value = car;
-    this.next = car !== undefined ? new List(...cdr) : undefined;
+    if (typeof car == "string") {
+        var chars = car.split("");
 
+        for (var i = 0; i < chars.length; i++) {
+            chars[i] = chars[i].charCodeAt(0);
+        }
+
+        this.value = new List(...chars);
+    }
+    else {
+        this.value = car;
+    }
+
+    this.next = car !== undefined ? new List(...cdr) : undefined;
     this.iterator = this;
 };
 
@@ -89,7 +100,9 @@ List.prototype.toString = function() {
         let isImproperList = !List.isList(this.__nthNode(Math.max(0, buffer.length - 1)));
         
         for (let i = 0; i < buffer.length; i++) {
-            if (i > 0) {
+            var isCharCode = Number.isInteger(buffer[i]) && isLatin1Char(buffer[i]);
+
+            if (i > 0 && !(isCharCode && Number.isInteger(buffer[i - 1]) && isLatin1Char(buffer[i - 1]))) {
                 if (i === buffer.length - 1 && isImproperList) {
                     textBuffer += "|";
                 }
@@ -97,7 +110,13 @@ List.prototype.toString = function() {
                     textBuffer += ",";
                 }
             }
-            textBuffer += buffer[i];
+
+            if (isCharCode) {
+                textBuffer += String.fromCharCode(buffer[i]);
+            }
+            else {
+                textBuffer += buffer[i];
+            }
         }
 
         return `[${textBuffer}]`;
@@ -106,6 +125,12 @@ List.prototype.toString = function() {
     return '[]';
 }
 
+function isLatin1Char(c) {
+    if (typeof c == "string") {
+        c = c.charCodeAt(0);
+    }
+    return (c >= 32 && c <= 126) || (c >= 160 && c <= 255);
+}
 
 if (typeof exports != "undefined") {
     exports.List = List;
