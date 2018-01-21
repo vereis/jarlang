@@ -357,6 +357,7 @@ assembleCaseCondition(Params,_,[],Evaluate)->
 assembleCaseCondition(Params,Vars,Match,{c_literal,_,true})->
     assembleCaseCondition(Params,Vars,Match);
 assembleCaseCondition(Params,Vars,Match,Evaluate)->
+%    Identifiers = tupleListToIdentifierList(Match,Params),
     Identifiers = lists:map(fun(Elem)->
             case Elem of
                 {c_var,_,Name} -> parseFunctionBody(noreturn,Params,{c_var,[],Name});
@@ -374,11 +375,11 @@ assembleCaseCondition(Params,Vars,Match,Evaluate)->
                   false),
              Identifiers)
    ).
-
-assembleCaseCondition(Params,[V],[M={c_var,_A,_N}])->
-        parseFunctionBody(noreturn,Params,{c_call, a, {a, a, erlang}, {a, a, 'match'}, [M,V]});
 assembleCaseCondition(Params,[V],[_M={c_alias,_A,_N,Value}])->
         parseFunctionBody(noreturn,Params,{c_call, a, {a, a, erlang}, {a, a, 'match'}, [Value,V]});
+assembleCaseCondition(Params,[V],[M])->
+%assembleCaseCondition(Params,[V],[M={c_var,A,N}])->
+        parseFunctionBody(noreturn,Params,{c_call, a, {a, a, erlang}, {a, a, 'match'}, [M,V]});
 assembleCaseCondition(Params,[V|Vars],[M|Match])->
     esast:logicalExpression(<<"&&">>,
         assembleCaseCondition(Params,[V],[M]),
@@ -408,8 +409,9 @@ assignMatchedVars(Params,{c_var,_,Variable},{c_alias,_,{c_var,[],Name},_Value})-
             esast:identifier(atom_to_binary(Variable,utf8))
         )
     )];
-assignMatchedVars(Params,A,B)->
-    erlang:error(io_lib:format("assignMatchedVars error:~p~n~p",[A,B])),
+%assignMatchedVars(Params,A,B)->
+%    erlang:error(io_lib:format("assignMatchedVars error:~p~n~p",[A,B])),
+assignMatchedVars(Params,_,_)->
     [ok].
 
 
