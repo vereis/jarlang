@@ -152,7 +152,7 @@ pipeline(core_ast, Module) ->
     {Module, AST};
 pipeline(js_ast, Module) ->
     {_Module, AST} = pipeline(core_ast, Module),
-    {Module, asttrans:erast2esast(AST)}.
+    {Module, estree:to_list(asttrans:erast2esast(AST))}.
 
 %% Generate javascript by writing out a javascript AST to a file and passing it into codegen.js
 %% Then proceeds to read the output of codegen.js and writes it to a file

@@ -4,31 +4,27 @@
 -vsn(1.0).
 
 -compile(export_all).
--compile({no_auto_import, [node/0]}).
-
--include_lib("eunit/include/eunit.hrl").
--include("estree/estree.hrl").
 
 %% Helper function to generate a equivalent c_module node in JS when given
 %% the main attributes of a c_module node from a Core Erlang AST
 c_module(ModuleName, ExportList, FunctionList) ->
     % Export list looks like [{"Funcname", Arity}...]
     % Function list looks like [{"Funcname/Arity", esast:functionDeclaration or esast:functionExpression}]
-    ?spec([{ModuleName, list}, {ExportList, list_of_tuple}, {FunctionList, list_of_tuple}]),
-    program([
-        constDeclaration(
+    % ?spec([{ModuleName, list}, {ExportList, list_of_tuple}, {FunctionList, list_of_tuple}]),
+    estree:program([
+        estree:constDeclaration(
             list_to_binary(ModuleName),
-            callExpression(
-                functionExpression(
+            estree:callExpression(
+                estree:functionExpression(
                     null,
                     [],
-                    blockStatement(
+                    estree:blockStatement(
                         [
-                            useStrict(),
+                            estree:useStrict(),
                             c_exports(ExportList),
                             c_functions(FunctionList),
-                            returnStatement(
-                                identifier(<<"exports">>)
+                            estree:returnStatement(
+                                estree:identifier(<<"exports">>)
                             )
                         ]
                     ),
@@ -45,14 +41,15 @@ c_module(ModuleName, ExportList, FunctionList) ->
 %% each entry in the map into a function containing a switch/case statement on arg length.
 c_exports(ExportList) ->
     MappedByFuncName = c_exports_mapfuncs(ExportList, #{}),
-    constDeclaration(
+    estree:constDeclaration(
         <<"exports">>,
-        objectExpression(
+        estree:objectExpression(
             lists:map(fun({FuncName, Arities}) ->
-                property(
-                    literal(list_to_binary(FuncName)),
-                    functionExpression(null, [], blockStatement(c_exports_gencases({FuncName, Arities})), false)
-                )
+                estree:property(
+                    estree:literal(list_to_binary(FuncName)),
+                    estree:functionExpression(null,
+                                              [],
+                                              estree:blockStatement(c_exports_gencases({FuncName, Arities})), false))
             end, maps:to_list(MappedByFuncName))
         )
     ).
@@ -74,31 +71,31 @@ c_exports_mapfuncs([{FnName, FnArity} | Tails], Map) when is_list(FnName) , is_i
 %% name and arities belonging to said function name. Cases will be generated for all such arities
 c_exports_gencases({FuncName, Arities}) when is_list(FuncName) ->
     [
-        switchStatement(
-            memberExpression(identifier(<<"arguments">>), identifier(<<"length">>), false),
+        estree:switchStatement(
+            estree:memberExpression(estree:identifier(<<"arguments">>), estree:identifier(<<"length">>), false),
             lists:map(fun(Arity) ->
-                switchCase(
-                    literal(Arity),
-                    [returnStatement(
-                        callExpression(
-                            memberExpression(
-                                identifier(<<"functions">>),
-                                literal(iolist_to_binary([FuncName, "/", integer_to_binary(Arity)])),
+                estree:switchCase(
+                    estree:literal(Arity),
+                    [estree:returnStatement(
+                        estree:callExpression(
+                            estree:memberExpression(
+                                estree:identifier(<<"functions">>),
+                                estree:literal(iolist_to_binary([FuncName, "/", integer_to_binary(Arity)])),
                                 true
                             ),
-                            [esast:spreadElement(identifier(<<"arguments">>))]
+                            [estree:spreadElement(estree:identifier(<<"arguments">>))]
                         )
-                    ), breakStatement(null)]
+                    ), estree:breakStatement(null)]
                 )
             end, Arities),
             false
         ),
-        error("exception error", "undefined function",
-            binaryExpression(<<"+">>,
-                literal(list_to_binary(FuncName)),
-                binaryExpression(<<"+">>,
-                    literal(<<"/">>),
-                    memberExpression(identifier(<<"arguments">>), identifier(<<"length">>), false)
+        estree:error("exception error", "undefined function",
+            estree:binaryExpression(<<"+">>,
+                estree:literal(list_to_binary(FuncName)),
+                estree:binaryExpression(<<"+">>,
+                    estree:literal(<<"/">>),
+                    estree:memberExpression(estree:identifier(<<"arguments">>), estree:identifier(<<"length">>), false)
                 )
             )
         )
@@ -109,12 +106,12 @@ c_exports_gencases({FuncName, Arities}) when is_list(FuncName) ->
 %% const functions = {"somefun/2": function() { ... }}
 c_functions([{FuncNameWithArity, Function} | Rest]) ->
     FunctionList = [{FuncNameWithArity, Function} | Rest],
-    constDeclaration(
+    estree:constDeclaration(
         <<"functions">>,
-        objectExpression(
+        estree:objectExpression(
             lists:map(fun({FuncName, FuncBody}) ->
-                property(
-                    literal(list_to_binary(FuncName)),
+                estree:property(
+                    estree:literal(list_to_binary(FuncName)),
                     FuncBody
                 )
             end , FunctionList)
