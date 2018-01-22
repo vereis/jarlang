@@ -319,25 +319,37 @@ parseFunctionBody(ReturnAtom,Params,{c_case, _, {c_apply,_,{c_var,_,Fun},Args}, 
         {Name,_} -> Fun_Actual = Name;
         _ -> Fun_Actual = Fun
     end,
-    assembleSequence(
-        %Define temp variable & call function
-        estree:variable_declaration([estree:variable_declarator(
-            estree:identifier(atom_to_binary('_tempVar',utf8)),
-            estree:call_expression(
-                estree:identifier(atom_to_binary(Fun_Actual,utf8)),
-                lists:map(fun(T)->parseFunctionBody(noreturn,Params,T) end,Args)
-            )
-        )],<<"let">>),
-        %Continue as normal, passing the temp variable
-        parseFunctionBody(ReturnAtom,Params,{c_case, [], {c_var,[],'_tempVar'}, Clauses})
+    parseFunctionCase(ReturnAtom,Params,
+        estree:call_expression(
+            estree:identifier(atom_to_binary(Fun_Actual,utf8)),
+            lists:map(fun(T)->parseFunctionBody(noreturn,Params,T) end,Args)
+        ),
+        Clauses
+    );
+
+parseFunctionBody(ReturnAtom,Params,{c_case, _, {c_call,_,{c_literal,_,Module},{c_literal,_,FunctionName},Args}, Clauses})->
+    parseFunctionCase(ReturnAtom,Params,
+        estree:call_expression(
+            estree:member_expression(estree:identifier(atom_to_binary(Module,utf8)),estree:identifier(atom_to_binary(FunctionName,utf8)),false),
+            lists:map(fun(T)->parseFunctionBody(noreturn,Params,T) end,Args)
+        ),
+        Clauses
     );
 
 parseFunctionBody(_,Params,T)->
     io:format("Unrecognised Token in function body: ~p~n", [T]).
 
 
-
-
+parseFunctionCase(ReturnAtom,Params,FuncCall, Clauses)->
+    assembleSequence(
+        %Define temp variable & call function
+        estree:variable_declaration([estree:variable_declarator(
+            estree:identifier(atom_to_binary('_tempVar',utf8)),
+            FuncCall
+        )],<<"let">>),
+        %Continue as normal, passing the temp variable
+        parseFunctionBody(ReturnAtom,Params,{c_case, [], {c_var,[],'_tempVar'}, Clauses})
+    ).
 
 
 
