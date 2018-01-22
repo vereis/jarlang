@@ -12,6 +12,7 @@ etesting/*
 *.core
 .concrete/DEV_MODE
 .rebar
+.bkup
 .log
 ### END - Erlang Stuff ###
 node_modules
