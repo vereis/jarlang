@@ -1,4 +1,4 @@
--module(consTest).
+-module(aliasTest).
 -compile(export_all).
 
 

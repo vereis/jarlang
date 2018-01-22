@@ -306,6 +306,14 @@ parseFunctionBody(return,Params,{c_primop,_,{_,_,Type},_Details})->
     % io:format("",[]);
 
 
+%c_letrec appears to represent list comprehension.
+parseFunctionBody(ReturnAtom,Params,{c_letrec,_,[Func],Apply})->
+    assembleSequence(
+        parseFunction(Func),
+        parseFunctionBody(ReturnAtom,Params,Apply)
+    );
+
+
 parseFunctionBody(ReturnAtom,Params,{c_case, _, {c_var,_,Var}, Clauses})->
     parseFunctionBody(ReturnAtom,Params,{c_case, a, {c_values,a,[{c_var,a,Var}]}, Clauses});
 
