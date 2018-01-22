@@ -51,6 +51,12 @@
         new_expression/2,
         call_expression/2,
         member_expression/3,
+        arrow_expression/6,
+        yield_expression/1,
+        generator_expression/3,
+        comprehension_expression/3,
+        comprehension_block/3,
+        comprehension_if/1,
 
         empty_statement/0,
         expression_statement/1,
@@ -70,6 +76,8 @@
         for_statement/4,
         for_in_statement/4,
         for_of_statement/3,
+        do_while_statement/2,
+        debugger_statement/0,
 
         error/3,
         use_strict/0,
@@ -142,7 +150,11 @@
                               | conditional_expression_node()
                               | new_expression_node()
                               | call_expression_node()
-                              | member_expression_node().
+                              | member_expression_node()
+                              | generator_expression_node()
+                              | comprehension_expression_node()
+                              | yield_expression_node()
+                              | arrow_expression_node().
 
 -type statement_node()       :: {'__estree_node', 'Statement', PropertyFields::es_node_fields()}
                               | empty_statement_node()
@@ -160,7 +172,9 @@
                               | while_statement_node()
                               | for_statement_node()
                               | for_in_statement_node()
-                              | for_of_statement_node().
+                              | for_of_statement_node()
+                              | do_while_statement_node()
+                              | debugger_statement_node().
 
 %% Declarations
 -type variable_declaration_node() :: {'__estree_node', 'VariableDeclaration', PropertyFields::es_node_fields()}.
@@ -170,35 +184,47 @@
 -type function_declaration_node() :: {'__estree_node', 'FunctionDeclaration', PropertyFields::es_node_fields()}.
 
 %% Expressions
--type this_expression_node()        :: {'__estree_node', 'ThisExpression', PropertyFields::es_node_fields()}.
+-type this_expression_node()          :: {'__estree_node', 'ThisExpression', PropertyFields::es_node_fields()}.
 
--type array_expression_node()       :: {'__estree_node', 'ArrayExpression', PropertyFields::es_node_fields()}.
+-type array_expression_node()         :: {'__estree_node', 'ArrayExpression', PropertyFields::es_node_fields()}.
 
--type object_expression_node()      :: {'__estree_node', 'ObjectExpression', PropertyFields::es_node_fields()}.
+-type object_expression_node()        :: {'__estree_node', 'ObjectExpression', PropertyFields::es_node_fields()}.
 
--type object_property_node()        :: {'__estree_node', 'Property', PropertyFields::es_node_fields()}.
+-type object_property_node()          :: {'__estree_node', 'Property', PropertyFields::es_node_fields()}.
 
--type function_expression_node()    :: {'__estree_node', 'FunctionExpression', PropertyFields::es_node_fields()}.
+-type function_expression_node()      :: {'__estree_node', 'FunctionExpression', PropertyFields::es_node_fields()}.
 
--type sequence_expression_node()    :: {'__estree_node', 'SequenceExpression', PropertyFields::es_node_fields()}.
+-type sequence_expression_node()      :: {'__estree_node', 'SequenceExpression', PropertyFields::es_node_fields()}.
 
--type unary_expression_node()       :: {'__estree_node', 'UnaryExpression', PropertyFields::es_node_fields()}.
+-type unary_expression_node()         :: {'__estree_node', 'UnaryExpression', PropertyFields::es_node_fields()}.
 
--type assignment_expression_node()  :: {'__estree_node', 'AssignmentExpression', PropertyFields::es_node_fields()}.
+-type assignment_expression_node()    :: {'__estree_node', 'AssignmentExpression', PropertyFields::es_node_fields()}.
 
--type binary_expression_node()      :: {'__estree_node', 'BinaryExpression', PropertyFields::es_node_fields()}.
+-type binary_expression_node()        :: {'__estree_node', 'BinaryExpression', PropertyFields::es_node_fields()}.
 
--type update_expression_node()      :: {'__estree_node', 'UpdateExpression', PropertyFields::es_node_fields()}.
+-type update_expression_node()        :: {'__estree_node', 'UpdateExpression', PropertyFields::es_node_fields()}.
 
--type logical_expression_node()     :: {'__estree_node', 'LogicalExpression', PropertyFields::es_node_fields()}.
+-type logical_expression_node()       :: {'__estree_node', 'LogicalExpression', PropertyFields::es_node_fields()}.
 
--type conditional_expression_node() :: {'__estree_node', 'ConditionalExpression', PropertyFields::es_node_fields()}.
+-type conditional_expression_node()   :: {'__estree_node', 'ConditionalExpression', PropertyFields::es_node_fields()}.
 
--type new_expression_node()         :: {'__estree_node', 'NewExpression', PropertyFields::es_node_fields()}.
+-type new_expression_node()           :: {'__estree_node', 'NewExpression', PropertyFields::es_node_fields()}.
 
--type call_expression_node()        :: {'__estree_node', 'CallExpression', PropertyFields::es_node_fields()}.
+-type call_expression_node()          :: {'__estree_node', 'CallExpression', PropertyFields::es_node_fields()}.
 
--type member_expression_node()      :: {'__estree_node', 'MemberExpression', PropertyFields::es_node_fields()}.
+-type member_expression_node()        :: {'__estree_node', 'MemberExpression', PropertyFields::es_node_fields()}.
+
+-type generator_expression_node()     :: {'__estree_node', 'GeneratorExpression', PropertyFields::es_node_fields()}.
+
+-type comprehension_expression_node() :: {'__estree_node', 'ComprehensionExpression', es_node_fields()}.
+
+-type comprehension_if_node()         :: {'__estree_node', 'ComprehensionIf', PropertyFields::es_node_fields()}.
+
+-type comprehension_block_node()      :: {'__estree_node', 'ComprehensionBlock', PropertyFields::es_node_fields()}.
+
+-type yield_expression_node()         :: {'__estree_node', 'YieldExpression', PropertyFields::es_node_fields()}.
+
+-type arrow_expression_node()         :: {'__estree_node', 'ArrowExpression', PropertyFields::es_node_fields()}.
 
 %% Statements
 -type empty_statement_node()       :: {'__estree_node', 'EmptyStatement', PropertyFields::es_node_fields()}.
@@ -236,6 +262,13 @@
 -type for_in_statement_node()      :: {'__estree_node', 'ForInStatement', PropertyFields::es_node_fields()}.
 
 -type for_of_statement_node()      :: {'__estree_node', 'ForOfStatement', PropertyFields::es_node_fields()}.
+
+-type do_while_statement_node()       :: {'__estree_node', 'DoWhileStatement', PropertyFields::es_node_fields()}.
+
+-type debugger_statement_node()    :: {'__estree_node', 'DebuggerStatement', PropertyFields::es_node_fields()}.
+
+
+
 
 
 %%% ---------------------------------------------------------------------------------------------%%%
@@ -301,7 +334,7 @@ node(T, Fs) when is_list(T) ->
 
 %% Updates a given node with the given NodeFields
 -spec update_record(es_node(),
-                   es_node_fields()) -> es_node().
+                    es_node_fields()) -> es_node().
 update_record({_, _, NodeFields}, NewFields) ->
     UpdatedNodeFields = merge_node_fields(NodeFields, NewFields),
     {_, NodeType} = lists:keyfind("type", 1, UpdatedNodeFields),
@@ -316,9 +349,9 @@ merge_node_fields(Old, New) ->
 
 %% Add location data metadata to any node
 -spec add_location_data(es_node(),
-                      pos_integer(),
-                      non_neg_integer(),
-                      non_neg_integer()) -> es_node().
+                        pos_integer(),
+                        non_neg_integer(),
+                        non_neg_integer()) -> es_node().
 add_location_data(Node, LineNumber, ColStart, ColEnd) ->
     update_record(Node, [{"loc", source_location(LineNumber, ColStart, ColEnd)}]).
 
@@ -352,8 +385,8 @@ identifier(Name) when ?IS_IDENTIFIER(Name) ->
 
 %% Generates a SourceLocation node
 -spec source_location(pos_integer(),
-                     non_neg_integer(),
-                     non_neg_integer()) -> source_location_node().
+                      non_neg_integer(),
+                      non_neg_integer()) -> source_location_node().
 source_location(LineNumber, ColStart, ColEnd) ->
     %?spec([{LineNumber, integer}, {ColStart, integer}, {ColEnd, integer}]),
     node("SourceLocation", [{"source", null},
@@ -399,7 +432,7 @@ statement() ->
 spread_element(Argument) ->
     %?spec([{Argument, [identifier, arrayExpression]}]),
     update_record(node(), [{"type", <<"SpreadElement">>},
-                          {"argument", Argument}]).
+                           {"argument", Argument}]).
 
 
 
@@ -411,16 +444,16 @@ spread_element(Argument) ->
 
 %% Generates a variable declaration
 -spec variable_declaration([variable_declarator_node()],
-                          es_literal()) -> variable_declaration_node().
+                            es_literal()) -> variable_declaration_node().
 variable_declaration(Declarations, Kind)  ->
     %?spec([{Declarations, list_of_variableDeclarator}, {Kind, [variableType]}]),
     update_record(declaration(), [{"type", <<"VariableDeclaration">>},
-                                 {"declarations", Declarations},
-                                 {"kind", Kind}]).
+                                  {"declarations", Declarations},
+                                  {"kind", Kind}]).
 
 %% Generates a variable declarator
 -spec variable_declarator(identifier_node(),
-                         expression_node()) -> variable_declarator_node().
+                          expression_node()) -> variable_declarator_node().
 variable_declarator(Identifier, Init) ->
     %?spec([{Identifier, identifier}, {Init, expression}]),
     node("VariableDeclarator", [{"id", Identifier},
@@ -428,14 +461,14 @@ variable_declarator(Identifier, Init) ->
 
 %% Generate a function declaration
 -spec function_declaration(identifier_node(),
-                          [identifier_node()],
-                          block_statement_node()) -> function_declaration_node().
+                           [identifier_node()],
+                           block_statement_node()) -> function_declaration_node().
 function_declaration(Identifier, Params, Body) ->
     %?spec([{Identifier, identifier}, {Params, list_of_identifier}, {Body, [expression, blockStatement]}]),
     update_record(declaration(), [{"type", <<"FunctionDeclaration">>},
-                                 {"id", Identifier},
-                                 {"params", Params},
-                                 {"body", Body}]).
+                                  {"id", Identifier},
+                                  {"params", Params},
+                                  {"body", Body}]).
 
 
 
@@ -455,14 +488,14 @@ this_expression() ->
 array_expression(Elements) ->
     %?spec([{Elements, list_of_expression}]),
     update_record(expression(), [{"type", <<"ArrayExpression">>},
-                                {"elements", Elements}]).
+                                 {"elements", Elements}]).
 
 %% Generate an Object expression
 -spec object_expression([object_property_node()]) -> object_expression_node().
 object_expression(Properties) ->
     %?spec([{Properties, list_of_property}]),
     update_record(expression(), [{"type", <<"ObjectExpression">>},
-                                {"properties", Properties}]).
+                                 {"properties", Properties}]).
 
 %% A Literal Property for Object expressions
 -spec property(literal_node() | identifier_node(),
@@ -475,133 +508,189 @@ property(Key, Value) ->
 
 %% Generates a Function expression
 -spec function_expression(identifier_node() | 'null',
-                         [identifier_node()],
-                         block_statement_node(),
-                         boolean()) -> function_expression_node().
+                          [identifier_node()],
+                          block_statement_node(),
+                          boolean()) -> function_expression_node().
 function_expression(Identifier, Params, Body, Expression) ->
     %?spec([{Identifier, [identifier, null]},
     %       {Params, list_of_identifier},
     %       {Body, blockStatement},
     %       {Expression, boolean}]),
     update_record(expression(), [{"type", <<"FunctionExpression">>},
-                                {"id", Identifier},
-                                {"params", Params},
-                                {"body", Body},
-                                {"expression", Expression}]).
+                                 {"id", Identifier},
+                                 {"params", Params},
+                                 {"body", Body},
+                                 {"expression", Expression}]).
+
+%% Generates an arrow expression
+-spec arrow_expression([identifier_node()],
+                       [expression_node()],
+                       identifier_node() | 'null',
+                       block_statement_node() | expression_node(),
+                       boolean(),
+                       boolean()) -> arrow_expression_node().
+arrow_expression(Params, Defaults, Rest, Body, IsGenerator, IsExpression) ->
+    update_record(expression(), [{"type", <<"ArrowExpression">>},
+                                 {"params", Params},
+                                 {"defaults", Defaults},
+                                 {"rest", Rest},
+                                 {"body", Body},
+                                 {"generator", IsGenerator},
+                                 {"expression", IsExpression}]).
 
 %% Generate a sequence expression
 -spec sequence_expression([expression_node()]) -> sequence_expression_node().
 sequence_expression(Expressions) ->
     %?spec([{Expressions, list_of_expression}]),
     update_record(expression(), [{"type", <<"SequenceExpression">>},
-                                {"expressions", Expressions}]).
+                                 {"expressions", Expressions}]).
 
 %% Generate a unary operation expression
 -spec unary_expression(any(),
-                      boolean(),
-                      expression_node()) -> unary_expression_node().
+                       boolean(),
+                       expression_node()) -> unary_expression_node().
 unary_expression(Operator, Prefix, Argument) when ?IS_UNARY_OPERATOR(Operator)  ->
     %?spec([{Operator, anything},
     %       {Prefix, boolean},
     %       {Argument, expression}]),
     update_record(expression(), [{"type", <<"UnaryExpression">>},
-                                {"operator", Operator},
-                                {"prefix", Prefix},
-                                {"argument", Argument}]).
+                                 {"operator", Operator},
+                                 {"prefix", Prefix},
+                                 {"argument", Argument}]).
 
 %% Generate an assignment expression
 -spec assignment_expression(any(),
-                           expression_node(),
-                           expression_node()) -> assignment_expression_node().
+                            expression_node(),
+                            expression_node()) -> assignment_expression_node().
 assignment_expression(Operator, Left, Right) ->
     %?spec([{Operator, anything},
     %       {Left, expression},
     %       {Right, expression}]),
     update_record(expression(), [{"type", <<"AssignmentExpression">>},
-                                {"operator", Operator},
-                                {"left", Left},
-                                {"right", Right}]).
+                                 {"operator", Operator},
+                                 {"left", Left},
+                                 {"right", Right}]).
 
 %% Generate a binary operation expression
 -spec binary_expression(any(),
-                       expression_node(),
-                       expression_node()) -> binary_expression_node().
+                        expression_node(),
+                        expression_node()) -> binary_expression_node().
 binary_expression(Operator, Left, Right) when ?IS_BINARY_OPERATOR(Operator) ->
     %?spec([{Operator, anything},
     %       {Left, expression},
     %       {Right, expression}]),
     update_record(expression(), [{"type", <<"BinaryExpression">>},
-                                {"operator", Operator},
-                                {"left", Left},
-                                {"right", Right}]).
+                                 {"operator", Operator},
+                                 {"left", Left},
+                                 {"right", Right}]).
 
 %% Generate an update (increment or decrement) operator expression
 -spec update_expression(any(),
-                       expression_node(),
-                       boolean()) -> update_expression_node().
+                        expression_node(),
+                        boolean()) -> update_expression_node().
 update_expression(Operator, Argument, Prefix) when ?IS_UPDATE_OPERATOR(Operator) ->
     %?spec([{Operator, anything},
     %       {Argument, expression},
     %       {Prefix, boolean}]),
     update_record(expression(), [{"type", <<"UpdateExpression">>},
-                                {"operator", Operator},
-                                {"argument", Argument},
-                                {"prefix", Prefix}]).
+                                 {"operator", Operator},
+                                 {"argument", Argument},
+                                 {"prefix", Prefix}]).
 
 %% Generate a logical operator expression
 -spec logical_expression(any(),
-                        expression_node(),
-                        expression_node()) -> logical_expression_node().
+                         expression_node(),
+                         expression_node()) -> logical_expression_node().
 logical_expression(Operator, Left, Right) when ?IS_LOGICAL_OPERATOR(Operator) ->
     %?spec([{Operator, anything},
     %       {Left, expression},
     %       {Right, expression}]),
     update_record(expression(), [{"type", <<"LogicalExpression">>},
-                                {"operator", Operator},
-                                {"left", Left},
-                                {"right", Right}]).
+                                 {"operator", Operator},
+                                 {"left", Left},
+                                 {"right", Right}]).
 
 %% Generate a conditional expression
 -spec conditional_expression(expression_node(),
-                            expression_node(),
-                            expression_node()) -> conditional_expression_node().
+                             expression_node(),
+                             expression_node()) -> conditional_expression_node().
 conditional_expression(Test, Alternate, Consequent) ->
     %?spec([{Test, expression}, {Alternate, expression}, {Consequent, expression}]),
     update_record(expression(), [{"type", <<"ConditionalExpression">>},
-                                {"test", Test},
-                                {"alternate", Alternate},
-                                {"consequent", Consequent}]).
+                                 {"test", Test},
+                                 {"alternate", Alternate},
+                                 {"consequent", Consequent}]).
 
 %% Generate a new expression
 -spec new_expression(expression_node(),
-                    [expression_node()]) -> new_expression_node().
+                     [expression_node()]) -> new_expression_node().
 new_expression(Callee, Arguments) ->
     %?spec([{Callee, expression}, {Arguments, list_of_expression}]),
     update_record(expression(), [{"type", <<"NewExpression">>},
-                                {"callee", Callee},
-                                {"arguments", Arguments}]).
+                                 {"callee", Callee},
+                                 {"arguments", Arguments}]).
 
 %% Generate a call expression
 -spec call_expression(expression_node(),
-                     [expression_node()]) -> call_expression_node().
+                      [expression_node()]) -> call_expression_node().
 call_expression(Callee, Arguments) ->
     %?spec([{Callee, expression}, {Arguments, list_of_expression}]),
     update_record(expression(), [{"type", <<"CallExpression">>},
-                                {"callee", Callee},
-                                {"arguments", Arguments}]).
+                                 {"callee", Callee},
+                                 {"arguments", Arguments}]).
 
 %% Generate a member expression
 -spec member_expression(expression_node(),
-                       identifier_node() | expression_node(),
-                       boolean()) -> member_expression_node().
+                        identifier_node() | expression_node(),
+                        boolean()) -> member_expression_node().
 member_expression(Object, Property, Computed) ->
     %?spec([{Object, expression}, {Property, [identifier, expression]}, {Computed, boolean}]),
     update_record(expression(), [{"type", <<"MemberExpression">>},
-                                {"object", Object},
-                                {"property", Property},
-                                {"computed", Computed}]).
+                                 {"object", Object},
+                                 {"property", Property},
+                                 {"computed", Computed}]).
 
+%% Generate a yield expression
+-spec yield_expression(expression_node() | 'null') -> yield_expression_node().
+yield_expression(Argument) ->
+    update_record(expression(), [{"type", <<"YieldExpression">>},
+                                 {"argument", Argument}]).
 
+%% Generate an array comprehension expression
+-spec comprehension_expression(expression_node(),
+                               [comprehension_block_node() | comprehension_if_node()],
+                               expression_node() | 'null') -> comprehension_expression_node().
+comprehension_expression(Body, Blocks, Filter) ->
+    update_record(expression(), [{"type", <<"ComprehensionExpression">>},
+                                 {"body", Body},
+                                 {"blocks", Blocks},
+                                 {"filter", Filter}]).
+
+%% Generates a comprehension block node
+-spec comprehension_block(any(),
+                          expression_node(),
+                          boolean()) -> comprehension_block_node().
+comprehension_block(Left, Right, Each) ->
+    update_record(expression(), [{"type", <<"ComprehensionBlock">>},
+                                 {"left", Left},
+                                 {"right", Right},
+                                 {"each", Each}]).
+
+%% Generates a comprehension if node
+-spec comprehension_if(expression_node()) -> comprehension_if_node().
+comprehension_if(Test) ->
+    update_record(expression(), [{"type", <<"ComprehensionIf">>},
+                                 {"test", Test}]).
+
+%% Generates a generator expression
+-spec generator_expression(expression_node(),
+                           [comprehension_block_node() | comprehension_if_node()],
+                           expression_node() | 'null') -> generator_expression_node().
+generator_expression(Body, Blocks, Filter) ->
+    update_record(expression(), [{"type", <<"GeneratorExpression">>},
+                                 {"body", Body},
+                                 {"blocks", Blocks},
+                                 {"filter", Filter}]).
 
 
 
@@ -618,170 +707,181 @@ empty_statement() ->
 -spec expression_statement(expression_node()) -> expression_statement_node().
 expression_statement(Expression) ->
     update_record(statement(), [{"type", <<"ExpressionStatement">>},
-                               {"expression", Expression}]).
+                                {"expression", Expression}]).
 
 %% Generates a block statement
 -spec block_statement([statement_node()]) -> block_statement_node().
 block_statement(Body) ->
     %?spec([{Body, list_of_statement}]),
     update_record(statement(), [{"type", <<"BlockStatement">>},
-                               {"body", Body}]).
+                                {"body", Body}]).
 
 %% Generates an if statement
 -spec if_statement(expression_node(),
-                  statement_node(),
-                  statement_node() | 'null') -> if_statement_node().
+                   statement_node(),
+                   statement_node() | 'null') -> if_statement_node().
 if_statement(Test, Consequent, Alternate) ->
     %?spec([{Test, expression}, {Consequent, statement}, {Alternate, [statement, null]}]),
     update_record(statement(), [{"type", <<"IfStatement">>},
-                               {"test", Test},
-                               {"consequent", Consequent},
-                               {"alternate", Alternate}]).
+                                {"test", Test},
+                                {"consequent", Consequent},
+                                {"alternate", Alternate}]).
 
 %% Generates a Labeled statement (prefixed with break/continue)
 -spec labeled_statement(identifier_node(),
-                       statement_node()) -> labeled_statement_node().
+                        statement_node()) -> labeled_statement_node().
 labeled_statement(Identifier, Body) ->
     %?spec([{Identifier, identifier}, {Body, statement}]),
     update_record(statement(), [{"type", <<"LabeledStatement">>},
-                               {"label", Identifier},
-                               {"body", Body}]).
+                                {"label", Identifier},
+                                {"body", Body}]).
 
 %% Generates a break statement
 -spec break_statement(identifier_node() | 'null') -> break_statement_node().
 break_statement(Identifier) ->
     %?spec([{Identifier, [null, identifier]}]),
     update_record(statement(), [{"type", <<"BreakStatement">>},
-                               {"label", Identifier}]).
+                                {"label", Identifier}]).
 
 %% Generates a continue statement
 -spec continue_statement(identifier_node() | 'null') -> continue_statement_node().
 continue_statement(Identifier) ->
     %?spec([{Identifier, [null, identifier]}]),
     update_record(statement(), [{"type", <<"ContinueStatement">>},
-                               {"label", Identifier}]).
+                                {"label", Identifier}]).
 
 %% Generates a with statement
 -spec with_statement(expression_node(),
-                    block_statement_node()) -> with_statement_node().
+                     block_statement_node()) -> with_statement_node().
 with_statement(Expression, BlockStatement) ->
     %?spec([{Expression, expression}, {BlockStatement, blockStatement}]),
     update_record(statement(), [{"type", <<"WithStatement">>},
-                               {"object", Expression},
-                               {"body", BlockStatement}]).
+                                {"object", Expression},
+                                {"body", BlockStatement}]).
 
 %% Generates a switch statement
 -spec switch_statement(expression_node(),
-                      [switch_case_statement_node()],
-                      boolean()) -> switch_statement_node().
+                       [switch_case_statement_node()],
+                       boolean()) -> switch_statement_node().
 switch_statement(Expression, Cases, HasLexScope) ->
     %?spec([{Expression, expression}, {Cases, list_of_switchCase}, {HasLexScope, boolean}]),
     update_record(statement(), [{"type", <<"SwitchStatement">>},
-                               {"discriminant", Expression},
-                               {"cases", Cases},
-                               {"lexical", HasLexScope}]).
+                                {"discriminant", Expression},
+                                {"cases", Cases},
+                                {"lexical", HasLexScope}]).
 
 %% Generates a case for use in a switch statement
 -spec switch_case(expression_node(),
-                 [statement_node()]) -> switch_case_statement_node().
+                  [statement_node()]) -> switch_case_statement_node().
 switch_case(Test, Consequent) ->
     %?spec([{Test, expression}, {Consequent, list_of_statement}]),
     update_record(statement(), [{"type", <<"SwitchCase">>},
-                               {"test", Test},
-                               {"consequent", Consequent}]).
+                                {"test", Test},
+                                {"consequent", Consequent}]).
 
 %% Generates a return statement
 -spec return_statement(expression_node() | 'null') -> return_statement_node().
 return_statement(Expression) ->
     %?spec([{Expression, [null, expression]}]),
     update_record(statement(), [{"type", <<"ReturnStatement">>},
-                               {"argument", Expression}]).
+                                {"argument", Expression}]).
 
 %% Generates a throw statement
 -spec throw_statement(expression_node() | 'null') -> throw_statement_node().
 throw_statement(Expression) ->
     %?spec([{Expression, [null, expression]}]),
     update_record(statement(), [{"type", <<"ThrowStatement">>},
-                               {"argument", Expression}]).
+                                {"argument", Expression}]).
 
 %% Generates a try statement
 -spec try_statement(block_statement_node(),
-                   catch_clause_node(),
-                   [catch_clause_node()],
-                   block_statement_node()) -> try_statement_node().
+                    catch_clause_node(),
+                    [catch_clause_node()],
+                    block_statement_node()) -> try_statement_node().
 try_statement(BlockStatement, Handler, GuardedHandler, Finalizer) ->
     %?spec([{BlockStatement, blockStatement},
     %       {Handler, catchClause},
     %       {GuardedHandler, list_of_catchClause},
     %       {Finalizer, blockStatement}]),
     update_record(statement(), [{"type", <<"TryStatement">>},
-                               {"block", BlockStatement},
-                               {"handler", Handler},
-                               {"guardedHandler", GuardedHandler},
-                               {"finalizer", Finalizer}]).
+                                {"block", BlockStatement},
+                                {"handler", Handler},
+                                {"guardedHandler", GuardedHandler},
+                                {"finalizer", Finalizer}]).
 
 %% Generates a catch clause for use in a try statement
 -spec catch_clause(identifier_node(),
-                  expression_node(),
-                  block_statement_node()) -> catch_clause_node().
+                   expression_node(),
+                   block_statement_node()) -> catch_clause_node().
 catch_clause(Param, Guard, Body) ->
     %?spec([{Param, identifier}, {Guard, expression}, {Body, blockStatement}]),
     update_record(statement(), [{"type", <<"CatchClause">>},
-                               {"param", Param},
-                               {"guard", Guard},
-                               {"body", Body}]).
+                                {"param", Param},
+                                {"guard", Guard},
+                                {"body", Body}]).
 
 %% Generates a while statement
 -spec while_statement(expression_node(),
-                     statement_node()) -> while_statement_node().
+                      statement_node()) -> while_statement_node().
 while_statement(Expression, Body) ->
     %?spec([{Expression, expression}, {Body, statement}]),
     update_record(statement(), [{"type", <<"WhileStatement">>},
-                               {"test", Expression},
-                               {"body", Body}]).
+                                {"test", Expression},
+                                {"body", Body}]).
+
+%% Generates a doWhile statement
+-spec do_while_statement(expression_node(),
+                         statement_node()) -> do_while_statement_node().
+do_while_statement(Expression, Body) ->
+    update_record(statement(), [{"type", <<"DoWhileStatement">>},
+                                {"test", Expression},
+                                {"body", Body}]).
 
 %% Generates a for statement
 -spec for_statement(expression_node() | variable_declaration_node() | 'null',
-                   expression_node() | 'null',
-                   expression_node(),
-                   statement_node()) -> for_statement_node().
+                    expression_node() | 'null',
+                    expression_node(),
+                    statement_node()) -> for_statement_node().
 for_statement(Init, Update, Expression, Body) ->
     %?spec([{Init, [expression, variableDeclaration, null]},
     %       {Update, [expression, null]},
     %       {Expression, expression},
     %       {Body, statement}]),
     update_record(while_statement(Expression, Body), [{"type", <<"ForStatement">>},
-                                                    {"init", Init},
-                                                    {"update", Update}]).
+                                                      {"init", Init},
+                                                      {"update", Update}]).
 
 %% Generates a forIn statement
 -spec for_in_statement(variable_declaration_node() | expression_node(),
-                     expression_node(),
-                     statement_node(),
-                     boolean()) -> for_in_statement_node().
+                       expression_node(),
+                       statement_node(),
+                       boolean()) -> for_in_statement_node().
 for_in_statement(Left, Right, Body, Each) ->
     %?spec([{Left, [variableDeclaration, expression]},
     %       {Right, expression},
     %       {Body, statement},
     %       {Each, boolean}]),
     update_record(statement(), [{"type", <<"ForInStatement">>},
-                               {"left", Left},
-                               {"right", Right},
-                               {"each", Each},
-                               {"body", Body}]).
+                                {"left", Left},
+                                {"right", Right},
+                                {"each", Each},
+                                {"body", Body}]).
 
 %% Generates a forOf statement
 -spec for_of_statement(variable_declaration_node() | expression_node(),
-                     expression_node(),
-                     statement_node()) -> for_of_statement_node().
+                       expression_node(),
+                       statement_node()) -> for_of_statement_node().
 for_of_statement(Left, Right, Body) ->
     %?spec([{Left, [variableDeclaration, expression]}, {Right, expression}, {Body, statement}]),
     update_record(statement(), [{"type", <<"ForOfStatement">>},
-                               {"left", Left},
-                               {"right", Right},
-                               {"body", Body}]).
+                                {"left", Left},
+                                {"right", Right},
+                                {"body", Body}]).
 
-
+%% Generates a debugger statement
+-spec debugger_statement() -> debugger_statement_node().
+debugger_statement() ->
+    update_record(statement(), [{"type", <<"DebuggerStatement">>}]).
 
 
 
@@ -808,17 +908,17 @@ use_strict() ->
 
 %% Variable declarator variant shorthand
 -spec const_declaration(es_identifier(),
-                       expression_node()) -> variable_declaration_node().
+                        expression_node()) -> variable_declaration_node().
 const_declaration(Identifier, Init) ->
     variable_declaration([variable_declarator(identifier(Identifier), Init)], <<"const">>).
 
 -spec var_declaration(es_identifier(),
-                     expression_node()) -> variable_declaration_node().
+                      expression_node()) -> variable_declaration_node().
 var_declaration(Identifier, Init) ->
     variable_declaration([variable_declarator(identifier(Identifier), Init)], <<"var">>).
 
 -spec let_declaration(es_identifier(),
-                     expression_node()) -> variable_declaration_node().
+                      expression_node()) -> variable_declaration_node().
 let_declaration(Identifier, Init) ->
     variable_declaration([variable_declarator(identifier(Identifier), Init)], <<"let">>).
 
