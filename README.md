@@ -1,8 +1,14 @@
 # jarlang
-Jarlang is an Erlang to JavaScript transpiler, which is mostly written in Erlang, with a little bit of JavaScript on the side. 
-Our main goal is to be able to support transpilation of as much of Erlang as possible. A long term goal of the project is to be able to transpile the transpiler itself, and be able to write Erlang in the browser; however the only thing which we expect to hold this stretch goal back is our use of erlc to compile native Erlang to an intermediate representation.
+Jarlang is an Erlang compiler which outputs to ES6 spec JavaScript, written in a combination of Erlang and JavaScript (NodeJS).
 
-Jarlang works similarly to other similar projects such as [LuvvieScript](https://github.com/hypernumbers/LuvvieScript) and [ElixirScript](https://github.com/elixirscript/elixirscript) by performing a sideways translation from some AST representing Erlang code to the documented [JSTree AST](https://developer.mozilla.org/en-US/docs/Mozilla/Projects/SpiderMonkey/Parser_API). We then offload the work of actually generating JavaScript to projects such as [escodegen](https://github.com/estools/escodegen).
+## Overview
+Jarlang is implemented via the following, simple, pipeline:
+1) Utilising the Erlang compiler, we generate Erlang's intermediate language, CoreErlang
+2) Utilise built in Erlang tools to generate an abstract syntax tree from generated CoreErlang, not too disimilarly from projects such as [LuvvieScript](https://github.com/hypernumbers/LuvvieScript) and [ElixirScript](https://github.com/elixirscript/elixirscript)
+3) Map the generated CoreErlang abstract syntax tree into an equivalent JavaScript abstract syntax tree
+4) Utilise NodeJS and tools such as [escodegen](https://github.com/estools/escodegen) to generate valid JavaScript.
+
+Our JavaScript AST is based off the documentation you can find here: [JSTree AST](https://developer.mozilla.org/en-US/docs/Mozilla/Projects/SpiderMonkey/Parser_API).
 
 ## Getting Started
 Jarlang is still in development and can't at this time can only transpile trivial pieces of Erlang to JavaScript. The following instructions will help you get an environment set up for development and testing purposes only. This tool is not at all ready for any real world usage.
@@ -14,14 +20,13 @@ Jarlang is still in development and can't at this time can only transpile trivia
 ### Installing
 1) Clone the repo with ```git clone https://github.com/vereis/jarlang``` on the commandline which should create a ```jarlang``` folder containing all our source code
 2) Go into the ```jarlang``` folder with ```cd jarlang```
-3) Run the ```make``` or ```make debug``` commands which will build either the release build of Jarlang or the debug build of Jarlang respectively. 
-4) Follow the instructions given to you from the result of ```make``` which will tell you to run ```jarlang.sh``` followed by a list of files to transpile as an argument. The folder containing ```jarlang.sh``` will depend on the type of build ```make``` has built.
-5) Currently, the generated JavaScript is printed to the command line. It does not currently write resultant JavaScript to a file.
+3) Get required NodeJS packages with the command ```npm install```
+4) Run the ```make``` or ```make debug``` commands which will build either the release build of Jarlang or the debug build of Jarlang respectively. 
+5) Run ```jarlang``` with the command ```ebin/jarlang``` or ```edebug/jarlang``` followed by paths to erlang files to compile into JavaScript. Additional info is available if you run the command ```jarlang -h```.
 
 ### Automatic Testing
 Run the command ```make test``` which will compile the project into the ```etesting``` directory and run the following tests:
-- Eunit tests in all modules if specified
-- XRef analyses of module code
+- Eunit tests in all modules where we have tests implemented
 - Dialyzer performing static analysis of Jarlang
 - Elvis to lint our code to confirm to a given style
 
