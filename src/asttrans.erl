@@ -236,6 +236,9 @@ parseFunctionBody(return,Params,{c_values, _, _Values})->
 
 parseFunctionBody(return,Params,{c_var, A, Var})->
     estree:return_statement(parseFunctionBody(noreturn,Params,{c_var, A, Var}));
+%added for support of functions by name
+parseFunctionBody(noreturn,Params,{c_var, _, {Name,Arity}})->
+    estree:identifier(atom_to_list(Name)++"/"++integer_to_list(Arity));
 parseFunctionBody(noreturn,Params,{c_var, _, Var})->
     estree:identifier(atom_to_binary(Var,utf8));
     %io:format("",[]);
