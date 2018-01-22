@@ -311,7 +311,7 @@ parseFunctionBody(ReturnAtom,Params,{c_case, _, {c_values,_,Vars}, Clauses})->
         _  -> assembleSequence(estree:variable_declaration(UnboundVars,<<"let">>),CaseClauses)
     end;
 
-parseFunctionBody(ReturnAtom,Params,{c_case, _, {c_apply,_,Name,Args}, Clauses})->
+parseFunctionBody(ReturnAtom,Params,{c_case, _, {c_apply,_,{c_var,_,{Name,_}},Args}, Clauses})->
     assembleSequence(
         %Define temp variable & call function
         estree:variable_declaration([estree:variable_declarator(
