@@ -311,6 +311,20 @@ parseFunctionBody(ReturnAtom,Params,{c_case, _, {c_values,_,Vars}, Clauses})->
         _  -> assembleSequence(estree:variable_declaration(UnboundVars,<<"let">>),CaseClauses)
     end;
 
+parseFunctionBody(ReturnAtom,Params,{c_case, _, {c_apply,_,Name,Args}, Clauses})->
+    assembleSequence(
+        %Define temp variable & call function
+        estree:variable_declaration([estree:variable_declarator(
+            estree:identifier(atom_to_binary('_tempVar',utf8)),
+            estree:call_expression(
+                estree:identifier(atom_to_binary(Name,utf8)),
+                lists:map(fun(T)->parseFunctionBody(noreturn,Params,T) end,Args)
+            )
+        )],<<"let">>),
+        %Continue as normal, passing the temp variable
+        parseFunctionBody(ReturnAtom,Params,{c_case, [], {c_var,[],'_tempVar'}, Clauses})
+    );
+
 parseFunctionBody(_,Params,T)->
     io:format("Unrecognised Token in function body: ~p~n", [T]).
 
