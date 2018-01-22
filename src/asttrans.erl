@@ -296,7 +296,9 @@ parseFunctionBody(noreturn,Params,{c_cons,_,A,B={c_cons,_,C,D}})->
 parseFunctionBody(noreturn,Params,{c_cons,_,A,B})->
     estree:new_expression(estree:identifier(<<"List">>),[parseFunctionBody(noreturn,Params,A),parseFunctionBody(noreturn,Params,B)]);
 
-
+%For lack of a more apparent reason for the c_try token I'm treating it a superfluous encapsulation
+parseFunctionBody(ReturnAtom,Params,{c_try,_,Elem,_,_,_,_})->
+    parseFunctionBody(ReturnAtom,Params,Elem);
 
 parseFunctionBody(return,Params,{c_primop,_,{_,_,Type},_Details})->
     % io:format("        Error? ~p~n~p~n", [Type,Details]),
