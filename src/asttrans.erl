@@ -371,7 +371,7 @@ assembleCaseCondition(Params,Vars,Match,Evaluate)->
     Identifiers = lists:map(fun(Elem)->
             case Elem of
                 {c_alias,_,{c_var,_,Name},_Value} -> parseFunctionBody(noreturn,Params,{c_var,[],Name});
-                true -> parseFunctionBody(noreturn,Params,Elem)
+                _ -> parseFunctionBody(noreturn,Params,Elem)
             end
         end,Match),
     estree:logical_expression(
