@@ -96,21 +96,25 @@
 %%% ---------------------------------------------------------------------------------------------%%%
 
 %% Node composition
--type es_literal()    :: nonempty_string()
-                       | iolist()
-                       | binary()
-                       | 'null'
-                       | 'undefined'
-                       | integer()
-                       | float()
-                       | boolean().
+-type es_literal()     :: nonempty_string()
+                        | iolist()
+                        | binary()
+                        | 'null'
+                        | 'undefined'
+                        | integer()
+                        | float()
+                        | boolean().
 
--type es_identifier() :: nonempty_string()
-                       | binary()
-                       | string()
-                       | iolist().
+-type es_identifier()  :: nonempty_string()
+                        | binary()
+                        | string()
+                        | iolist().
 
 -type es_node()        :: {'__estree_node', es_node_type(), PropertyFields::es_node_fields()}.
+
+-type es_ast()         :: es_node()
+                        | [{string(), any()}]
+                        | map().
 
 -type es_node_type()   :: atom().
 
@@ -275,6 +279,7 @@
     es_literal/0,
     es_identifier/0,
     es_node/0,
+    es_ast/0,
     es_node_type/0,
     es_node_field/0,
     es_node_fields/0,
