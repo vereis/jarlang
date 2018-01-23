@@ -156,7 +156,8 @@
                               | generator_expression_node()
                               | comprehension_expression_node()
                               | yield_expression_node()
-                              | arrow_expression_node().
+                              | arrow_expression_node()
+                              | spread_element_node().
 
 -type statement_node()       :: {'__estree_node', 'Statement', PropertyFields::es_node_fields()}
                               | empty_statement_node()
@@ -268,6 +269,70 @@
 -type do_while_statement_node()       :: {'__estree_node', 'DoWhileStatement', PropertyFields::es_node_fields()}.
 
 -type debugger_statement_node()    :: {'__estree_node', 'DebuggerStatement', PropertyFields::es_node_fields()}.
+
+%% Export all node types for external use
+-export_type([
+    es_literal/0,
+    es_identifier/0,
+    es_node/0,
+    es_node_type/0,
+    es_node_field/0,
+    es_node_fields/0,
+    tba_node/0,
+    identifier_node/0,
+    source_location_node/0,
+    position_node/0,
+    literal_node/0,
+    program_node/0,
+    spread_element_node/0,
+    declaration_node/0,
+    expression_node/0,
+    statement_node/0,
+    variable_declaration_node/0,
+    variable_declarator_node/0,
+    function_declaration_node/0,
+    this_expression_node/0,
+    array_expression_node/0,
+    object_expression_node/0,
+    object_property_node/0,
+    function_expression_node/0,
+    sequence_expression_node/0,
+    unary_expression_node/0,
+    assignment_expression_node/0,
+    binary_expression_node/0,
+    update_expression_node/0,
+    logical_expression_node/0,
+    conditional_expression_node/0,
+    new_expression_node/0,
+    call_expression_node/0,
+    member_expression_node/0,
+    generator_expression_node/0,
+    comprehension_expression_node/0,
+    comprehension_if_node/0,
+    comprehension_block_node/0,
+    yield_expression_node/0,
+    arrow_expression_node/0,
+    empty_statement_node/0,
+    expression_statement_node/0,
+    block_statement_node/0,
+    if_statement_node/0,
+    labeled_statement_node/0,
+    break_statement_node/0,
+    continue_statement_node/0,
+    with_statement_node/0,
+    switch_statement_node/0,
+    switch_case_statement_node/0,
+    return_statement_node/0,
+    throw_statement_node/0,
+    try_statement_node/0,
+    catch_clause_node/0,
+    while_statement_node/0,
+    for_statement_node/0,
+    for_in_statement_node/0,
+    for_of_statement_node/0,
+    do_while_statement_node/0,
+    debugger_statement_node/0
+]).
 
 
 
@@ -430,7 +495,7 @@ statement() ->
     node('Statement').
 
 %% SpreadExpression
--spec spread_element([identifier_node() | array_expression_node()]) -> spread_element_node().
+-spec spread_element(identifier_node() | array_expression_node()) -> spread_element_node().
 spread_element(Argument) ->
     %?spec([{Argument, [identifier, arrayExpression]}]),
     update_record(node(), [{"type", <<"SpreadElement">>},
@@ -693,6 +758,8 @@ generator_expression(Body, Blocks, Filter) ->
                                  {"body", Body},
                                  {"blocks", Blocks},
                                  {"filter", Filter}]).
+
+
 
 
 
