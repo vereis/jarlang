@@ -152,21 +152,23 @@ pipeline(core_ast, Module) ->
     {Module, AST};
 pipeline(js_ast, Module) ->
     {_Module, AST} = pipeline(core_ast, Module),
-    {Module, estree:to_list(asttrans:erast2esast(AST))}.
+    {Module, asttrans:erast2esast(AST)}.
 
 %% Generate javascript by writing out a javascript AST to a file and passing it into codegen.js
 %% Then proceeds to read the output of codegen.js and writes it to a file
 gen_js(Ast, File, Codegen, Outdir) ->
-    Json = jsone:encode(Ast),
+    %io:format("~p",[Ast]),
+    %init:stop().
+    Json = jsone:encode(estree:to_map(Ast)),
 
-    %% We need to write our json into a temp file so that we can easily pass it into codegen.js
-    %% We'll dump the temp file into the same directory as codegen.js
+    % We need to write our json into a temp file so that we can easily pass it into codegen.js
+    % We'll dump the temp file into the same directory as codegen.js
     WorkingDirectory = filename:dirname(Codegen),
     Filename = filename:basename(filename:rootname(File)),
     TempFile = lists:flatten([WorkingDirectory, "/", Filename, ".json"]),
     filepath:write(Json, TempFile),
 
-    %% Pass json file into escodegen to generate JavaScript
+    % Pass json file into escodegen to generate JavaScript
     try os:cmd("node " ++ Codegen ++ " " ++ TempFile) of
         Result ->
             write_js(Result, Filename, Outdir)
