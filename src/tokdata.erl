@@ -1,18 +1,52 @@
 %%% Provides a means of extracting token data from a given file.
 -module(tokdata).
 -author(["Nick Laine", "Chris Bailey"]).
--vsn(1.0).
+-vsn(1.1).
 
 -export([get_exported_function_map/1]).
 
+
+
+
+%%% ---------------------------------------------------------------------------------------------%%%
+%%% - TYPE DEFINITIONS --------------------------------------------------------------------------%%%
+%%% ---------------------------------------------------------------------------------------------%%%
+-type category() :: atom().
+
+-type symbol() :: atom()
+                | float()
+                | integer()
+                | string().
+
+-type token() :: {category(), erl_anno:anno(), symbol()}
+               | {category(), erl_anno:anno()}.
+
+
+
+
+
+%%% ---------------------------------------------------------------------------------------------%%%
+%%% - PUBLIC FUNCTIONS --------------------------------------------------------------------------%%%
+%%% ---------------------------------------------------------------------------------------------%%%
+
 %% Returns a map of the line numbers of exported functions keyed by function name/arity.
 %% Throughout the file, this key is referred to as an "export string" or "definition string".
+-spec get_exported_function_map(file:filename_all()) -> map().
 get_exported_function_map(Filename) ->
     Toks = tokenize_file(Filename),
     match_export_lines(Toks, find_exports(Toks), #{}).
 
+
+
+
+
+%%% ---------------------------------------------------------------------------------------------%%%
+%%% - PUBLIC FUNCTIONS --------------------------------------------------------------------------%%%
+%%% ---------------------------------------------------------------------------------------------%%%
+
 %% Scans and tokenizes a given erlang file; not dissimilar to coregen code that tokenizes core erlang.
 %% todo: add tokenize_erl/tokenize_core functions to lib?
+-spec tokenize_file(file:filename_all()) -> [token()].
 tokenize_file(Filename) ->
     case file:read_file(Filename) of
         {ok, Bin} ->
@@ -27,24 +61,17 @@ tokenize_file(Filename) ->
     end.
 
 %% Search file tokens for an export directive, then perform processing.
-find_exports({ok, Toks, _}) ->
-    find_exports(Toks);
 find_exports([{'-', _} | [{atom, _, export} | [{'(', _} | [{'[', _} | Toks]]]]) ->
     process_exports(Toks);
 find_exports([_ | Toks]) ->
     find_exports(Toks);
 find_exports([]) ->
-    ok;
-find_exports(error) ->
-    error;
-find_exports(_) ->
-    error.
+    ok.
 
 %% Returns a list of strings representing exported functions, i.e. the keys in the map of export data.
 process_exports(Toks) when is_list(Toks) ->
-    process_exports(Toks, []);
-process_exports(_) ->
-    badarg.
+    process_exports(Toks, []).
+
 process_exports([{atom, _, Name} | [{'/', _} | [{integer, _, Arity} | Toks]]], Exp) ->
     process_exports(Toks, [atom_to_list(Name) ++ "/" ++ integer_to_list(Arity) | Exp]);
 process_exports([{',', _} | Toks], Exp) ->

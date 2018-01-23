@@ -243,11 +243,6 @@ perform_wildcard_matches(FileList) ->
 
 %% Checks whether a given type is a valid one, and if so, returns ok.
 %% Otherwise throws an error.
-is_valid_type(String) when is_list(String) ->
-    is_valid_type(list_to_atom(String));
-is_valid_type(String) when is_binary(String) ->
-    is_valid_type(binary_to_list(String));
-
 is_valid_type(js) ->
     ok;
 is_valid_type(js_ast) ->
