@@ -106,6 +106,8 @@
                        | boolean().
 
 -type es_identifier() :: nonempty_string()
+                       | binary()
+                       | string()
                        | iolist().
 
 -type es_node()        :: {'__estree_node', es_node_type(), PropertyFields::es_node_fields()}.
