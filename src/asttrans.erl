@@ -308,8 +308,9 @@ parseFunctionBody(return,Params,{c_primop,_,{_,_,Type},_Details})->
 
 %c_letrec appears to represent list comprehension.
 parseFunctionBody(ReturnAtom,Params,{c_letrec,_,[Func],Apply})->
+    {Id,F} = parseFunction(Func),
     assembleSequence(
-        parseFunction(Func),
+        {Id,estree:to_list(F)},
         parseFunctionBody(ReturnAtom,Params,Apply)
     );
 
