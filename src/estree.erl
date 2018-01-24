@@ -110,7 +110,9 @@
                         | string()
                         | iolist().
 
--type es_node()        :: {'__estree_node', es_node_type(), PropertyFields::es_node_fields()}.
+-type es_node()        :: {'__estree_node', es_node_type(), PropertyFields::es_node_fields()}
+                        | list()
+                        | tuple().
 
 -type es_ast()         :: es_node()
                         | [{string(), any()}]
@@ -431,8 +433,10 @@ add_location_data(Node, LineNumber, ColStart, ColEnd) ->
 -spec to_map(es_node()) -> map().
 to_map({'__estree_node', _, Params}) ->
     maps:from_list([{K, to_map(V)} || {K, V} <- Params]);
-to_map([{'__estree_node', _, _} | _] = X) ->
-    [to_map(Y) || Y <- X];
+to_map(L) when is_list(L) ->
+    [to_map(Li) || Li <- L];
+to_map(T) when is_tuple(T) ->
+    to_map(tuple_to_list(T));
 to_map(X) ->
     %io:format("ESTREE_TO_MAP fail: ~p~n~n", [X]),
     X.
@@ -440,8 +444,10 @@ to_map(X) ->
 -spec to_list(es_node()) -> list().
 to_list({'__estree_node', _, Params}) ->
     [{K, to_list(V)} || {K, V} <- Params];
-to_list([{'__estree_node', _, _} | _] = X) ->
-    [to_list(Y) || Y <- X];
+to_list(L) when is_list(L) ->
+    [to_list(Li) || Li <- L];
+to_list(T) when is_tuple(T) ->
+    to_list(tuple_to_list(T));
 to_list(X) ->
     %io:format("ESTREE_TO_MAP fail: ~p~n~n", [X]),
     X.
