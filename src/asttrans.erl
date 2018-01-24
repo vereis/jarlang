@@ -408,7 +408,13 @@ assembleCaseCondition(Params,_,[],Evaluate)->
          estree:function_expression(
               null,
               [],
-              estree:block_statement([parseFunctionBody(return,Params,Evaluate)]),
+              estree:block_statement(
+                encapsulateExpressions(
+                    listCheck(
+                        parseFunctionBody(return,Params,Evaluate)
+                    )
+                )
+              ),
               false),
          []);
 assembleCaseCondition(Params,Vars,Match,{c_literal,_,true})->
@@ -428,7 +434,13 @@ assembleCaseCondition(Params,Vars,Match,Evaluate)->
              estree:function_expression(
                   null,
                   Identifiers,
-                  estree:block_statement([parseFunctionBody(return,Params,Evaluate)]),
+                    estree:block_statement(
+                      encapsulateExpressions(
+                          listCheck(
+                              parseFunctionBody(return,Params,Evaluate)
+                          )
+                      )
+                    ),
                   false),
              Identifiers)
    ).
