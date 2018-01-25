@@ -308,6 +308,8 @@ parseFunctionBody(return,Params,{c_primop,_,{_,_,Type},_Details})->
 
 %c_letrec appears to represent list comprehension.
 parseFunctionBody(ReturnAtom,Params,{c_letrec,_,[Func],Apply})->
+%parseFunctionBody(ReturnAtom,Params,{c_letrec,_,[{{_, _, {FunctionName, Arity}}, {_c_fun, _, ParamNames, Body}}],Apply})->
+    %{Id,F} = parseFunction({{a, [], {'listComp', Arity}}, {c_fun, [], ParamNames, Body}}),
     {Id,F} = parseFunction(Func),
     assembleSequence(
         {Id,estree:to_list(F)},
