@@ -225,7 +225,7 @@ parseFunctionBody(noreturn,Params,{c_call, _, {_, _, erlang}, {_, _, 'bnot'}, [T
 
 parseFunctionBody(noreturn,Params,{c_call, _, {_, _, Module}, {_, _, FunctionName}, Parameters})->
     estree:call_expression(
-         estree:member_expression(estree:identifier(atom_to_binary(Module,utf8)),estree:identifier(atom_to_binary(FunctionName,utf8)),true),
+         estree:member_expression(estree:identifier(atom_to_binary(Module,utf8)),estree:literal(atom_to_binary(FunctionName,utf8)),true),
          lists:map(fun(T)->parseFunctionBody(noreturn,Parameters,T) end,Parameters)
      );
 
@@ -264,12 +264,16 @@ parseFunctionBody(ReturnAtom,Params,{c_let, _, [{_, _, Variable}], Value, UsedBy
 parseFunctionBody(ReturnAtom,Params,{c_apply, _, {_,_,{FunctionName,Arity}}, Parameters})->
     % parseFunctionBody(ReturnAtom,Params,{c_call, [], {a, a, functions}, {a, a, FunctionName}, Parameters});
     estree:call_expression(
-         estree:identifier(list_to_binary(atom_to_list(FunctionName)++"/"++integer_to_list(Arity))),
+         % estree:identifier(list_to_binary(atom_to_list(FunctionName)++"/"++integer_to_list(Arity))),
+         estree:member_expression(
+            estree:identifier(atom_to_binary(functions,utf8)),
+            estree:literal(identify_normalise(atom_to_list(FunctionName)++"/"++integer_to_list(Arity))),
+            true),
          lists:map(fun(T)->parseFunctionBody(noreturn,Parameters,T) end,Parameters)
      );
 
-parseFunctionBody(ReturnAtom,Params,{c_apply, _, {_, _, FunctionName}, Parameters})->
-    parseFunctionBody(ReturnAtom,Params,{c_call, [], {a, a, functions}, {a, a, FunctionName}, Parameters});
+% parseFunctionBody(ReturnAtom,Params,{c_apply, _, {_, _, FunctionName}, Parameters})->
+%     parseFunctionBody(ReturnAtom,Params,{c_call, [], {a, a, functions}, {a, a, FunctionName}, Parameters});
 
 parseFunctionBody(return,Params,{c_literal,_,Value})->
     estree:return_statement(parseFunctionBody(noreturn,Params,{c_literal,[],Value}));
@@ -332,8 +336,29 @@ parseFunctionBody(ReturnAtom,Params,{c_letrec,_,[Func],Apply})->
     {Id,F} = parseFunction(Func),
     assembleSequence(
         %estree:variable_declaration(estree:variable_declarator(estree:identifier(list_to_binary(Id)),F),<<"let">>),
-        % F,
-        estree:let_declaration(list_to_binary(Id),F),
+        % estree:let_declaration(list_to_binary(Id),F),
+        estree:assignment_expression(
+            <<"=">>,
+            estree:member_expression(
+                estree:identifier(<<"functions">>),
+                estree:literal(identify_normalise(Id)),
+                % estree:identifier(<<"listComp">>),
+                true
+            ),
+            F
+        ),
+        % estree:function_expression(
+        %     estree:identifier(identify_normalise(atom_to_list(FunctionName)++"/"++integer_to_list(Arity))),
+        %     tupleListToIdentifierList(ParamNames,tupleList_getVars_3(ParamNames)),
+        %     estree:block_statement(
+        %         encapsulateExpressions(
+        %             listCheck(
+        %                 parseFunctionBody(return,tupleList_getVars_3(ParamNames),Body)
+        %             )
+        %         )
+        %     ),
+        %     true
+        % ),
         parseFunctionBody(ReturnAtom,Params,Apply)
     );
 
@@ -543,6 +568,10 @@ declaratorsFromList(List)->
         end
     end,List).
 
+
+identify_normalise(N)->
+    {ok, Regex}=re:compile("[^A-Za-z0-9_$]"),
+    iolist_to_binary(re:replace(N,Regex,"_$_",[global])).
 
 %rAtomToList([A|Rest])->
 %    [rAtomToList(A)|rAtomToList(Rest)];
