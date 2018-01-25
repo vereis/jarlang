@@ -570,8 +570,9 @@ declaratorsFromList(List)->
 
 
 identify_normalise(N)->
-    {ok, Regex}=re:compile("[^A-Za-z0-9_$]"),
-    iolist_to_binary(re:replace(N,Regex,"_$_",[global])).
+    % {ok, Regex}=re:compile("[^A-Za-z0-9_$]"),
+    % iolist_to_binary(re:replace(N,Regex,"_$_",[global])).
+    list_to_binary(N).
 
 %rAtomToList([A|Rest])->
 %    [rAtomToList(A)|rAtomToList(Rest)];
