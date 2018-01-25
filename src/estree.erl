@@ -452,6 +452,10 @@ to_list(X) ->
     %io:format("ESTREE_TO_MAP fail: ~p~n~n", [X]),
     X.
 
+identify_normalise(N)->
+    {ok, Regex}=re:compile("[^A-Za-z0-9_$]"),
+    iolist_to_binary(re:replace(N,Regex,"_$_",[global])).
+
 %%% ---------------------------------------------------------------------------------------------%%%
 %%% - AST PRIMITIVES ----------------------------------------------------------------------------%%%
 %%% ---------------------------------------------------------------------------------------------%%%
@@ -459,7 +463,7 @@ to_list(X) ->
 %% Generates an Identifier Node
 -spec identifier(es_identifier()) -> identifier_node().
 identifier(Name) when ?IS_IDENTIFIER(Name) ->
-    node("Identifier", [{"name", Name}]).
+    node("Identifier", [{"name", identify_normalise(Name)}]).
 
 %% Generates a SourceLocation node
 -spec source_location(pos_integer(),

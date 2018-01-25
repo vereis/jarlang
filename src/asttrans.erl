@@ -225,7 +225,7 @@ parseFunctionBody(noreturn,Params,{c_call, _, {_, _, erlang}, {_, _, 'bnot'}, [T
 
 parseFunctionBody(noreturn,Params,{c_call, _, {_, _, Module}, {_, _, FunctionName}, Parameters})->
     estree:call_expression(
-         estree:member_expression(estree:identifier(atom_to_binary(Module,utf8)),estree:identifier(atom_to_binary(FunctionName,utf8)),false),
+         estree:member_expression(estree:identifier(atom_to_binary(Module,utf8)),estree:identifier(atom_to_binary(FunctionName,utf8)),true),
          lists:map(fun(T)->parseFunctionBody(noreturn,Parameters,T) end,Parameters)
      );
 
@@ -262,10 +262,14 @@ parseFunctionBody(ReturnAtom,Params,{c_let, _, [{_, _, Variable}], Value, UsedBy
 
 % Is apply a local function call? Assignment from function? Assignment with pattern matching?
 parseFunctionBody(ReturnAtom,Params,{c_apply, _, {_,_,{FunctionName,Arity}}, Parameters})->
-    parseFunctionBody(ReturnAtom,Params,{c_call, [], {a, a, exports}, {a, a, FunctionName}, Parameters});
+    % parseFunctionBody(ReturnAtom,Params,{c_call, [], {a, a, functions}, {a, a, FunctionName}, Parameters});
+    estree:call_expression(
+         estree:identifier(list_to_binary(atom_to_list(FunctionName)++"/"++integer_to_list(Arity))),
+         lists:map(fun(T)->parseFunctionBody(noreturn,Parameters,T) end,Parameters)
+     );
 
 parseFunctionBody(ReturnAtom,Params,{c_apply, _, {_, _, FunctionName}, Parameters})->
-    parseFunctionBody(ReturnAtom,Params,{c_call, [], {a, a, exports}, {a, a, FunctionName}, Parameters});
+    parseFunctionBody(ReturnAtom,Params,{c_call, [], {a, a, functions}, {a, a, FunctionName}, Parameters});
 
 parseFunctionBody(return,Params,{c_literal,_,Value})->
     estree:return_statement(parseFunctionBody(noreturn,Params,{c_literal,[],Value}));
@@ -297,8 +301,23 @@ parseFunctionBody(noreturn,Params,{c_cons,_,A,B})->
     estree:new_expression(estree:identifier(<<"List">>),[parseFunctionBody(noreturn,Params,A),parseFunctionBody(noreturn,Params,B)]);
 
 %For lack of a more apparent reason for the c_try token I'm treating it a superfluous encapsulation
-parseFunctionBody(ReturnAtom,Params,{c_try,_,Elem,_,_,_,_})->
-    parseFunctionBody(ReturnAtom,Params,Elem);
+parseFunctionBody(return,Params,{c_try,_,Elem,_,_,_,_})->
+    estree:return_statement(parseFunctionBody(noreturn,Params,{c_try,[],Elem,a,a,a,a}));
+parseFunctionBody(noreturn,Params,{c_try,_,Elem,_,_,_,_})->
+    estree:call_expression(
+        estree:function_expression(
+            null,
+            [],
+            estree:block_statement(
+                encapsulateExpressions(
+                    listCheck(
+                        parseFunctionBody(return,Params,Elem)
+                    )
+                )
+            ),
+        false),
+    []);
+    % parseFunctionBody(ReturnAtom,Params,Elem);
 
 parseFunctionBody(return,Params,{c_primop,_,{_,_,Type},_Details})->
     % io:format("        Error? ~p~n~p~n", [Type,Details]),
@@ -308,11 +327,13 @@ parseFunctionBody(return,Params,{c_primop,_,{_,_,Type},_Details})->
 
 %c_letrec appears to represent list comprehension.
 parseFunctionBody(ReturnAtom,Params,{c_letrec,_,[Func],Apply})->
-%parseFunctionBody(ReturnAtom,Params,{c_letrec,_,[{{_, _, {FunctionName, Arity}}, {_c_fun, _, ParamNames, Body}}],Apply})->
-    %{Id,F} = parseFunction({{a, [], {'listComp', Arity}}, {c_fun, [], ParamNames, Body}}),
+% parseFunctionBody(ReturnAtom,Params,{c_letrec,_,[{{_, _, {FunctionName, Arity}}, {_c_fun, _, ParamNames, Body}}],Apply})->
+%     {Id,F} = parseFunction({{a, [], {'listComp', Arity}}, {c_fun, [], ParamNames, Body}}),
     {Id,F} = parseFunction(Func),
     assembleSequence(
-        {Id,estree:to_list(F)},
+        %estree:variable_declaration(estree:variable_declarator(estree:identifier(list_to_binary(Id)),F),<<"let">>),
+        % F,
+        estree:let_declaration(list_to_binary(Id),F),
         parseFunctionBody(ReturnAtom,Params,Apply)
     );
 
