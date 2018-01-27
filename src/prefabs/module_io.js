@@ -29,21 +29,25 @@ const io = function () {
     };
     const functions = {
         'columns/0': function () {
-            if (typeof process == "object") {
-                return new Tuple(new Atom("ok"), new ErlNumber(process.stdout.columns));
+            var cols = 1;
+
+            if (typeof process == "object" && process.stdout) {
+                cols = process.stdout.columns;
             }
+
+            return new Tuple(new Atom("ok"), new ErlNumber(cols));
         },
         'columns/1': function (_cor0) {
-            this['columns/0']();
+            return this['columns/0']();
         },
         
         'format/1': function (_cor0) {
             console.log(_cor0);
-            return 'ok';
+            return new Atom("ok");
         },
         'format/2': function (_cor1, _cor0) {
             console.log(_cor1);
-            return 'ok';
+            return new Atom("ok");
         },
         'format/3': function (_cor2, _cor1, _cor0) {
             this['format/2'](_cor1, _cor0);
@@ -52,6 +56,7 @@ const io = function () {
         'fread/2': function (_cor1, _cor0) {
         },
         'fread/3': function (_cor2, _cor1, _cor0) {
+            return this['fread/2'](_cor1, _cor0);
         },
 
         'fwrite/1': function (_cor0) {
@@ -59,21 +64,25 @@ const io = function () {
         'fwrite/2': function (_cor1, _cor0) {
         },
         'fwrite/3': function (_cor2, _cor1, _cor0) {
+            return this['fwrite/2'](_cor1, _cor0);
         },
 
         'get_chars/2': function (_cor1, _cor0) {
         },
         'get_chars/3': function (_cor2, _cor1, _cor0) {
+            return this['get_chars/2'](_cor1, _cor0);
         },
 
         'get_line/1': function (_cor0) {
         },
         'get_line/2': function (_cor1, _cor0) {
+            return this['get_line/1'](_cor0);
         },
 
         'getopts/0': function () {
         },
         'getopts/1': function (_cor0) {
+            return this['getopts/0']();
         },
 
         'module_info/0': function () {
@@ -82,8 +91,11 @@ const io = function () {
         },
 
         'nl/0': function () {
+            console.log("\n");
+            return new Atom("ok");
         },
         'nl/1': function (_cor0) {
+            return this['nl/0']();
         },
 
         'parse_erl_exprs/1': function (_cor0) {
@@ -110,6 +122,7 @@ const io = function () {
         'put_chars/1': function (_cor0) {
         },
         'put_chars/2': function (_cor1, _cor0) {
+            return this['put_chars/1'](_cor0);
         },
 
         'read/1': function (_cor0) {
@@ -122,12 +135,16 @@ const io = function () {
         },
 
         'rows/0': function () {
-            if (typeof process == "object") {
-                return new Tuple(new Atom("ok"), new ErlNumber(process.stdout.rows));
+            var rows = 1;
+
+            if (typeof process == "object" && process.stdout) {
+                rows = process.stdout.rows;
             }
+
+            return new Tuple(new Atom("ok"), new ErlNumber(rows));
         },
         'rows/1': function (_cor0) {
-            this['rows/0']();
+            return this['rows/0']();
         },
 
         'scan_erl_exprs/1': function (_cor0) {
@@ -151,11 +168,13 @@ const io = function () {
         'setopts/1': function (_cor0) {
         },
         'setopts/2': function (_cor1, _cor0) {
+            return this['setopts/1'](_cor0);
         },
 
         'write/1': function (_cor0) {
         },
         'write/2': function (_cor1, _cor0) {
+            return this['write/1'](_cor0);
         }
     };
     return exports;
