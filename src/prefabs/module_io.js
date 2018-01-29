@@ -27,6 +27,7 @@ const io = function () {
             throw '** exception error: undefined function' + ('module_info' + ('/' + arguments.length));
         }
     };
+
     const functions = {
         'columns/0': function () {
             var cols = 1;
@@ -46,7 +47,7 @@ const io = function () {
             return new Atom("ok");
         },
         'format/2': function (_cor1, _cor0) {
-            console.log(_cor1);
+            console.log(formatString(_cor1, _cor0));
             return new Atom("ok");
         },
         'format/3': function (_cor2, _cor1, _cor0) {
@@ -177,5 +178,70 @@ const io = function () {
             return this['write/1'](_cor0);
         }
     };
+
+    // Private Methods
+    function formatString(str, data) {
+        var fstr = "";
+
+        for (int i = 0; i < str.length; i++) {
+            var ch = str.charAt(i);
+
+            if (ch == "~") {
+                i++;
+
+                switch (str.charAt(i)) {
+                    case "~":
+                        fstr += "~";
+                        break;
+                    case "c":
+                        fstr += String.fromCharCode(data.shift());
+                        break;
+                    case "f":
+                        break;
+                    case "e":
+                        break;
+                    case "g":
+                        break;
+                    case "s":
+                        fstr += data.shift();
+                        break;
+                    case "w":
+                        break;
+                    case "p":
+                        break;
+                    case "W":
+                        break;
+                    case "P":
+                        break;
+                    case "B":
+                        break;
+                    case "X":
+                        break;
+                    case "#":
+                        break;
+                    case "b":
+                        break;
+                    case "x":
+                        break;
+                    case "+":
+                        break;
+                    case "n":
+                        fstr += "\n";
+                        break;
+                    case "i":
+                        data.shift();
+                        break;
+                    default:
+                        throw "bad argument";
+                }
+            }
+            else {
+                fstr += ch;
+            }
+        }
+
+        return fstr;
+    }
+
     return exports;
 }();
