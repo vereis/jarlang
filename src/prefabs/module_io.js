@@ -43,11 +43,11 @@ const io = function () {
         },
         
         'format/1': function (_cor0) {
-            console.log(_cor0);
+            console.log(_cor0.toString());
             return new Atom("ok");
         },
         'format/2': function (_cor1, _cor0) {
-            console.log(formatString(_cor1, _cor0));
+            console.log(formatErlangString(_cor1, _cor0).toString());
             return new Atom("ok");
         },
         'format/3': function (_cor2, _cor1, _cor0) {
@@ -61,11 +61,13 @@ const io = function () {
         },
 
         'fwrite/1': function (_cor0) {
+            return this['format/1'](_cor0);
         },
         'fwrite/2': function (_cor1, _cor0) {
+            return this['format/2'](_cor1, _cor0);
         },
         'fwrite/3': function (_cor2, _cor1, _cor0) {
-            return this['fwrite/2'](_cor1, _cor0);
+            return this['format/2'](_cor1, _cor0);
         },
 
         'get_chars/2': function (_cor1, _cor0) {
@@ -180,8 +182,9 @@ const io = function () {
     };
 
     // Private Methods
-    function formatString(str, data) {
-        var fstr = "";
+    function formatErlangString(str, data) {
+        var isErlList = str instanceof List, fstr = "";
+        str = isErlList ? str.toString() : str;
 
         for (int i = 0; i < str.length; i++) {
             var ch = str.charAt(i);
@@ -240,7 +243,7 @@ const io = function () {
             }
         }
 
-        return fstr;
+        return isErlList ? new List(...fstr.split("")) : fstr;
     }
 
     return exports;
