@@ -186,7 +186,7 @@ const io = function () {
         var isErlList = str instanceof List, fstr = "";
         str = isErlList ? str.toString() : str;
 
-        for (int i = 0; i < str.length; i++) {
+        for (var i = 0; i < str.length; i++) {
             var ch = str.charAt(i);
 
             if (ch == "~") {
