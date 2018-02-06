@@ -371,7 +371,11 @@ parseFunctionBody(ReturnAtom,Params,{c_case, _, {c_values,_,Vars}, Clauses})->
     {UnboundVars,CaseClauses} = parseCaseClauses(ReturnAtom,Params, Vars, Clauses),
     case UnboundVars of
         [] -> CaseClauses;
-        _  -> assembleSequence(estree:variable_declaration(UnboundVars,<<"let">>),CaseClauses)
+        _  -> assembleSequence(
+                estree:variable_declaration(
+                    tupleList_getVars_2(maps:to_list(maps:from_list(UnboundVars))),
+                    <<"let">>),
+                CaseClauses)
     end;
 
 parseFunctionBody(ReturnAtom,Params,{c_case, _, {c_apply,_,{c_var,_,Fun},Args}, Clauses})->
@@ -557,14 +561,25 @@ tupleList_getVars_3([{_, _, Val, _} | Body])->
     [Val | tupleList_getVars_3(Body)].
 
 
+tupleList_getVars_2([])->
+    [];
+tupleList_getVars_2([{_, Val} | Body])->
+    [Val | tupleList_getVars_2(Body)];
+tupleList_getVars_2([{_, Val, _} | Body])->
+    [Val | tupleList_getVars_2(Body)].
+
+
 declaratorsFromList(List)->
     lists:filtermap(fun(Elem)->
         case Elem of
-            {c_var,_,Name} -> {true,estree:variable_declarator(estree:identifier(atom_to_binary(Name,utf8)),estree:identifier(<<"undefined">>))};
-            {c_alias,_,{c_var,_,Name},Value} -> {true,
+            {c_var,_,Name} -> { true,{Name,
+                                estree:variable_declarator(
+                                    estree:identifier(atom_to_binary(Name,utf8)),
+                                    estree:identifier(<<"undefined">>))}};
+            {c_alias,_,{c_var,_,Name},Value} -> {true,{Name,
                                                  estree:variable_declarator(
                                                      estree:identifier(atom_to_binary(Name,utf8)),
-                                                     parseFunctionBody(noreturn,[],Value))};
+                                                     parseFunctionBody(noreturn,[],Value))}};
             _              -> false
         end
     end,List).
