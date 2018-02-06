@@ -263,17 +263,18 @@ parseFunctionBody(ReturnAtom,Params,{c_let, _, [{_, _, Variable}], Value, UsedBy
 % Is apply a local function call? Assignment from function? Assignment with pattern matching?
 parseFunctionBody(ReturnAtom,Params,{c_apply, _, {_,_,{FunctionName,Arity}}, Parameters})->
     % parseFunctionBody(ReturnAtom,Params,{c_call, [], {a, a, functions}, {a, a, FunctionName}, Parameters});
-    estree:call_expression(
-         % estree:identifier(list_to_binary(atom_to_list(FunctionName)++"/"++integer_to_list(Arity))),
-         estree:member_expression(
-            estree:identifier(atom_to_binary(functions,utf8)),
-            estree:literal(identify_normalise(atom_to_list(FunctionName)++"/"++integer_to_list(Arity))),
-            true),
-         lists:map(fun(T)->parseFunctionBody(noreturn,Parameters,T) end,Parameters)
-     );
+    parseFunctionBody(ReturnAtom,Params,{c_call, [], {a, a, functions}, {a, a, list_to_atom(atom_to_list(FunctionName)++"/"++integer_to_list(Arity))}, Parameters});
+    % estree:call_expression(
+    %      % estree:identifier(list_to_binary(atom_to_list(FunctionName)++"/"++integer_to_list(Arity))),
+    %      estree:member_expression(
+    %         estree:identifier(atom_to_binary(functions,utf8)),
+    %         estree:literal(identify_normalise(atom_to_list(FunctionName)++"/"++integer_to_list(Arity))),
+    %         true),
+    %      lists:map(fun(T)->parseFunctionBody(noreturn,Parameters,T) end,Parameters)
+    %  );
 
-% parseFunctionBody(ReturnAtom,Params,{c_apply, _, {_, _, FunctionName}, Parameters})->
-%     parseFunctionBody(ReturnAtom,Params,{c_call, [], {a, a, functions}, {a, a, FunctionName}, Parameters});
+parseFunctionBody(ReturnAtom,Params,{c_apply, _, {_, _, FunctionName}, Parameters})->
+    parseFunctionBody(ReturnAtom,Params,{c_call, [], {a, a, functions}, {a, a, FunctionName}, Parameters});
 
 parseFunctionBody(return,Params,{c_literal,_,Value})->
     estree:return_statement(parseFunctionBody(noreturn,Params,{c_literal,[],Value}));
