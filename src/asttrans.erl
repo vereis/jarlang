@@ -16,6 +16,8 @@ parseModule({c_module, _A, {_, _, ModuleName}, Exports, _Attributes, Functions})
 parseModule(T)->
     io:format("Unrecognised Token in module section: ~p", [T]).
 
+
+%###########################
 % Concurrently transpile core erlang asts for functions into javascript asts for functions
 parseFunctions(Functions)->
     Self = self(),
@@ -32,6 +34,8 @@ parseFunctions(Functions)->
         Pid <- Pids
     ].
 
+
+%###########################
 %Read a function
 parseFunction({{_, _, {FunctionName, Arity}}, {_c_fun, [compiler_generated], _, _}})->
     {atom_to_list(FunctionName)++"/"++integer_to_list(Arity),estree:function_expression(null,[],estree:block_statement([estree:empty_statement()]),false)};
@@ -49,6 +53,8 @@ parseFunction({{_, _, {FunctionName, Arity}}, {_c_fun, _, ParamNames, Body}})->
         false
     )}.
 
+
+%###########################
 is_statement({_, Type, _}) ->
     case re:run(atom_to_list(Type), "Statement|Declaration") of
         {match, _} ->
@@ -81,9 +87,7 @@ listCheck(L)->
     end.
 
 
-%Parse the function body
-
-
+%###########################
 parseNode(ReturnAtom,Params,N)->
     case tuple_getVar_1(N) of
         c_call ->parseCall(ReturnAtom,Params,N);
@@ -101,146 +105,9 @@ parseNode(ReturnAtom,Params,N)->
         c_case ->parseCase(ReturnAtom,Params,N)
     end.
 
-
+%###########################
 parseCall(return,Params,{c_call, A, {B, C, Module}, {D, E, FunctionName}, Parameters})->
     estree:return_statement(parseCall(noreturn,Params,{c_call, A, {B, C, Module}, {D, E, FunctionName}, Parameters}));
-
-
-
-%Handle Operator calls
-
-
-
-parseCall(noreturn,Params,{c_call, _, {_, _, erlang}, {_, _, '+'}, [L,R]})->
-    estree:call_expression(
-         estree:member_expression(estree:identifier(<<"erlang">>),estree:identifier(<<"addition">>),false),
-         [parseNode(noreturn,Params,L),parseNode(noreturn,Params,R)]
-     );
-parseCall(noreturn,Params,{c_call, _, {_, _, erlang}, {_, _, '-'}, [L,R]})->
-    estree:call_expression(
-         estree:member_expression(estree:identifier(<<"erlang">>),estree:identifier(<<"subtraction">>),false),
-         [parseNode(noreturn,Params,L),parseNode(noreturn,Params,R)]
-     );
-parseCall(noreturn,Params,{c_call, _, {_, _, erlang}, {_, _, '*'}, [L,R]})->
-    estree:call_expression(
-         estree:member_expression(estree:identifier(<<"erlang">>),estree:identifier(<<"multiplication">>),false),
-         [parseNode(noreturn,Params,L),parseNode(noreturn,Params,R)]
-     );
-parseCall(noreturn,Params,{c_call, _, {_, _, erlang}, {_, _, '/'}, [L,R]})->
-    estree:call_expression(
-         estree:member_expression(estree:identifier(<<"erlang">>),estree:identifier(<<"division">>),false),
-         [parseNode(noreturn,Params,L),parseNode(noreturn,Params,R)]
-     );
-parseCall(noreturn,Params,{c_call, _, {_, _, erlang}, {_, _, 'rem'}, [L,R]})->
-    estree:call_expression(
-         estree:member_expression(estree:identifier(<<"erlang">>),estree:identifier(<<"remainder">>),false),
-         [parseNode(noreturn,Params,L),parseNode(noreturn,Params,R)]
-     );
-parseCall(noreturn,Params,{c_call, _, {_, _, erlang}, {_, _, 'div'}, [L,R]})->
-    estree:call_expression(
-         estree:member_expression(estree:identifier(<<"erlang">>),estree:identifier(<<"intDivision">>),false),
-         [parseNode(noreturn,Params,L),parseNode(noreturn,Params,R)]
-     );
-
-
-
-parseCall(noreturn,Params,{c_call, _, {_, _, erlang}, {_, _, '=='}, [L,R]})->
-    estree:call_expression(
-         estree:member_expression(estree:identifier(<<"erlang">>),estree:identifier(<<"equality">>),false),
-         [parseNode(noreturn,Params,L),parseNode(noreturn,Params,R)]
-     );
-parseCall(noreturn,Params,{c_call, _, {_, _, erlang}, {_, _, '/='}, [L,R]})->
-    estree:call_expression(
-         estree:member_expression(estree:identifier(<<"erlang">>),estree:identifier(<<"notEquality">>),false),
-         [parseNode(noreturn,Params,L),parseNode(noreturn,Params,R)]
-     );
-parseCall(noreturn,Params,{c_call, _, {_, _, erlang}, {_, _, '<'}, [L,R]})->
-    estree:call_expression(
-         estree:member_expression(estree:identifier(<<"erlang">>),estree:identifier(<<"lessThan">>),false),
-         [parseNode(noreturn,Params,L),parseNode(noreturn,Params,R)]
-     );
-parseCall(noreturn,Params,{c_call, _, {_, _, erlang}, {_, _, '=<'}, [L,R]})->
-    estree:call_expression(
-         estree:member_expression(estree:identifier(<<"erlang">>),estree:identifier(<<"lessThanOrEq">>),false),
-         [parseNode(noreturn,Params,L),parseNode(noreturn,Params,R)]
-     );
-parseCall(noreturn,Params,{c_call, _, {_, _, erlang}, {_, _, '>'}, [L,R]})->
-    estree:call_expression(
-         estree:member_expression(estree:identifier(<<"erlang">>),estree:identifier(<<"moreThan">>),false),
-         [parseNode(noreturn,Params,L),parseNode(noreturn,Params,R)]
-     );
-parseCall(noreturn,Params,{c_call, _, {_, _, erlang}, {_, _, '>='}, [L,R]})->
-    estree:call_expression(
-         estree:member_expression(estree:identifier(<<"erlang">>),estree:identifier(<<"moreThanOrEq">>),false),
-         [parseNode(noreturn,Params,L),parseNode(noreturn,Params,R)]
-     );
-parseCall(noreturn,Params,{c_call, _, {_, _, erlang}, {_, _, '=:='}, [L,R]})->
-    estree:call_expression(
-         estree:member_expression(estree:identifier(<<"erlang">>),estree:identifier(<<"exactlyEq">>),false),
-         [parseNode(noreturn,Params,L),parseNode(noreturn,Params,R)]
-     );
-parseCall(noreturn,Params,{c_call, _, {_, _, erlang}, {_, _, '=/='}, [L,R]})->
-    estree:call_expression(
-         estree:member_expression(estree:identifier(<<"erlang">>),estree:identifier(<<"exactlyNotEq">>),false),
-         [parseNode(noreturn,Params,L),parseNode(noreturn,Params,R)]
-     );
-
-
-
-
-parseCall(noreturn,Params,{c_call, _, {_, _, erlang}, {_, _, 'or'}, [L,R]})->
-    estree:call_expression(
-         estree:member_expression(estree:identifier(<<"erlang">>),estree:identifier(<<"or">>),false),
-         [parseNode(noreturn,Params,L),parseNode(noreturn,Params,R)]
-     );
-parseCall(noreturn,Params,{c_call, _, {_, _, erlang}, {_, _, 'and'}, [L,R]})->
-    estree:call_expression(
-         estree:member_expression(estree:identifier(<<"erlang">>),estree:identifier(<<"and">>),false),
-         [parseNode(noreturn,Params,L),parseNode(noreturn,Params,R)]
-     );
-parseCall(noreturn,Params,{c_call, _, {_, _, erlang}, {_, _, 'not'}, [T]})->
-    estree:call_expression(
-         estree:member_expression(estree:identifier(<<"erlang">>),estree:identifier(<<"not">>),false),
-         [parseNode(noreturn,Params,T)]
-     );
-parseCall(noreturn,Params,{c_call, _, {_, _, erlang}, {_, _, 'xor'}, [L,R]})->
-    estree:call_expression(
-         estree:member_expression(estree:identifier(<<"erlang">>),estree:identifier(<<"xor">>),false),
-         [parseNode(noreturn,Params,L),parseNode(noreturn,Params,R)]
-     );
-
-
-
-parseCall(noreturn,Params,{c_call, _, {_, _, erlang}, {_, _, 'band'}, [L,R]})->
-    estree:call_expression(
-         estree:member_expression(estree:identifier(<<"erlang">>),estree:identifier(<<"band">>),false),
-         [parseNode(noreturn,Params,L),parseNode(noreturn,Params,R)]
-     );
-parseCall(noreturn,Params,{c_call, _, {_, _, erlang}, {_, _, 'bor'}, [L,R]})->
-    estree:call_expression(
-         estree:member_expression(estree:identifier(<<"erlang">>),estree:identifier(<<"bor">>),false),
-         [parseNode(noreturn,Params,L),parseNode(noreturn,Params,R)]
-     );
-parseCall(noreturn,Params,{c_call, _, {_, _, erlang}, {_, _, 'bxor'}, [L,R]})->
-    estree:call_expression(
-         estree:member_expression(estree:identifier(<<"erlang">>),estree:identifier(<<"bxor">>),false),
-         [parseNode(noreturn,Params,L),parseNode(noreturn,Params,R)]
-     );
-parseCall(noreturn,Params,{c_call, _, {_, _, erlang}, {_, _, 'bnot'}, [T]})->
-    estree:call_expression(
-         estree:member_expression(estree:identifier(<<"erlang">>),estree:identifier(<<"bnot">>),false),
-         [parseNode(noreturn,Params,T)]
-     );
-
-
-
-%Bodge job: external module calls
-%parseNode(noreturn,Params,{c_call, _, {_, _, io}, {_, _, format}, [T]})->
-%    estree:call_expression(
-%         estree:member_expression(estree:identifier(<<"console">>),estree:identifier(<<"log">>),false),
-%         [parseNode(noreturn,Params,T)]
-%     );
-
 
 parseCall(noreturn,Params,{c_call, _, {_, _, Module}, {_, _, FunctionName}, Parameters})->
     estree:call_expression(
@@ -249,11 +116,13 @@ parseCall(noreturn,Params,{c_call, _, {_, _, Module}, {_, _, FunctionName}, Para
      ).
 
 
+%###########################
 parseValues(return,Params,{c_values, _, _Values})->
     %io:format("~p~n", [tupleList_getVars_3(Values)]);
     io:format("",[]).
 
 
+%###########################
 parseVar(return,Params,{c_var, A, Var})->
     estree:return_statement(parseVar(noreturn,Params,{c_var, A, Var}));
 %added for support of functions by name
@@ -264,6 +133,7 @@ parseVar(noreturn,Params,{c_var, _, Var})->
     %io:format("",[]);
 
 
+%###########################
 parseSeq(return,Params,{c_seq, _, A, B})->
     assembleSequence(
         parseNode(noreturn,Params,A),
@@ -274,12 +144,15 @@ parseSeq(noreturn,Params,{c_seq, _, A, B})->
         parseNode(noreturn,Params,B)).
 
 
+%###########################
 % A let statement is the core representation of implicit variable declarations (the result of some function as an argument of another function
 parseLet(ReturnAtom,Params,{c_let, _, [{_, _, Variable}], Value, UsedBy})->
     assembleSequence(
         estree:variable_declaration([estree:variable_declarator(estree:identifier(atom_to_binary(Variable,utf8)),parseNode(noreturn,Params,Value))],<<"let">>),
         parseNode(ReturnAtom,Params,UsedBy)).
 
+
+%###########################
 % Is apply a local function call? Assignment from function? Assignment with pattern matching?
 parseApply(ReturnAtom,Params,{c_apply, _, {_,_,{FunctionName,Arity}}, Parameters})->
     % parseNode(ReturnAtom,Params,{c_call, [], {a, a, functions}, {a, a, FunctionName}, Parameters});
@@ -296,6 +169,8 @@ parseApply(ReturnAtom,Params,{c_apply, _, {_,_,{FunctionName,Arity}}, Parameters
 parseApply(ReturnAtom,Params,{c_apply, _, {_, _, FunctionName}, Parameters})->
     parseCall(ReturnAtom,Params,{c_call, [], {a, a, functions}, {a, a, FunctionName}, Parameters}).
 
+
+%###########################
 parseLiteral(return,Params,{c_literal,_,Value})->
     estree:return_statement(parseLiteral(noreturn,Params,{c_literal,[],Value}));
 parseLiteral(noreturn,Params,{c_literal,_,Value}) when is_number(Value)->
@@ -305,14 +180,15 @@ parseLiteral(noreturn,Params,{c_literal,_,Value}) when is_atom(Value)->
 parseLiteral(noreturn,Params,{c_literal,_,Value}) when is_list(Value)->
     estree:new_expression(estree:identifier(<<"List">>),[estree:literal(Value)]).
 
+
+%###########################
 parseTuple(return,Params,A={c_tuple,_,Values})->
     estree:return_statement(parseTuple(noreturn,Params,A));
 parseTuple(noreturn,Params,{c_tuple,_,Values})->
     estree:new_expression(estree:identifier(<<"Tuple">>),[parseNode(noreturn,Params,Value) || Value <- Values]).
 
 
-
-
+%###########################
 %List constructor
 parseCons(return,Params,{c_cons,_,A,B})->
     estree:return_statement(parseCons(noreturn,Params,{c_cons,[],A,B}));
@@ -325,6 +201,8 @@ parseCons(noreturn,Params,{c_cons,_,A,B={c_cons,_,C,D}})->
 parseCons(noreturn,Params,{c_cons,_,A,B})->
     estree:new_expression(estree:identifier(<<"List">>),[parseNode(noreturn,Params,A),parseNode(noreturn,Params,B)]).
 
+
+%###########################
 %For lack of a more apparent reason for the c_try token I'm treating it a superfluous encapsulation
 parseTry(return,Params,{c_try,_,Elem,_,_,_,_})->
     estree:return_statement(parseTry(noreturn,Params,{c_try,[],Elem,a,a,a,a}));
@@ -344,12 +222,15 @@ parseTry(noreturn,Params,{c_try,_,Elem,_,_,_,_})->
     []).
     % parseNode(ReturnAtom,Params,Elem);
 
+
+%###########################
 parsePrimop(return,Params,{c_primop,_,{_,_,Type},_Details})->
     % io:format("        Error? ~p~n~p~n", [Type,Details]),
     estree:error(atom_to_list(Type),"TODO Errors dont parse nicely\\n",estree:literal(<<"Message">>)).
     % io:format("",[]);
 
 
+%###########################
 %c_letrec appears to represent list comprehension.
 parseLetrec(ReturnAtom,Params,{c_letrec,_,[Func],Apply})->
 % parseNode(ReturnAtom,Params,{c_letrec,_,[{{_, _, {FunctionName, Arity}}, {_c_fun, _, ParamNames, Body}}],Apply})->
@@ -384,6 +265,7 @@ parseLetrec(ReturnAtom,Params,{c_letrec,_,[Func],Apply})->
     ).
 
 
+%###########################
 parseCase(ReturnAtom,Params,{c_case, _, {c_var,_,Var}, Clauses})->
     parseCase(ReturnAtom,Params,{c_case, a, {c_values,a,[{c_var,a,Var}]}, Clauses});
 
@@ -555,6 +437,12 @@ assignMatchedVars(Params,_,_)->
     [ok].
 
 
+
+
+
+
+
+%###########################
 assembleSequence(L,R) when is_list(L) and is_list(R)->
     lists:append(L,R);
 assembleSequence(L,R) when is_list(R)->

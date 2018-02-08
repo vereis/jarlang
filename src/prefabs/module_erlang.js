@@ -1,117 +1,117 @@
 const erlang = function () {
     'use_strict';
     const exports = {
-        'addition': function () {
+        '+': function () {
             switch (arguments.length) {
                 case 2:
-                    return functions['addition/2'](...arguments);
+                    return functions['+/2'](...arguments);
                     break;
             }
-            throw '** exception error: undefined function' + ('addition' + ('/' + arguments.length));
+            throw '** exception error: undefined function' + ('+' + ('/' + arguments.length));
         },
-        'subtraction': function () {
+        '-': function () {
             switch (arguments.length) {
                 case 2:
-                    return functions['subtraction/2'](...arguments);
+                    return functions['-/2'](...arguments);
                     break;
             }
-            throw '** exception error: undefined function' + ('subtraction' + ('/' + arguments.length));
+            throw '** exception error: undefined function' + ('-' + ('/' + arguments.length));
         },
-        'multiplication': function () {
+        '*': function () {
             switch (arguments.length) {
                 case 2:
-                    return functions['multiplication/2'](...arguments);
+                    return functions['*/2'](...arguments);
                     break;
             }
-            throw '** exception error: undefined function' + ('multiplication' + ('/' + arguments.length));
+            throw '** exception error: undefined function' + ('*' + ('/' + arguments.length));
         },
-        'division': function () {
+        '/': function () {
             switch (arguments.length) {
                 case 2:
-                    return functions['division/2'](...arguments);
+                    return functions['//2'](...arguments);
                     break;
             }
-            throw '** exception error: undefined function' + ('division' + ('/' + arguments.length));
+            throw '** exception error: undefined function' + ('/' + ('/' + arguments.length));
         },
-        'remainder': function () {
+        'rem': function () {
             switch (arguments.length) {
                 case 2:
-                    return functions['remainder/2'](...arguments);
+                    return functions['rem/2'](...arguments);
                     break;
             }
-            throw '** exception error: undefined function' + ('remainder' + ('/' + arguments.length));
+            throw '** exception error: undefined function' + ('rem' + ('/' + arguments.length));
         },
-        'intDivision': function () {
+        'div': function () {
             switch (arguments.length) {
                 case 2:
-                    return functions['intDivision/2'](...arguments);
+                    return functions['div/2'](...arguments);
                     break;
             }
-            throw '** exception error: undefined function' + ('intDivision' + ('/' + arguments.length));
+            throw '** exception error: undefined function' + ('div' + ('/' + arguments.length));
         },
-        'equality': function () {
+        '==': function () {
             switch (arguments.length) {
                 case 2:
-                    return functions['equality/2'](...arguments);
+                    return functions['==/2'](...arguments);
                     break;
             }
-            throw '** exception error: undefined function' + ('equality' + ('/' + arguments.length));
+            throw '** exception error: undefined function' + ('==' + ('/' + arguments.length));
         },
-        'notEquality': function () {
+        '/=': function () {
             switch (arguments.length) {
                 case 2:
-                    return functions['notEquality/2'](...arguments);
+                    return functions['/=/2'](...arguments);
                     break;
             }
-            throw '** exception error: undefined function' + ('notEquality' + ('/' + arguments.length));
+            throw '** exception error: undefined function' + ('/=' + ('/' + arguments.length));
         },
-        'lessThan': function () {
+        '<': function () {
             switch (arguments.length) {
                 case 2:
-                    return functions['lessThan/2'](...arguments);
+                    return functions['</2'](...arguments);
                     break;
             }
-            throw '** exception error: undefined function' + ('lessThan' + ('/' + arguments.length));
+            throw '** exception error: undefined function' + ('<' + ('/' + arguments.length));
         },
-        'lessThanOrEq': function () {
+        '=<': function () {
             switch (arguments.length) {
                 case 2:
-                    return functions['lessThanOrEq/2'](...arguments);
+                    return functions['=</2'](...arguments);
                     break;
             }
-            throw '** exception error: undefined function' + ('lessThanOrEq' + ('/' + arguments.length));
+            throw '** exception error: undefined function' + ('=<' + ('/' + arguments.length));
         },
-        'moreThan': function () {
+        '>': function () {
             switch (arguments.length) {
                 case 2:
-                    return functions['moreThan/2'](...arguments);
+                    return functions['>/2'](...arguments);
                     break;
             }
-            throw '** exception error: undefined function' + ('moreThan' + ('/' + arguments.length));
+            throw '** exception error: undefined function' + ('>' + ('/' + arguments.length));
         },
-        'moreThanOrEq': function () {
+        '>=': function () {
             switch (arguments.length) {
                 case 2:
-                    return functions['moreThanOrEq/2'](...arguments);
+                    return functions['>=/2'](...arguments);
                     break;
             }
-            throw '** exception error: undefined function' + ('moreThanOrEq' + ('/' + arguments.length));
+            throw '** exception error: undefined function' + ('>=' + ('/' + arguments.length));
         },
-        'exactlyEq': function () {
+        '=:=': function () {
             switch (arguments.length) {
                 case 2:
-                    return functions['exactlyEq/2'](...arguments);
+                    return functions['=:=/2'](...arguments);
                     break;
             }
-            throw '** exception error: undefined function' + ('exactlyEq' + ('/' + arguments.length));
+            throw '** exception error: undefined function' + ('=:=' + ('/' + arguments.length));
         },
-        'exactlyNotEq': function () {
+        '=/=': function () {
             switch (arguments.length) {
                 case 2:
-                    return functions['exactlyNotEq/2'](...arguments);
+                    return functions['=/=/2'](...arguments);
                     break;
             }
-            throw '** exception error: undefined function' + ('exactlyNotEq' + ('/' + arguments.length));
+            throw '** exception error: undefined function' + ('=/=' + ('/' + arguments.length));
         },
         'compare': function () {
             switch (arguments.length) {
@@ -207,19 +207,19 @@ const erlang = function () {
     };
 
     const functions = {
-        'addition/2': function (_cor1, _cor0) {
+        '+/2': function (_cor1, _cor0) {
             if (ErlNumber.isErlNumber(_cor1) && ErlNumber.isErlNumber(_cor0)) {
                 return _cor1.add(_cor0);
             }
             throw '** exception error: an error occurred when evaluating an arithmetic expression in operator +/2 called as ' + _cor1 + ' + ' + _cor0;
         },
-        'subtraction/2': function (_cor1, _cor0) {
+        '-/2': function (_cor1, _cor0) {
             if (ErlNumber.isErlNumber(_cor1) && ErlNumber.isErlNumber(_cor0)) {
                 return _cor1.subtract(_cor0);
             }
             throw '** exception error: an error occurred when evaluating an arithmetic expression in operator -/2 called as ' + _cor1 + ' - ' + _cor0;
         },
-        'multiplication/2': function (_cor1, _cor0) {
+        '*/2': function (_cor1, _cor0) {
             if (ErlNumber.isErlNumber(_cor1) && ErlNumber.isErlNumber(_cor0)) {
                 return _cor1.multiply(_cor0);
             }
@@ -231,40 +231,40 @@ const erlang = function () {
             }
             throw '** exception error: an error occurred when evaluating an arithmetic expression in operator \'/\'/2 called as ' + _cor1 + ' / ' + _cor0;
         },
-        'remainder/2': function (_cor1, _cor0) {
+        'rem/2': function (_cor1, _cor0) {
             if (ErlNumber.isErlNumber(_cor1) && ErlNumber.isErlNumber(_cor0)) {
                 return _cor1.remainder(_cor0);
             }
             throw '** exception error: an error occurred when evaluating an arithmetic expression in operator rem/2 called as ' + _cor1 + ' rem ' + _cor0;
         },
-        'intDivision/2': function (_cor1, _cor0) {
+        'div/2': function (_cor1, _cor0) {
             if (ErlNumber.isErlNumber(_cor1) && ErlNumber.isErlNumber(_cor0)) {
                 return _cor1.intDivide(_cor0);
             }
             throw '** exception error: an error occurred when evaluating an arithmetic expression in operator div/2 called as ' + _cor1 + ' div ' + _cor0;
         },
-        'equality/2': function (_cor1, _cor0) {
+        '==/2': function (_cor1, _cor0) {
             return compare(_cor1, _cor0) == 0;
         },
-        'notEquality/2': function (_cor1, _cor0) {
+        '/=/2': function (_cor1, _cor0) {
             return compare(_cor1, _cor0) != 0;
         },
-        'lessThan/2': function (_cor1, _cor0) {
+        '</2': function (_cor1, _cor0) {
             return compare(_cor1, _cor0) < 0;
         },
-        'lessThanOrEq/2': function (_cor1, _cor0) {
+        '=</2': function (_cor1, _cor0) {
             return compare(_cor1, _cor0) <= 0;
         },
-        'moreThan/2': function (_cor1, _cor0) {
+        '>/2': function (_cor1, _cor0) {
             return compare(_cor1, _cor0) > 0;
         },
-        'moreThanOrEq/2': function (_cor1, _cor0) {
+        '>=/2': function (_cor1, _cor0) {
             return compare(_cor1, _cor0) >= 0;
         },
-        'exactlyEq/2': function (_cor1, _cor0) {
+        '=:=/2': function (_cor1, _cor0) {
             return _cor1 === _cor0;
         },
-        'exactlyNotEq/2': function (_cor1, _cor0) {
+        '=/=/2': function (_cor1, _cor0) {
             return _cor1 !== _cor0;
         },
         //returns negative if _cor1 evaluates to less than _cor0, returns 0 if they evaluate equal. Magnitude is not representative of anything
