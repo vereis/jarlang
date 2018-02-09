@@ -105,6 +105,7 @@ parseNode(ReturnAtom,Params,N)->
         c_case ->parseCase(ReturnAtom,Params,N)
     end.
 
+
 %###########################
 parseCall(return,Params,{c_call, A, {B, C, Module}, {D, E, FunctionName}, Parameters})->
     estree:return_statement(parseCall(noreturn,Params,{c_call, A, {B, C, Module}, {D, E, FunctionName}, Parameters}));
@@ -273,19 +274,22 @@ parseLetrec(ReturnAtom,Params,{c_letrec,_,[Func],Apply})->
 
 
 %###########################
+%converts single var case to multi-var case format
 parseCase(ReturnAtom,Params,{c_case, _, {c_var,_,Var}, Clauses})->
     parseCase(ReturnAtom,Params,{c_case, a, {c_values,a,[{c_var,a,Var}]}, Clauses});
 
 parseCase(ReturnAtom,Params,{c_case, _, {c_values,_,Vars}, Clauses})->
-    {UnboundVars,CaseClauses} = parseCaseClauses(ReturnAtom,Params, Vars, Clauses),
-    case UnboundVars of
-        [] -> CaseClauses;
-        _  -> assembleSequence(
-                estree:variable_declaration(
-                    tupleList_getVars_2(maps:to_list(maps:from_list(UnboundVars))),
-                    <<"let">>),
-                CaseClauses)
-    end;
+    parseCaseClauses(ReturnAtom,Params, Vars, Clauses);
+    % {UnboundVars,CaseClauses} = parseCaseClauses(ReturnAtom,Params, Vars, Clauses),
+    % case UnboundVars of
+    %     [] -> CaseClauses;
+    %     _  -> assembleSequence(
+    %             estree:variable_declaration(
+    %                 tupleList_getVars_2(maps:to_list(maps:from_list(UnboundVars))),
+    %                 <<"let">>),
+    %             CaseClauses)
+    % end;
+
 
 parseCase(ReturnAtom,Params,{c_case, _, {c_apply,_,{c_var,_,Fun},Args}, Clauses})->
     case Fun of
@@ -308,7 +312,6 @@ parseCase(ReturnAtom,Params,{c_case, _, {c_call,_,{c_literal,_,Module},{c_litera
         ),
         Clauses
     ).
-
 
 parseFunctionCase(ReturnAtom,Params,FuncCall, Clauses)->
     assembleSequence(
@@ -333,14 +336,15 @@ parseConsChain(noreturn,Params,{c_cons,[],A,B})->
 
 
 parseCaseClauses(ReturnAtom,Params, Vars, [])->
-    {[],[]};
+    [];
 parseCaseClauses(ReturnAtom,Params, Vars, [{c_clause,_,Match,Evaluate,Consequent}|Clauses])->
-    {UnboundVars,ElseClauses} = parseCaseClauses(ReturnAtom,Params, Vars, Clauses),%alternate
+    % {UnboundVars,ElseClauses} = parseCaseClauses(ReturnAtom,Params, Vars, Clauses),%alternate
+    ElseClauses = parseCaseClauses(ReturnAtom,Params, Vars, Clauses),%alternate
     case ElseClauses of
         [] -> ElseClausesActual = null;
         _  -> ElseClausesActual = ElseClauses
     end,
-    {lists:append(declaratorsFromList(Match),UnboundVars),
+    % {lists:append(declaratorsFromList(Match),UnboundVars),
      estree:if_statement(
         assembleCaseCondition(Params,Vars,Match,Evaluate),%test
         estree:block_statement(%consequent
@@ -361,7 +365,8 @@ parseCaseClauses(ReturnAtom,Params, Vars, [{c_clause,_,Match,Evaluate,Consequent
             )
         ),
         ElseClausesActual %alternate
-    )}.
+    ).
+     % }.
 
 assembleCaseCondition(Params,_,[],Evaluate)->
     estree:call_expression(
@@ -377,43 +382,175 @@ assembleCaseCondition(Params,_,[],Evaluate)->
               ),
               false),
          []);
-assembleCaseCondition(Params,Vars,Match,{c_literal,_,true})->
-    assembleCaseCondition(Params,Vars,Match);
+
 assembleCaseCondition(Params,Vars,Match,Evaluate)->
-%    Identifiers = tupleListToIdentifierList(Match,Params),
-    Identifiers = lists:map(fun(Elem)->
+    {DefL1,MatchL,DefL2} = lists:foldl(
+        fun(Elem,{DefL1,MatchL,DefL2})->
             case Elem of
-                {c_alias,_,{c_var,_,Name},_Value} -> parseVar(noreturn,Params,{c_var,[],Name});
-                _ -> parseNode(noreturn,Params,Elem)
-            end
-        end,Match),
-    estree:logical_expression(
-        <<"&&">>,
-        assembleCaseCondition(Params,Vars,Match),
-        estree:call_expression(
-             estree:function_expression(
-                  null,
-                  Identifiers,
-                    estree:block_statement(
-                      encapsulateExpressions(
-                          listCheck(
-                              parseNode(return,Params,Evaluate)
-                          )
-                      )
+                {{c_var,_,ParamName},{c_var,A,NewName}}->
+                    {lists:append(DefL1,[
+                        estree:variable_declarator(estree:identifier(atom_to_binary(NewName,utf8)),estree:identifier(atom_to_binary(ParamName,utf8)))
+                    ]),MatchL,DefL2};
+
+                {V={c_var,_,ParamName},M={c_literal,_,Literal}}->
+                    {DefL1,
+                    lists:append(MatchL,[
+                        parseCall(noreturn,Params,{c_call, a, {a, a, erlang}, {a, a, 'match'}, [M,V]})
+                    ]),DefL2};
+
+                {V={c_var,_,ParamName},M={c_cons,_,H,T}}->
+                    {lists:append(DefL1,
+                        recurseVarDeclaration(M)
                     ),
-                  false),
-             Identifiers)
-   ).
-assembleCaseCondition(Params,[V],[_M={c_alias,_A,_N,Value}])->
-        parseCall(noreturn,Params,{c_call, a, {a, a, erlang}, {a, a, 'match'}, [Value,V]});
-assembleCaseCondition(Params,[V],[M])->
-%assembleCaseCondition(Params,[V],[M={c_var,A,N}])->
-        parseCall(noreturn,Params,{c_call, a, {a, a, erlang}, {a, a, 'match'}, [M,V]});
-assembleCaseCondition(Params,[V|Vars],[M|Match])->
-    estree:logical_expression(<<"&&">>,
-        assembleCaseCondition(Params,[V],[M]),
-        assembleCaseCondition(Params,Vars,Match)
-    ).
+                    lists:append(MatchL,[
+                        parseCall(noreturn,Params,{c_call, a, {a, a, erlang}, {a, a, 'match'}, [M,V]})
+                    ]),
+                    lists:append(DefL2,recurseVarAssignments(M,estree:identifier(atom_to_binary(ParamName,utf8))))};
+
+                {V={c_var,_,ParamName},M={c_tuple,_,Content}}->
+                    {lists:append(DefL1,
+                        recurseVarDeclaration(M)
+                    ),
+                    lists:append(MatchL,[
+                        parseCall(noreturn,Params,{c_call, a, {a, a, erlang}, {a, a, 'match'}, [M,V]})
+                    ]),
+                    lists:append(DefL2,recurseVarAssignments(M,estree:identifier(atom_to_binary(ParamName,utf8))))};
+
+                {V={c_var,_,ParamName},{c_alias,_,{c_var,_,NewName},M}}->
+                    {lists:append(DefL1,
+                        recurseVarDeclaration(M)
+                    ),
+                    lists:append(MatchL,[
+                        parseCall(noreturn,Params,{c_call, a, {a, a, erlang}, {a, a, 'match'}, [M,V]})
+                    ]),
+                    lists:append(DefL2,lists:append(
+                        recurseVarAssignments(M,estree:identifier(atom_to_binary(ParamName,utf8))),
+                        [
+                            estree:assignment_expression(
+                                <<"=">>,
+                                estree:identifier(atom_to_binary(NewName,utf8)),
+                                estree:identifier(atom_to_binary(ParamName,utf8))
+                            )
+                        ]
+                    ))}
+            end
+        end,
+        {[],[],[]},
+        lists:zip(Vars,Match)),
+    Internal =  estree:if_statement(
+                    assembleMatchCalls(MatchL),
+                    estree:block_statement(%consequent
+                        encapsulateExpressions(
+                            listCheck(
+                                assembleSequence(
+                                    estree:sequence_expression(DefL2),
+                                    parseNode(return,Params,Evaluate)
+                                )
+                            )
+                        )
+                    ),
+                    null
+                ),
+    case DefL1 of
+        [] -> InternalActual = Internal;
+        _  -> InternalActual = assembleSequence(
+                            estree:variable_declaration(listCheck(DefL1),<<"let">>),
+                            Internal
+                        )
+    end,
+    estree:call_expression(
+        estree:function_expression(
+            null,
+            [],
+            estree:block_statement(
+                encapsulateExpressions(
+                    listCheck(
+                        InternalActual
+                    )
+                )
+            ),
+            false
+        ),
+    []).
+
+recurseVarDeclaration({c_var,_,Name})->
+    [estree:variable_declarator(estree:identifier(atom_to_binary(Name,utf8)),estree:identifier(<<"undefined">>))];
+recurseVarDeclaration({c_literal,_,Name})->
+    [];
+recurseVarDeclaration({c_tuple,_,Elements})->
+    lists:foldl(fun(Elem,L)->
+            lists:append(L,recurseVarDeclaration(Elem))
+        end,[],Elements);
+recurseVarDeclaration({c_cons,_,A,B})->
+    lists:append(recurseVarDeclaration(A),
+    recurseVarDeclaration(B)).
+
+
+recurseVarAssignments(M,V)->
+    recurseVarAssignments(0,M,V,false).
+recurseVarAssignments(_,{c_var,_,Name},V,false)->
+    [
+        estree:assignment_expression(
+            <<"=">>,
+            estree:identifier(atom_to_binary(Name,utf8)),
+            V
+        )
+    ];
+recurseVarAssignments(ConsCount,{c_var,_,Name},V,isTail)->
+    [
+        estree:assignment_expression(
+            <<"=">>,
+            estree:identifier(atom_to_binary(Name,utf8)),
+            estree:call_expression(
+                estree:member_expression(V,estree:identifier(<<"slice">>),false),
+                [   estree:literal(ConsCount),
+                    estree:call_expression(estree:member_expression(V,estree:identifier(<<"size">>),false),[])
+                ]
+            )
+        )
+    ];
+recurseVarAssignments(_,{c_tuple,_,Elements},V,_)->
+    lists:foldl(
+        fun(Elem,L)->
+            A = length(L),
+            lists:append(
+                L,
+                recurseVarAssignments(0,Elem,
+                    estree:member_expression(V,estree:literal(A),true),
+                    false
+                )
+            )
+        end,
+        [],Elements);
+recurseVarAssignments(ConsCount,{c_cons,_,A,B={c_var,_,Name}},V,_)->
+    lists:append(
+        recurseVarAssignments(0,A,estree:member_expression(V,estree:literal(ConsCount),true),false),
+        recurseVarAssignments(ConsCount+1,B,V,isTail)
+    );
+recurseVarAssignments(ConsCount,{c_cons,_,A,B},V,_)->
+    lists:append(
+        recurseVarAssignments(0,A,estree:member_expression(V,estree:literal(ConsCount),true),false),
+        recurseVarAssignments(ConsCount+1,B,V,false)
+    );
+recurseVarAssignments(_ConsCount,_,_V,_)->
+    [].
+
+
+assembleMatchCalls(MatchL)->
+    % io:format("~p~n",[MatchL]),
+    case MatchL of
+        []    -> estree:literal(true);
+        [M]   -> M;
+        [M|T] -> estree:logical_expression(<<"&&">>,M,assembleMatchCalls(T))
+        % [M|T] -> estree:expression_statement(estree:logical_expression(<<"&&">>,M,assembleMatchCalls(T)))
+    end.
+
+
+
+
+
+
+
 
 assignMatchedVars(Params,[V],[M])->
         assignMatchedVars(Params,V,M);
