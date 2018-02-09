@@ -178,7 +178,14 @@ parseLiteral(noreturn,Params,{c_literal,_,Value}) when is_number(Value)->
 parseLiteral(noreturn,Params,{c_literal,_,Value}) when is_atom(Value)->
     estree:new_expression(estree:identifier(<<"Atom">>),[estree:literal(atom_to_binary(Value, utf8))]);
 parseLiteral(noreturn,Params,{c_literal,_,Value}) when is_list(Value)->
-    estree:new_expression(estree:identifier(<<"List">>),[estree:literal(Value)]).
+    estree:new_expression(estree:identifier(<<"List">>),[estree:literal(Value)]);
+parseLiteral(noreturn,Params,{c_literal,_,Value}) when is_tuple(Value)->
+    estree:new_expression(estree:identifier(<<"Tuple">>),
+        case tup2list(Value) of
+            [] -> [];
+            Array -> [parseLiteral(return,Params,{c_literal,[],A}) || A <- Array]
+        end
+    ).
 
 
 %###########################
@@ -503,6 +510,13 @@ identify_normalise(N)->
     % {ok, Regex}=re:compile("[^A-Za-z0-9_$]"),
     % iolist_to_binary(re:replace(N,Regex,"_$_",[global])).
     list_to_binary(N).
+
+
+tup2list(Tuple) -> tup2list(Tuple, 1, tuple_size(Tuple)).
+
+tup2list(Tuple, Pos, Size) when Pos =< Size ->  
+    [element(Pos,Tuple) | tup2list(Tuple, Pos+1, Size)];
+tup2list(_Tuple,_Pos,_Size) -> [].
 
 %rAtomToList([A|Rest])->
 %    [rAtomToList(A)|rAtomToList(Rest)];
