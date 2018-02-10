@@ -387,7 +387,10 @@ const erlang = function () {
             return;
         },
         'list_to_existing_atom/1': function (_cor0) {
-            return;
+            if (_cor0 instanceof List && List.isString(_cor0) && Atom.exists(_cor0.toString())) {
+                return new Atom(_cor0.toString);
+            }
+            throw "bad argument";
         },
         'list_to_float/1': function (_cor0) {
             return;
