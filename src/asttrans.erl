@@ -178,8 +178,11 @@ parseLiteral(noreturn,Params,{c_literal,_,Value}) when is_number(Value)->
     estree:new_expression(estree:identifier(<<"ErlNumber">>),[estree:literal(Value)]);
 parseLiteral(noreturn,Params,{c_literal,_,Value}) when is_atom(Value)->
     estree:new_expression(estree:identifier(<<"Atom">>),[estree:literal(atom_to_binary(Value, utf8))]);
+
 parseLiteral(noreturn,Params,{c_literal,_,Value}) when is_list(Value)->
-    estree:new_expression(estree:identifier(<<"List">>),[estree:literal(Value)]);
+    estree:new_expression(estree:identifier(<<"List">>),lists:map(fun(Elem)->
+        parseLiteral(noreturn,Params,{c_literal,[],Elem})
+    end,Value));
 parseLiteral(noreturn,Params,{c_literal,_,Value}) when is_tuple(Value)->
     estree:new_expression(estree:identifier(<<"Tuple">>),
         case tup2list(Value) of

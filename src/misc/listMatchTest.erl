@@ -1,0 +1,21 @@
+-module(listMatchTest).
+-compile(export_all).
+
+func([])->
+    [];
+func([a])->
+    [a];
+func([b,B])->
+    [b,B];
+func([A,c])->
+    [A,c];
+func([d|Rest])->
+    [d|Rest];
+func([e,e|Rest])->
+    [e,e|Rest];
+func([f,f])->
+    [f,f];
+func([0,f])->
+    [0,f];
+func([0,0])->
+    [0,0].
