@@ -64,7 +64,7 @@ main(Args) ->
     ShowHelp = pkgargs:get(o_help, ParsedArgs),
     ShowVsn  = pkgargs:get(o_vsn, ParsedArgs),
     OutDir   = pkgargs:get(o_output, ParsedArgs),
-    Type   = list_to_atom(pkgargs:get(o_type, ParsedArgs)),
+    Type     = list_to_atom(pkgargs:get(o_type, ParsedArgs)),
     Files    = perform_wildcard_matches(pkgargs:get(default,  ParsedArgs)),
 
     try branch(ShowHelp, ShowVsn, OutDir, Type, Files) of
@@ -188,7 +188,7 @@ pipeline(core_ast, Module) ->
     {Module, AST};
 pipeline(js_ast, Module) ->
     {_Module, AST} = pipeline(core_ast, Module),
-    {Module, estree:to_list(asttrans:erast2esast(AST))}.
+    {Module, estree:to_list(asttrans:erast_to_esast(AST))}.
 
 %% Generate javascript by writing out a javascript AST to a file and passing it into codegen.js
 %% Then proceeds to read the output of codegen.js and writes it to a file

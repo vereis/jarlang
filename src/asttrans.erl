@@ -1,28 +1,57 @@
-% Author: Andrew Johnson
-% Walks down a CoreErlang AST and calls EStree.
+%%% Module Description:
+%%% Recursively descends into a core erlang AST and generates an ESTREE equivalent
 -module(asttrans).
--export([erast2esast/1]).
+-author(["Andrew Johnson", "Chris Bailey"]).
 
-% Compiles a given Erlang source file to a EStree ast
-erast2esast(AST) ->
-    parseModule(AST).
+-define(VERSION, "2.1.0").
 
-%Read the module token (first token)
-parseModule({c_module, _A, {_, _, ModuleName}, Exports, _Attributes, Functions})->
-    FormattedFunctions = parseFunctions(Functions),
-    FormattedExports = lists:map(fun({N,A})->{atom_to_list(N),A} end,tupleList_getVars_3(Exports)),
+-vsn(?VERSION).
+
+%%% Export all functions if we compiled with erlc -dTEST or c(?MODULE, {d, 'TEST'}).
+%%% This is so that we can run external eunit tests
+-ifdef(TEST).
+    -compile(export_all).
+-else.
+    -export([erast_to_esast/1]).
+-endif.
+
+
+
+
+
+%%% ---------------------------------------------------------------------------------------------%%%
+%%% - MODULE ENTRYPOINTS ------------------------------------------------------------------------%%%
+%%% ---------------------------------------------------------------------------------------------%%%
+
+%% Alternative entrypoint to parse_module/1
+erast_to_esast(AST) ->
+    parse_module(AST).
+
+%% Begins parses ast expecting a c_module atom to indicate that the ast we're parsing
+%% is indeed a core_erlang ast.
+%% Processes information we need such as ModuleName and continues to parse functions and
+%% module export information.
+parse_module({c_module, _A, {_, _, ModuleName}, Exports, _Attributes, Functions})->
+    FormattedFunctions = parse_functions(Functions),
+    FormattedExports = lists:map(fun({N,A})->{atom_to_list(N),A} end,tuple_list_get_vars_3(Exports)),
     esast:c_module(atom_to_list(ModuleName),FormattedExports,FormattedFunctions);
-
-parseModule(T)->
+parse_module(T)->
     io:format("Unrecognised Token in module section: ~p", [T]).
 
 
-%###########################
-% Concurrently transpile core erlang asts for functions into javascript asts for functions
-parseFunctions(Functions)->
+
+
+
+%%% ---------------------------------------------------------------------------------------------%%%
+%%% - AST TO AST TRANSLATION --------------------------------------------------------------------%%%
+%%% ---------------------------------------------------------------------------------------------%%%
+
+%% Spawns new parse_function processes for each function in a given function list,
+%% concurrently transpiling all functions given.
+parse_functions(Functions)->
     Self = self(),
     Pids = lists:map(fun(X) ->
-        spawn_link(fun() -> Self ! {self(), parseFunction(X)} end)
+        spawn_link(fun() -> Self ! {self(), parse_function(X)} end)
     end, Functions),
 
     [
@@ -34,27 +63,26 @@ parseFunctions(Functions)->
         Pid <- Pids
     ].
 
-
-%###########################
-%Read a function
-parseFunction({{_, _, {FunctionName, Arity}}, {_c_fun, [compiler_generated], _, _}})->
+%% Parse a function node, and recursively descend into the function to translate all
+%% AST nodes into an JavaScript equivalent.
+%% Compiler generated functions are currently generated as containing only an empty statement.
+parse_function({{_, _, {FunctionName, Arity}}, {_c_fun, [compiler_generated], _, _}})->
     {atom_to_list(FunctionName)++"/"++integer_to_list(Arity),estree:function_expression(null,[],estree:block_statement([estree:empty_statement()]),false)};
-parseFunction({{_, _, {FunctionName, Arity}}, {_c_fun, _, ParamNames, Body}})->
+parse_function({{_, _, {FunctionName, Arity}}, {_c_fun, _, ParamNames, Body}})->
     {atom_to_list(FunctionName)++"/"++integer_to_list(Arity),estree:function_expression(
         null,
-        tupleListToIdentifierList(ParamNames,tupleList_getVars_3(ParamNames)),
+        tuple_list_to_identifier_list(ParamNames,tuple_list_get_vars_3(ParamNames)),
         estree:block_statement(
-            encapsulateExpressions(
-                listCheck(
-                    parseNode(return,tupleList_getVars_3(ParamNames),Body)
+            encapsulate_expressions(
+                list_check(
+                    parse_node(return,tuple_list_get_vars_3(ParamNames),Body)
                 )
             )
         ),
         false
     )}.
 
-
-%###########################
+%% Helper function to determine whether a given ESTree node is a statement
 is_statement({_, Type, _}) ->
     case re:run(atom_to_list(Type), "Statement|Declaration") of
         {match, _} ->
@@ -65,7 +93,10 @@ is_statement({_, Type, _}) ->
 is_statement(_) ->
     false.
 
-encapsulateExpressions(L)->
+%% Helper function to ensure that any given expression is a statement. If a statement
+%% is given to this function, it is simply returned; otherwise we wrap it in an 
+%% expression_statement.
+encapsulate_expressions(L)->
     lists:map(
         fun(X)->
             IsStmt = is_statement(X),
@@ -77,174 +108,163 @@ encapsulateExpressions(L)->
         L
     ).
 
-listCheck([L]) when is_list(L) ->
-    listCheck(L);
-listCheck(L)->
+%% I have no idea what this is meant to do
+list_check([L]) when is_list(L) ->
+    list_check(L);
+list_check(L)->
     IsStmt = is_statement(L),
     if
         IsStmt->[L];
         true->L
     end.
 
-
-%###########################
-parseNode(ReturnAtom,Params,N)->
+%% Determines what type of node we're currently parsing and calls a function
+%% to translate that specific node.
+parse_node(ReturnAtom,Params,N)->
     case tuple_getVar_1(N) of
-        c_call ->parseCall(ReturnAtom,Params,N);
-        c_values ->parseValues(ReturnAtom,Params,N);
-        c_var ->parseVar(ReturnAtom,Params,N);
-        c_seq ->parseSeq(ReturnAtom,Params,N);
-        c_let ->parseLet(ReturnAtom,Params,N);
-        c_apply ->parseApply(ReturnAtom,Params,N);
-        c_literal ->parseLiteral(ReturnAtom,Params,N);
-        c_tuple ->parseTuple(ReturnAtom,Params,N);
-        c_cons ->parseCons(ReturnAtom,Params,N);
-        c_try ->parseTry(ReturnAtom,Params,N);
-        c_primop ->parsePrimop(ReturnAtom,Params,N);
-        c_letrec ->parseLetrec(ReturnAtom,Params,N);
-        c_case ->parseCase(ReturnAtom,Params,N)
+        c_call    -> parse_call(ReturnAtom,Params,N);
+        c_values  -> parse_values(ReturnAtom,Params,N);
+        c_var     -> parse_var(ReturnAtom,Params,N);
+        c_seq     -> parse_seq(ReturnAtom,Params,N);
+        c_let     -> parse_let(ReturnAtom,Params,N);
+        c_apply   -> parse_apply(ReturnAtom,Params,N);
+        c_literal -> parse_literal(ReturnAtom,Params,N);
+        c_tuple   -> parse_tuple(ReturnAtom,Params,N);
+        c_cons    -> parse_cons(ReturnAtom,Params,N);
+        c_try     -> parse_try(ReturnAtom,Params,N);
+        c_primop  -> parse_primop(ReturnAtom,Params,N);
+        c_letrec  -> parse_letrec(ReturnAtom,Params,N);
+        c_case    -> parse_case(ReturnAtom,Params,N)
     end.
 
-
-%###########################
-parseCall(return,Params,{c_call, A, {B, C, Module}, {D, E, FunctionName}, Parameters})->
-    estree:return_statement(parseCall(noreturn,Params,{c_call, A, {B, C, Module}, {D, E, FunctionName}, Parameters}));
-
-parseCall(noreturn,Params,{c_call, _, {_, _, Module}, {_, _, FunctionName}, Parameters})->
+%% Parses a c_call node.
+parse_call(return,Params,{c_call, A, {B, C, Module}, {D, E, FunctionName}, Parameters})->
+    estree:return_statement(parse_call(noreturn,Params,{c_call, A, {B, C, Module}, {D, E, FunctionName}, Parameters}));
+parse_call(noreturn,Params,{c_call, _, {_, _, Module}, {_, _, FunctionName}, Parameters})->
     estree:call_expression(
          estree:member_expression(estree:identifier(atom_to_binary(Module,utf8)),estree:literal(atom_to_binary(FunctionName,utf8)),true),
-         lists:map(fun(T)->parseNode(noreturn,Parameters,T) end,Parameters)
+         lists:map(fun(T)->parse_node(noreturn,Parameters,T) end,Parameters)
      ).
 
-
-%###########################
-parseValues(return,Params,{c_values, _, _Values})->
-    %io:format("~p~n", [tupleList_getVars_3(Values)]);
+%% Parses a c_values node.
+parse_values(return,Params,{c_values, _, _Values})->
+    %io:format("~p~n", [tuple_list_get_vars_3(Values)]);
     io:format("",[]).
 
-
-%###########################
-parseVar(return,Params,{c_var, A, Var})->
-    estree:return_statement(parseVar(noreturn,Params,{c_var, A, Var}));
+%% Parses a c_var node.
+parse_var(return,Params,{c_var, A, Var})->
+    estree:return_statement(parse_var(noreturn,Params,{c_var, A, Var}));
 %added for support of functions by name
-parseVar(noreturn,Params,{c_var, _, {Name,Arity}})->
+parse_var(noreturn,Params,{c_var, _, {Name,Arity}})->
     estree:identifier(atom_to_list(Name)++"/"++integer_to_list(Arity));
-parseVar(noreturn,Params,{c_var, _, Var})->
+parse_var(noreturn,Params,{c_var, _, Var})->
     estree:identifier(atom_to_binary(Var,utf8)).
     %io:format("",[]);
 
+%% Parses a c_seq node.
+parse_seq(return,Params,{c_seq, _, A, B})->
+    assemble_sequence(
+        parse_node(noreturn,Params,A),
+        parse_node(return,Params,B));
+parse_seq(noreturn,Params,{c_seq, _, A, B})->
+    assemble_sequence(
+        parse_node(noreturn,Params,A),
+        parse_node(noreturn,Params,B)).
 
-%###########################
-parseSeq(return,Params,{c_seq, _, A, B})->
-    assembleSequence(
-        parseNode(noreturn,Params,A),
-        parseNode(return,Params,B));
-parseSeq(noreturn,Params,{c_seq, _, A, B})->
-    assembleSequence(
-        parseNode(noreturn,Params,A),
-        parseNode(noreturn,Params,B)).
+%% Parses a c_let node.
+%% A let statement is the core erlang representation of implicit variable declaration
+%% Often the result of some function as an argument of another function.
+parse_let(ReturnAtom,Params,{c_let, _, [{_, _, Variable}], Value, UsedBy})->
+    assemble_sequence(
+        estree:variable_declaration([estree:variable_declarator(estree:identifier(atom_to_binary(Variable,utf8)),parse_node(noreturn,Params,Value))],<<"let">>),
+        parse_node(ReturnAtom,Params,UsedBy)).
 
 
-%###########################
-% A let statement is the core representation of implicit variable declarations (the result of some function as an argument of another function
-parseLet(ReturnAtom,Params,{c_let, _, [{_, _, Variable}], Value, UsedBy})->
-    assembleSequence(
-        estree:variable_declaration([estree:variable_declarator(estree:identifier(atom_to_binary(Variable,utf8)),parseNode(noreturn,Params,Value))],<<"let">>),
-        parseNode(ReturnAtom,Params,UsedBy)).
-
-
-%###########################
-% Is apply a local function call? Assignment from function? Assignment with pattern matching?
-parseApply(ReturnAtom,Params,{c_apply, _, {_,_,{FunctionName,Arity}}, Parameters})->
-    % parseNode(ReturnAtom,Params,{c_call, [], {a, a, functions}, {a, a, FunctionName}, Parameters});
-    parseCall(ReturnAtom,Params,{c_call, [], {a, a, functions}, {a, a, list_to_atom(atom_to_list(FunctionName)++"/"++integer_to_list(Arity))}, Parameters});
+%% Parses a c_apply node.
+%% TODO: Is apply a local function call? 
+%%       Assignment from function? 
+%%       Assignment with pattern matching?
+parse_apply(ReturnAtom,Params,{c_apply, _, {_,_,{FunctionName,Arity}}, Parameters})->
+    % parse_node(ReturnAtom,Params,{c_call, [], {a, a, functions}, {a, a, FunctionName}, Parameters});
+    parse_call(ReturnAtom,Params,{c_call, [], {a, a, functions}, {a, a, list_to_atom(atom_to_list(FunctionName)++"/"++integer_to_list(Arity))}, Parameters});
     % estree:call_expression(
     %      % estree:identifier(list_to_binary(atom_to_list(FunctionName)++"/"++integer_to_list(Arity))),
     %      estree:member_expression(
     %         estree:identifier(atom_to_binary(functions,utf8)),
     %         estree:literal(identify_normalise(atom_to_list(FunctionName)++"/"++integer_to_list(Arity))),
     %         true),
-    %      lists:map(fun(T)->parseNode(noreturn,Parameters,T) end,Parameters)
+    %      lists:map(fun(T)->parse_node(noreturn,Parameters,T) end,Parameters)
     %  );
+parse_apply(ReturnAtom,Params,{c_apply, _, {_, _, FunctionName}, Parameters})->
+    parse_call(ReturnAtom,Params,{c_call, [], {a, a, functions}, {a, a, FunctionName}, Parameters}).
 
-parseApply(ReturnAtom,Params,{c_apply, _, {_, _, FunctionName}, Parameters})->
-    parseCall(ReturnAtom,Params,{c_call, [], {a, a, functions}, {a, a, FunctionName}, Parameters}).
-
-
-%###########################
-parseLiteral(return,Params,{c_literal,_,Value})->
-    estree:return_statement(parseLiteral(noreturn,Params,{c_literal,[],Value}));
-parseLiteral(noreturn,Params,{c_literal,_,Value}) when is_number(Value)->
+%% Parses a c_literal node.
+parse_literal(return,Params,{c_literal,_,Value})->
+    estree:return_statement(parse_literal(noreturn,Params,{c_literal,[],Value}));
+parse_literal(noreturn,Params,{c_literal,_,Value}) when is_number(Value)->
     estree:new_expression(estree:identifier(<<"ErlNumber">>),[estree:literal(Value)]);
-parseLiteral(noreturn,Params,{c_literal,_,Value}) when is_atom(Value)->
+parse_literal(noreturn,Params,{c_literal,_,Value}) when is_atom(Value)->
     estree:new_expression(estree:identifier(<<"Atom">>),[estree:literal(atom_to_binary(Value, utf8))]);
-parseLiteral(noreturn,Params,{c_literal,_,Value}) when is_list(Value)->
+parse_literal(noreturn,Params,{c_literal,_,Value}) when is_list(Value)->
     estree:new_expression(estree:identifier(<<"List">>),[estree:literal(Value)]);
-parseLiteral(noreturn,Params,{c_literal,_,Value}) when is_tuple(Value)->
+parse_literal(noreturn,Params,{c_literal,_,Value}) when is_tuple(Value)->
     estree:new_expression(estree:identifier(<<"Tuple">>),
-        case tup2list(Value) of
+        case tup_to_list(Value) of
             [] -> [];
-            Array -> [parseLiteral(return,Params,{c_literal,[],A}) || A <- Array]
+            Array -> [parse_literal(return,Params,{c_literal,[],A}) || A <- Array]
         end
     ).
 
+%% Parses a c_tuple node.
+parse_tuple(return,Params,A={c_tuple,_,Values})->
+    estree:return_statement(parse_tuple(noreturn,Params,A));
+parse_tuple(noreturn,Params,{c_tuple,_,Values})->
+    estree:new_expression(estree:identifier(<<"Tuple">>),[parse_node(noreturn,Params,Value) || Value <- Values]).
 
-%###########################
-parseTuple(return,Params,A={c_tuple,_,Values})->
-    estree:return_statement(parseTuple(noreturn,Params,A));
-parseTuple(noreturn,Params,{c_tuple,_,Values})->
-    estree:new_expression(estree:identifier(<<"Tuple">>),[parseNode(noreturn,Params,Value) || Value <- Values]).
-
-
-%###########################
-%List constructor
-parseCons(return,Params,{c_cons,_,A,B})->
-    estree:return_statement(parseCons(noreturn,Params,{c_cons,[],A,B}));
-
-parseCons(noreturn,Params,{c_cons,_,A,B={c_cons,_,C,D}})->
+%% Parses a c_cons node.
+%% This is essentially a list constructor.
+parse_cons(return,Params,{c_cons,_,A,B})->
+    estree:return_statement(parse_cons(noreturn,Params,{c_cons,[],A,B}));
+parse_cons(noreturn,Params,{c_cons,_,A,B={c_cons,_,C,D}})->
     estree:new_expression(estree:identifier(<<"List">>),
-        parseConsChain(noreturn,Params,{c_cons,[],A,B})
+        parse_cons_chain(noreturn,Params,{c_cons,[],A,B})
    );
+parse_cons(noreturn,Params,{c_cons,_,A,B})->
+    estree:new_expression(estree:identifier(<<"List">>),[parse_node(noreturn,Params,A),parse_node(noreturn,Params,B)]).
 
-parseCons(noreturn,Params,{c_cons,_,A,B})->
-    estree:new_expression(estree:identifier(<<"List">>),[parseNode(noreturn,Params,A),parseNode(noreturn,Params,B)]).
-
-
-%###########################
-%For lack of a more apparent reason for the c_try token I'm treating it a superfluous encapsulation
-parseTry(return,Params,{c_try,_,Elem,_,_,_,_})->
-    estree:return_statement(parseTry(noreturn,Params,{c_try,[],Elem,a,a,a,a}));
-parseTry(noreturn,Params,{c_try,_,Elem,_,_,_,_})->
+%% Parses a c_try node.
+%% For lack of a more apparent reason for the c_try token I'm treating it a superfluous encapsulation
+parse_try(return,Params,{c_try,_,Elem,_,_,_,_})->
+    estree:return_statement(parse_try(noreturn,Params,{c_try,[],Elem,a,a,a,a}));
+parse_try(noreturn,Params,{c_try,_,Elem,_,_,_,_})->
     estree:call_expression(
         estree:function_expression(
             null,
             [],
             estree:block_statement(
-                encapsulateExpressions(
-                    listCheck(
-                        parseNode(return,Params,Elem)
+                encapsulate_expressions(
+                    list_check(
+                        parse_node(return,Params,Elem)
                     )
                 )
             ),
         false),
     []).
-    % parseNode(ReturnAtom,Params,Elem);
+    % parse_node(ReturnAtom,Params,Elem);
 
-
-%###########################
-parsePrimop(return,Params,{c_primop,_,{_,_,Type},_Details})->
+%% Parses a c_primop node.
+parse_primop(return,Params,{c_primop,_,{_,_,Type},_Details})->
     % io:format("        Error? ~p~n~p~n", [Type,Details]),
     estree:error(atom_to_list(Type),"TODO Errors dont parse nicely\\n",estree:literal(<<"Message">>)).
     % io:format("",[]);
 
-
-%###########################
-%c_letrec appears to represent list comprehension.
-parseLetrec(ReturnAtom,Params,{c_letrec,_,[Func],Apply})->
-% parseNode(ReturnAtom,Params,{c_letrec,_,[{{_, _, {FunctionName, Arity}}, {_c_fun, _, ParamNames, Body}}],Apply})->
-%     {Id,F} = parseFunction({{a, [], {'listComp', Arity}}, {c_fun, [], ParamNames, Body}}),
-    {Id,F} = parseFunction(Func),
-    assembleSequence(
+%% Parses a c_letrec node.
+%% Note: c_letrec appears to represent list comprehension.
+parse_letrec(ReturnAtom,Params,{c_letrec,_,[Func],Apply})->
+% parse_node(ReturnAtom,Params,{c_letrec,_,[{{_, _, {FunctionName, Arity}}, {_c_fun, _, ParamNames, Body}}],Apply})->
+%     {Id,F} = parse_function({{a, [], {'listComp', Arity}}, {c_fun, [], ParamNames, Body}}),
+    {Id,F} = parse_function(Func),
+    assemble_sequence(
         %estree:variable_declaration(estree:variable_declarator(estree:identifier(list_to_binary(Id)),F),<<"let">>),
         % estree:let_declaration(list_to_binary(Id),F),
         estree:assignment_expression(
@@ -259,107 +279,97 @@ parseLetrec(ReturnAtom,Params,{c_letrec,_,[Func],Apply})->
         ),
         % estree:function_expression(
         %     estree:identifier(identify_normalise(atom_to_list(FunctionName)++"/"++integer_to_list(Arity))),
-        %     tupleListToIdentifierList(ParamNames,tupleList_getVars_3(ParamNames)),
+        %     tuple_list_to_identifier_list(ParamNames,tuple_list_get_vars_3(ParamNames)),
         %     estree:block_statement(
-        %         encapsulateExpressions(
-        %             listCheck(
-        %                 parseNode(return,tupleList_getVars_3(ParamNames),Body)
+        %         encapsulate_expressions(
+        %             list_check(
+        %                 parse_node(return,tuple_list_get_vars_3(ParamNames),Body)
         %             )
         %         )
         %     ),
         %     true
         % ),
-        parseNode(ReturnAtom,Params,Apply)
+        parse_node(ReturnAtom,Params,Apply)
     ).
 
-
-%###########################
-%converts single var case to multi-var case format
-parseCase(ReturnAtom,Params,{c_case, _, {c_var,_,Var}, Clauses})->
-    parseCase(ReturnAtom,Params,{c_case, a, {c_values,a,[{c_var,a,Var}]}, Clauses});
-
-parseCase(ReturnAtom,Params,{c_case, _, {c_values,_,Vars}, Clauses})->
-    parseCaseClauses(ReturnAtom,Params, Vars, Clauses);
-    % {UnboundVars,CaseClauses} = parseCaseClauses(ReturnAtom,Params, Vars, Clauses),
+%% Parses a c_case node.
+%% converts single var case to multi-var case format
+parse_case(ReturnAtom,Params,{c_case, _, {c_var,_,Var}, Clauses})->
+    parse_case(ReturnAtom,Params,{c_case, a, {c_values,a,[{c_var,a,Var}]}, Clauses});
+parse_case(ReturnAtom,Params,{c_case, _, {c_values,_,Vars}, Clauses})->
+    parse_case_clauses(ReturnAtom,Params, Vars, Clauses);
+    % {UnboundVars,CaseClauses} = parse_case_clauses(ReturnAtom,Params, Vars, Clauses),
     % case UnboundVars of
     %     [] -> CaseClauses;
-    %     _  -> assembleSequence(
+    %     _  -> assemble_sequence(
     %             estree:variable_declaration(
-    %                 tupleList_getVars_2(maps:to_list(maps:from_list(UnboundVars))),
+    %                 tuple_list_get_vars_2(maps:to_list(maps:from_list(UnboundVars))),
     %                 <<"let">>),
     %             CaseClauses)
     % end;
-
-
-parseCase(ReturnAtom,Params,{c_case, _, {c_apply,_,{c_var,_,Fun},Args}, Clauses})->
+parse_case(ReturnAtom,Params,{c_case, _, {c_apply,_,{c_var,_,Fun},Args}, Clauses})->
     case Fun of
         {Name,_} -> Fun_Actual = Name;
         _ -> Fun_Actual = Fun
     end,
-    parseFunctionCase(ReturnAtom,Params,
+    parse_function_case(ReturnAtom,Params,
         estree:call_expression(
             estree:identifier(atom_to_binary(Fun_Actual,utf8)),
-            lists:map(fun(T)->parseNode(noreturn,Params,T) end,Args)
+            lists:map(fun(T)->parse_node(noreturn,Params,T) end,Args)
         ),
         Clauses
     );
-
-parseCase(ReturnAtom,Params,{c_case, _, {c_call,_,{c_literal,_,Module},{c_literal,_,FunctionName},Args}, Clauses})->
-    parseFunctionCase(ReturnAtom,Params,
+parse_case(ReturnAtom,Params,{c_case, _, {c_call,_,{c_literal,_,Module},{c_literal,_,FunctionName},Args}, Clauses})->
+    parse_function_case(ReturnAtom,Params,
         estree:call_expression(
             estree:member_expression(estree:identifier(atom_to_binary(Module,utf8)),estree:identifier(atom_to_binary(FunctionName,utf8)),false),
-            lists:map(fun(T)->parseNode(noreturn,Params,T) end,Args)
+            lists:map(fun(T)->parse_node(noreturn,Params,T) end,Args)
         ),
         Clauses
     ).
-
-parseFunctionCase(ReturnAtom,Params,FuncCall, Clauses)->
-    assembleSequence(
+parse_function_case(ReturnAtom,Params,FuncCall, Clauses)->
+    assemble_sequence(
         %Define temp variable & call function
         estree:variable_declaration([estree:variable_declarator(
             estree:identifier(atom_to_binary('_tempVar',utf8)),
             FuncCall
         )],<<"let">>),
         %Continue as normal, passing the temp variable
-        parseCase(ReturnAtom,Params,{c_case, [], {c_var,[],'_tempVar'}, Clauses})
+        parse_case(ReturnAtom,Params,{c_case, [], {c_var,[],'_tempVar'}, Clauses})
     ).
 
+%% Parses a c_cons chain.
+parse_cons_chain(noreturn,Params,{c_cons,[],A,{c_cons,_,C,D}})->
+    [parse_node(noreturn,Params,A)|parse_cons_chain(noreturn,Params,{c_cons,[],C,D})];
+parse_cons_chain(noreturn,Params,{c_cons,[],A,B})->
+    [parse_node(noreturn,Params,A),parse_node(noreturn,Params,B)].
 
-
-parseConsChain(noreturn,Params,{c_cons,[],A,{c_cons,_,C,D}})->
-    [parseNode(noreturn,Params,A)|parseConsChain(noreturn,Params,{c_cons,[],C,D})];
-parseConsChain(noreturn,Params,{c_cons,[],A,B})->
-    [parseNode(noreturn,Params,A),parseNode(noreturn,Params,B)].
-
-
-
-
-
-parseCaseClauses(ReturnAtom,Params, Vars, [])->
+%% Parses c_clause nodes.
+parse_case_clauses(ReturnAtom,Params, Vars, [])->
     [];
-parseCaseClauses(ReturnAtom,Params, Vars, [{c_clause,_,Match,Evaluate,Consequent}|Clauses])->
-    % {UnboundVars,ElseClauses} = parseCaseClauses(ReturnAtom,Params, Vars, Clauses),%alternate
-    ElseClauses = parseCaseClauses(ReturnAtom,Params, Vars, Clauses),%alternate
+parse_case_clauses(ReturnAtom,Params, Vars, [{c_clause,_,Match,Evaluate,Consequent}|Clauses])->
+    % {UnboundVars,ElseClauses} = parse_case_clauses(ReturnAtom,Params, Vars, Clauses),%alternate
+    ElseClauses = parse_case_clauses(ReturnAtom,Params, Vars, Clauses),%alternate
     case ElseClauses of
         [] -> ElseClausesActual = null;
         _  -> ElseClausesActual = ElseClauses
     end,
-    % {lists:append(declaratorsFromList(Match),UnboundVars),
+    % {lists:append(declarators_from_list(Match),UnboundVars),
      estree:if_statement(
-        assembleCaseCondition(Params,Vars,Match,Evaluate),%test
+        assemble_case_condition(Params,Vars,Match,Evaluate),%test
         estree:block_statement(%consequent
-            assembleSequence(
+            assemble_sequence(
                 lists:filter(fun(Elem)->
                         case Elem of
                             ok -> false;
                             _  -> true
                         end
                     end,
-                    assignMatchedVars(Params,Vars,Match)
+                    assign_matched_vars(Params,Vars,Match)
                 ),
-                encapsulateExpressions(
-                    listCheck(
-                        parseNode(ReturnAtom,Params,Consequent)
+                encapsulate_expressions(
+                    list_check(
+                        parse_node(ReturnAtom,Params,Consequent)
                     )
                 )
             )
@@ -368,22 +378,22 @@ parseCaseClauses(ReturnAtom,Params, Vars, [{c_clause,_,Match,Evaluate,Consequent
     ).
      % }.
 
-assembleCaseCondition(Params,_,[],Evaluate)->
+%% Puts together a case condition
+assemble_case_condition(Params,_,[],Evaluate)->
     estree:call_expression(
          estree:function_expression(
               null,
               [],
               estree:block_statement(
-                encapsulateExpressions(
-                    listCheck(
-                        parseNode(return,Params,Evaluate)
+                encapsulate_expressions(
+                    list_check(
+                        parse_node(return,Params,Evaluate)
                     )
                 )
               ),
               false),
          []);
-
-assembleCaseCondition(Params,Vars,Match,Evaluate)->
+assemble_case_condition(Params,Vars,Match,Evaluate)->
     {DefL1,MatchL,DefL2} = lists:foldl(
         fun(Elem,{DefL1,MatchL,DefL2})->
             case Elem of
@@ -395,36 +405,36 @@ assembleCaseCondition(Params,Vars,Match,Evaluate)->
                 {V={c_var,_,ParamName},M={c_literal,_,Literal}}->
                     {DefL1,
                     lists:append(MatchL,[
-                        parseCall(noreturn,Params,{c_call, a, {a, a, erlang}, {a, a, 'match'}, [M,V]})
+                        parse_call(noreturn,Params,{c_call, a, {a, a, erlang}, {a, a, 'match'}, [M,V]})
                     ]),DefL2};
 
                 {V={c_var,_,ParamName},M={c_cons,_,H,T}}->
                     {lists:append(DefL1,
-                        recurseVarDeclaration(M)
+                        recurse_var_declaration(M)
                     ),
                     lists:append(MatchL,[
-                        parseCall(noreturn,Params,{c_call, a, {a, a, erlang}, {a, a, 'match'}, [M,V]})
+                        parse_call(noreturn,Params,{c_call, a, {a, a, erlang}, {a, a, 'match'}, [M,V]})
                     ]),
-                    lists:append(DefL2,recurseVarAssignments(M,estree:identifier(atom_to_binary(ParamName,utf8))))};
+                    lists:append(DefL2,recurse_var_assignments(M,estree:identifier(atom_to_binary(ParamName,utf8))))};
 
                 {V={c_var,_,ParamName},M={c_tuple,_,Content}}->
                     {lists:append(DefL1,
-                        recurseVarDeclaration(M)
+                        recurse_var_declaration(M)
                     ),
                     lists:append(MatchL,[
-                        parseCall(noreturn,Params,{c_call, a, {a, a, erlang}, {a, a, 'match'}, [M,V]})
+                        parse_call(noreturn,Params,{c_call, a, {a, a, erlang}, {a, a, 'match'}, [M,V]})
                     ]),
-                    lists:append(DefL2,recurseVarAssignments(M,estree:identifier(atom_to_binary(ParamName,utf8))))};
+                    lists:append(DefL2,recurse_var_assignments(M,estree:identifier(atom_to_binary(ParamName,utf8))))};
 
                 {V={c_var,_,ParamName},{c_alias,_,{c_var,_,NewName},M}}->
                     {lists:append(DefL1,
-                        recurseVarDeclaration(M)
+                        recurse_var_declaration(M)
                     ),
                     lists:append(MatchL,[
-                        parseCall(noreturn,Params,{c_call, a, {a, a, erlang}, {a, a, 'match'}, [M,V]})
+                        parse_call(noreturn,Params,{c_call, a, {a, a, erlang}, {a, a, 'match'}, [M,V]})
                     ]),
                     lists:append(DefL2,lists:append(
-                        recurseVarAssignments(M,estree:identifier(atom_to_binary(ParamName,utf8))),
+                        recurse_var_assignments(M,estree:identifier(atom_to_binary(ParamName,utf8))),
                         [
                             estree:assignment_expression(
                                 <<"=">>,
@@ -438,13 +448,13 @@ assembleCaseCondition(Params,Vars,Match,Evaluate)->
         {[],[],[]},
         lists:zip(Vars,Match)),
     Internal =  estree:if_statement(
-                    assembleMatchCalls(MatchL),
+                    assemble_match_calls(MatchL),
                     estree:block_statement(%consequent
-                        encapsulateExpressions(
-                            listCheck(
-                                assembleSequence(
+                        encapsulate_expressions(
+                            list_check(
+                                assemble_sequence(
                                     estree:sequence_expression(DefL2),
-                                    parseNode(return,Params,Evaluate)
+                                    parse_node(return,Params,Evaluate)
                                 )
                             )
                         )
@@ -453,8 +463,8 @@ assembleCaseCondition(Params,Vars,Match,Evaluate)->
                 ),
     case DefL1 of
         [] -> InternalActual = Internal;
-        _  -> InternalActual = assembleSequence(
-                            estree:variable_declaration(listCheck(DefL1),<<"let">>),
+        _  -> InternalActual = assemble_sequence(
+                            estree:variable_declaration(list_check(DefL1),<<"let">>),
                             Internal
                         )
     end,
@@ -463,8 +473,8 @@ assembleCaseCondition(Params,Vars,Match,Evaluate)->
             null,
             [],
             estree:block_statement(
-                encapsulateExpressions(
-                    listCheck(
+                encapsulate_expressions(
+                    list_check(
                         InternalActual
                     )
                 )
@@ -473,22 +483,21 @@ assembleCaseCondition(Params,Vars,Match,Evaluate)->
         ),
     []).
 
-recurseVarDeclaration({c_var,_,Name})->
+recurse_var_declaration({c_var,_,Name})->
     [estree:variable_declarator(estree:identifier(atom_to_binary(Name,utf8)),estree:identifier(<<"undefined">>))];
-recurseVarDeclaration({c_literal,_,Name})->
+recurse_var_declaration({c_literal,_,Name})->
     [];
-recurseVarDeclaration({c_tuple,_,Elements})->
+recurse_var_declaration({c_tuple,_,Elements})->
     lists:foldl(fun(Elem,L)->
-            lists:append(L,recurseVarDeclaration(Elem))
+            lists:append(L,recurse_var_declaration(Elem))
         end,[],Elements);
-recurseVarDeclaration({c_cons,_,A,B})->
-    lists:append(recurseVarDeclaration(A),
-    recurseVarDeclaration(B)).
+recurse_var_declaration({c_cons,_,A,B})->
+    lists:append(recurse_var_declaration(A),
+    recurse_var_declaration(B)).
 
-
-recurseVarAssignments(M,V)->
-    recurseVarAssignments(0,M,V,false).
-recurseVarAssignments(_,{c_var,_,Name},V,false)->
+recurse_var_assignments(M,V)->
+    recurse_var_assignments(0,M,V,false).
+recurse_var_assignments(_,{c_var,_,Name},V,false)->
     [
         estree:assignment_expression(
             <<"=">>,
@@ -496,7 +505,7 @@ recurseVarAssignments(_,{c_var,_,Name},V,false)->
             V
         )
     ];
-recurseVarAssignments(ConsCount,{c_var,_,Name},V,isTail)->
+recurse_var_assignments(ConsCount,{c_var,_,Name},V,isTail)->
     [
         estree:assignment_expression(
             <<"=">>,
@@ -509,57 +518,49 @@ recurseVarAssignments(ConsCount,{c_var,_,Name},V,isTail)->
             )
         )
     ];
-recurseVarAssignments(_,{c_tuple,_,Elements},V,_)->
+recurse_var_assignments(_,{c_tuple,_,Elements},V,_)->
     lists:foldl(
         fun(Elem,L)->
             A = length(L),
             lists:append(
                 L,
-                recurseVarAssignments(0,Elem,
+                recurse_var_assignments(0,Elem,
                     estree:member_expression(V,estree:literal(A),true),
                     false
                 )
             )
         end,
         [],Elements);
-recurseVarAssignments(ConsCount,{c_cons,_,A,B={c_var,_,Name}},V,_)->
+recurse_var_assignments(ConsCount,{c_cons,_,A,B={c_var,_,Name}},V,_)->
     lists:append(
-        recurseVarAssignments(0,A,estree:member_expression(V,estree:literal(ConsCount),true),false),
-        recurseVarAssignments(ConsCount+1,B,V,isTail)
+        recurse_var_assignments(0,A,estree:member_expression(V,estree:literal(ConsCount),true),false),
+        recurse_var_assignments(ConsCount+1,B,V,isTail)
     );
-recurseVarAssignments(ConsCount,{c_cons,_,A,B},V,_)->
+recurse_var_assignments(ConsCount,{c_cons,_,A,B},V,_)->
     lists:append(
-        recurseVarAssignments(0,A,estree:member_expression(V,estree:literal(ConsCount),true),false),
-        recurseVarAssignments(ConsCount+1,B,V,false)
+        recurse_var_assignments(0,A,estree:member_expression(V,estree:literal(ConsCount),true),false),
+        recurse_var_assignments(ConsCount+1,B,V,false)
     );
-recurseVarAssignments(_ConsCount,_,_V,_)->
+recurse_var_assignments(_ConsCount,_,_V,_)->
     [].
 
-
-assembleMatchCalls(MatchL)->
+assemble_match_calls(MatchL)->
     % io:format("~p~n",[MatchL]),
     case MatchL of
         []    -> estree:literal(true);
         [M]   -> M;
-        [M|T] -> estree:logical_expression(<<"&&">>,M,assembleMatchCalls(T))
-        % [M|T] -> estree:expression_statement(estree:logical_expression(<<"&&">>,M,assembleMatchCalls(T)))
+        [M|T] -> estree:logical_expression(<<"&&">>,M,assemble_match_calls(T))
+        % [M|T] -> estree:expression_statement(estree:logical_expression(<<"&&">>,M,assemble_match_calls(T)))
     end.
 
-
-
-
-
-
-
-
-assignMatchedVars(Params,[V],[M])->
-        assignMatchedVars(Params,V,M);
-assignMatchedVars(Params,[V|Vars],[M|Match])->
-    assembleSequence(
-        assignMatchedVars(Params,[V],[M]),
-        assignMatchedVars(Params,Vars,Match)
+assign_matched_vars(Params,[V],[M])->
+        assign_matched_vars(Params,V,M);
+assign_matched_vars(Params,[V|Vars],[M|Match])->
+    assemble_sequence(
+        assign_matched_vars(Params,[V],[M]),
+        assign_matched_vars(Params,Vars,Match)
     );
-assignMatchedVars(Params,{c_var,_,Variable},{c_var,_,Match})->
+assign_matched_vars(Params,{c_var,_,Variable},{c_var,_,Match})->
     [estree:expression_statement(
         estree:assignment_expression(
             <<"=">>,
@@ -567,7 +568,7 @@ assignMatchedVars(Params,{c_var,_,Variable},{c_var,_,Match})->
             estree:identifier(atom_to_binary(Variable,utf8))
         )
     )];
-assignMatchedVars(Params,{c_var,_,Variable},{c_alias,_,{c_var,[],Name},_Value})->
+assign_matched_vars(Params,{c_var,_,Variable},{c_alias,_,{c_var,[],Name},_Value})->
     [estree:expression_statement(
         estree:assignment_expression(
             <<"=">>,
@@ -575,48 +576,37 @@ assignMatchedVars(Params,{c_var,_,Variable},{c_alias,_,{c_var,[],Name},_Value})-
             estree:identifier(atom_to_binary(Variable,utf8))
         )
     )];
-%assignMatchedVars(Params,A,B)->
+%assign_matched_vars(Params,A,B)->
 %    erlang:error(io_lib:format("assignMatchedVars error:~p~n~p",[A,B])),
-assignMatchedVars(Params,_,_)->
+assign_matched_vars(Params,_,_)->
     [ok].
 
-
-
-
-
-
-
 %###########################
-assembleSequence(L,R) when is_list(L) and is_list(R)->
+assemble_sequence(L,R) when is_list(L) and is_list(R)->
     lists:append(L,R);
-assembleSequence(L,R) when is_list(R)->
+assemble_sequence(L,R) when is_list(R)->
     [L|R];
-assembleSequence(L,R) when is_list(L)->
+assemble_sequence(L,R) when is_list(L)->
     lists:append(L,[R]);
-assembleSequence(L,R)->
+assemble_sequence(L,R)->
     [L,R].
 
+tuple_list_to_identifier_list(List,Params)->
+    lists:map(fun({c_var,[],A})->parse_var(noreturn,Params,{c_var,[],A}) end,List).
 
-tupleListToIdentifierList(List,Params)->
-    lists:map(fun({c_var,[],A})->parseVar(noreturn,Params,{c_var,[],A}) end,List).
-
-
-
-tupleList_getVars_3([])->
+tuple_list_get_vars_3([])->
     [];
-tupleList_getVars_3([{_,_, Val} | Body])->
-    [Val | tupleList_getVars_3(Body)];
-tupleList_getVars_3([{_, _, Val, _} | Body])->
-    [Val | tupleList_getVars_3(Body)].
+tuple_list_get_vars_3([{_,_, Val} | Body])->
+    [Val | tuple_list_get_vars_3(Body)];
+tuple_list_get_vars_3([{_, _, Val, _} | Body])->
+    [Val | tuple_list_get_vars_3(Body)].
 
-
-tupleList_getVars_2([])->
+tuple_list_get_vars_2([])->
     [];
-tupleList_getVars_2([{_, Val} | Body])->
-    [Val | tupleList_getVars_2(Body)];
-tupleList_getVars_2([{_, Val, _} | Body])->
-    [Val | tupleList_getVars_2(Body)].
-
+tuple_list_get_vars_2([{_, Val} | Body])->
+    [Val | tuple_list_get_vars_2(Body)];
+tuple_list_get_vars_2([{_, Val, _} | Body])->
+    [Val | tuple_list_get_vars_2(Body)].
 
 tuple_getVar_1({V})->V;
 tuple_getVar_1({V,_})->V;
@@ -626,8 +616,7 @@ tuple_getVar_1({V,_,_,_,_})->V;
 tuple_getVar_1({V,_,_,_,_,_})->V;
 tuple_getVar_1({V,_,_,_,_,_,_})->V.
 
-
-declaratorsFromList(List)->
+declarators_from_list(List)->
     lists:filtermap(fun(Elem)->
         case Elem of
             {c_var,_,Name} -> { true,{Name,
@@ -637,23 +626,21 @@ declaratorsFromList(List)->
             {c_alias,_,{c_var,_,Name},Value} -> {true,{Name,
                                                  estree:variable_declarator(
                                                      estree:identifier(atom_to_binary(Name,utf8)),
-                                                     parseNode(noreturn,[],Value))}};
+                                                     parse_node(noreturn,[],Value))}};
             _              -> false
         end
     end,List).
-
 
 identify_normalise(N)->
     % {ok, Regex}=re:compile("[^A-Za-z0-9_$]"),
     % iolist_to_binary(re:replace(N,Regex,"_$_",[global])).
     list_to_binary(N).
 
+tup_to_list(Tuple) -> tup_to_list(Tuple, 1, tuple_size(Tuple)).
 
-tup2list(Tuple) -> tup2list(Tuple, 1, tuple_size(Tuple)).
-
-tup2list(Tuple, Pos, Size) when Pos =< Size ->  
-    [element(Pos,Tuple) | tup2list(Tuple, Pos+1, Size)];
-tup2list(_Tuple,_Pos,_Size) -> [].
+tup_to_list(Tuple, Pos, Size) when Pos =< Size ->  
+    [element(Pos,Tuple) | tup_to_list(Tuple, Pos+1, Size)];
+tup_to_list(_Tuple,_Pos,_Size) -> [].
 
 %rAtomToList([A|Rest])->
 %    [rAtomToList(A)|rAtomToList(Rest)];
