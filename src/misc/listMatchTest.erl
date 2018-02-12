@@ -18,4 +18,10 @@ func([f,f])->
 func([0,f])->
     [0,f];
 func([0,0])->
-    [0,0].
+    [0,0];
+func([a,b])->
+    [a,b];
+func([A|b])->
+    [A|b];
+func([a|Rest])->
+    [a|Rest].
