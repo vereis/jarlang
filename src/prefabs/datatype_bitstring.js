@@ -2,18 +2,19 @@
 function BitString () {
     var tmp = [];
 
-    for (b in arguments) {
-        if (!(ErlNumber.isErlNumber(b) && b.isInteger()) && !List.isString(b)) {
+    for (var i = 0; i < arguments.length; i++) {
+        if (!(ErlNumber.isErlNumber(arguments[i]) && arguments[i].isInteger()) && !List.isString(arguments[i])) {
             throw "bad argument";
         }
 
-        if (List.isString(b)) {
-            for (c in b.split("")) {
+        if (List.isString(arguments[i])) {
+            for (c in arguments[i].toString().split("")) {
                 tmp.push(c.charCodeAt(0));
             }
         }
         else {
-            tmp.push(b);
+            var max8bit = (1 << 8) - 1;
+            tmp.push(arguments[i].greaterThan(max8bit) ? max8bit : arguments[i].getValue().c[0]);
         }
     }
 
