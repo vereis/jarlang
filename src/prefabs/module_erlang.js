@@ -442,43 +442,46 @@ const erlang = function () {
         },
 
         'is_atom/1': function (_cor0) {
-            return _cor0 instanceof Atom;
+            return Atom.isAtom(_cor0);
+        },
+        'is_binary/1': function (_cor0) {
+            return BitString.isBinary(_cor0);
         },
         'is_bitstring/1': function (_cor0) {
-            return _cor0 instanceof BitString;
+            return BitString.isBitString(_cor0);
         },
         'is_boolean/1': function (_cor0) {
-            return _cor0 instanceof Atom && (_cor0.toString() == "true" || _cor0.toString == "false");
+            return Atom.isAtom(_cor0) && (_cor0.toString() == "true" || _cor0.toString == "false");
         },
         'is_float/1': function (_cor0) {
-            return _cor0 instanceof ErlNumber && _cor0.isFloat();
+            return ErlNumber.isErlNumber(_cor0) && _cor0.isFloat();
         },
         'is_function/1': function (_cor0) {
-            return _cor0 instanceof Fun;
+            return Fun.isFun(_cor0);
         },
         'is_integer/1': function (_cor0) {
-            return _cor0 instanceof ErlNumber && _cor0.isInteger();
+            return ErlNumber.isErlNumber(_cor0) && _cor0.isInteger();
         },
         'is_list/1': function (_cor0) {
-            return _cor0 instanceof List;
+            return List.isList(_cor0);
         },
         'is_map/1': function (_cor0) {
-            return _cor0 instanceof ErlMap;
+            return ErlMap.isErlMap(_cor0);
         },
         'is_number/1': function (_cor0) {
-            return _cor0 instanceof ErlNumber;
+            return ErlNumber.isErlNumber(_cor0);
         },
         'is_pid/1': function (_cor0) {
-            return _cor0 instanceof Pid;
+            return Pid.isPid(_cor0);
         },
         'is_port/1': function (_cor0) {
-            return _cor0 instanceof Port;
+            return Port.isPort(_cor0);
         },
         'is_reference/1': function (_cor0) {
-            return _cor0 instanceof Reference;
+            return Reference.isReference(_cor0);
         },
         'is_tuple/1': function (_cor0) {
-            return _cor0 instanceof Tuple;
+            return Tuple.isTuple(_cor0);
         },
 
         'abs/1': function (_cor0) {
