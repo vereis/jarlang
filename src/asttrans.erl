@@ -228,12 +228,18 @@ parse_tuple(noreturn,Params,{c_tuple,_,Values})->
 %% This is essentially a list constructor.
 parse_cons(return,Params,{c_cons,_,A,B})->
     estree:return_statement(parse_cons(noreturn,Params,{c_cons,[],A,B}));
-parse_cons(noreturn,Params,{c_cons,_,A,B={c_cons,_,C,D}})->
-    estree:new_expression(estree:identifier(<<"List">>),
-        parse_cons_chain(noreturn,Params,{c_cons,[],A,B})
-   );
 parse_cons(noreturn,Params,{c_cons,_,A,B})->
-    estree:new_expression(estree:identifier(<<"List">>),[parse_node(noreturn,Params,A),parse_node(noreturn,Params,B)]).
+    {Values,End} = parse_cons_chain(noreturn,Params,{c_cons,[],A,B}),
+    NewList = estree:new_expression(estree:identifier(<<"List">>),Values),
+    estree:call_expression(estree:member_expression(NewList,estree:identifier(<<"cons">>),false),[End]).
+
+%% Parses a c_cons chain.
+parse_cons_chain(noreturn,Params,{c_cons,[],A,B={c_cons,_,C,D}})->
+    {Values,End} = parse_cons_chain(noreturn,Params,B),
+    {[parse_node(noreturn,Params,A)|Values],End};
+parse_cons_chain(noreturn,Params,{c_cons,[],A,B})->
+    {[parse_node(noreturn,Params,A)],parse_node(noreturn,Params,B)}.
+
 
 %% Parses a c_try node.
 %% For lack of a more apparent reason for the c_try token I'm treating it a superfluous encapsulation
@@ -340,12 +346,6 @@ parse_function_case(ReturnAtom,Params,FuncCall, Clauses)->
         %Continue as normal, passing the temp variable
         parse_case(ReturnAtom,Params,{c_case, [], {c_var,[],'_tempVar'}, Clauses})
     ).
-
-%% Parses a c_cons chain.
-parse_cons_chain(noreturn,Params,{c_cons,[],A,{c_cons,_,C,D}})->
-    [parse_node(noreturn,Params,A)|parse_cons_chain(noreturn,Params,{c_cons,[],C,D})];
-parse_cons_chain(noreturn,Params,{c_cons,[],A,B})->
-    [parse_node(noreturn,Params,A),parse_node(noreturn,Params,B)].
 
 %% Parses c_clause nodes.
 parse_case_clauses(ReturnAtom,Params, Vars, [])->
@@ -494,6 +494,7 @@ recurse_var_declaration({c_tuple,_,Elements})->
     lists:foldl(fun(Elem,L)->
             lists:append(L,recurse_var_declaration(Elem))
         end,[],Elements);
+
 recurse_var_declaration({c_cons,_,A,B})->
     lists:append(recurse_var_declaration(A),
     recurse_var_declaration(B)).
