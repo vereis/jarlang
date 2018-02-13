@@ -20,7 +20,22 @@ function List (car, ...cdr) {
 
 // Static Methods
 List.isList = (list) => list instanceof List;
+
 List.isEmptyList = (list) => List.isList(list) && list.value === undefined && list.next === undefined;
+
+List.isString = (list) => {
+    if (!List.isList(list)) {
+        return false;
+    }
+
+    for (var i = 1; i <= list.size; i++) {
+        if (!isLatin1Char(list.nth(i))) {
+            return false;
+        }
+    }
+    return true;
+};
+
 List.cloneList = (list) => new List(...list);
 
 
@@ -100,7 +115,7 @@ List.prototype.toString = function() {
         let isImproperList = !List.isList(this.__nthNode(Math.max(0, buffer.length - 1)));
         
         for (let i = 0; i < buffer.length; i++) {
-            var isCharCode = Number.isInteger(buffer[i]) && isLatin1Char(buffer[i]);
+            let isCharCode = Number.isInteger(buffer[i]) && isLatin1Char(buffer[i]);
 
             if (i > 0 && !(isCharCode && Number.isInteger(buffer[i - 1]) && isLatin1Char(buffer[i - 1]))) {
                 if (i === buffer.length - 1 && isImproperList) {

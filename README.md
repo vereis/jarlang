@@ -4,7 +4,7 @@ Jarlang is an Erlang compiler which outputs to ES6 spec JavaScript, written in a
 ## Overview
 Jarlang is implemented via the following, simple, pipeline:
 1) Utilising the Erlang compiler, we generate Erlang's intermediate language, CoreErlang
-2) Utilise built in Erlang tools to generate an abstract syntax tree from generated CoreErlang, not too disimilarly from projects such as [LuvvieScript](https://github.com/hypernumbers/LuvvieScript) and [ElixirScript](https://github.com/elixirscript/elixirscript)
+2) Utilise built in Erlang tools to generate an abstract syntax tree from generated CoreErlang, not too dissimilarly from projects such as [LuvvieScript](https://github.com/hypernumbers/LuvvieScript) and [ElixirScript](https://github.com/elixirscript/elixirscript)
 3) Map the generated CoreErlang abstract syntax tree into an equivalent JavaScript abstract syntax tree
 4) Utilise NodeJS and tools such as [escodegen](https://github.com/estools/escodegen) to generate valid JavaScript.
 

@@ -302,6 +302,145 @@ const erlang = function () {
             ;
         },
 
+        'atom_to_binary/2': function (_cor1, _cor0) {
+            return;
+        },
+        'atom_to_list/1': function (_cor0) {
+            if (_cor0 instanceof Atom) {
+                return new List(_cor0.toString());
+            }
+            throw "bad argument";
+        },
+        'binary_to_atom/2': function (_cor1, _cor0) {
+            return;
+        },
+        'binary_to_existing_atom/2': function (_cor1, _cor0) {
+            return;
+        },
+        'binary_to_float/1': function (_cor0) {
+            return;
+        },
+        'binary_to_integer/1': function (_cor0) {
+            return;
+        },
+        'binary_to_integer/2': function (_cor1, _cor0) {
+            return;
+        },
+        'binary_to_list/1': function (_cor0) {
+            return;
+        },
+        'binary_to_list/3': function (_cor2, _cor1, _cor0) {
+            return;
+        },
+        'binary_to_term/1': function (_cor0) {
+            return;
+        },
+        'binary_to_term/2': function (_cor1, _cor0) {
+            return;
+        },
+        'bitstring_to_list/1': function (_cor0) {
+            return;
+        },
+        'float_to_binary/1': function (_cor0) {
+            return;
+        },
+        'float_to_binary/2': function (_cor1, _cor0) {
+            return;
+        },
+        'float_to_list/1': function (_cor0) {
+            return;
+        },
+        'float_to_list/2': function (_cor1, _cor0) {
+            return;
+        },
+        'fun_to_list/1': function (_cor0) {
+            return;
+        },
+        'integer_to_binary/1': function (_cor0) {
+            return;
+        },
+        'integer_to_binary/2': function (_cor1, _cor0) {
+            return;
+        },
+        'integer_to_list/1': function (_cor0) {
+            return;
+        },
+        'integer_to_list/2': function (_cor1, _cor0) {
+            return;
+        },
+        'iolist_to_binary/1': function (_cor0) {
+            return;
+        },
+        'iolist_to_iovec/1': function (_cor0) {
+            return;
+        },
+        'list_to_atom/1': function (_cor0) {
+            if (_cor0 instanceof List && List.isString(_cor0)) {
+                return new Atom(_cor0.toString);
+            }
+            throw "bad argument";
+        },
+        'list_to_binary/1': function (_cor0) {
+            return;
+        },
+        'list_to_bitstring/1': function (_cor0) {
+            return;
+        },
+        'list_to_existing_atom/1': function (_cor0) {
+            if (_cor0 instanceof List && List.isString(_cor0) && Atom.exists(_cor0.toString())) {
+                return new Atom(_cor0.toString);
+            }
+            throw "bad argument";
+        },
+        'list_to_float/1': function (_cor0) {
+            return;
+        },
+        'list_to_integer/1': function (_cor0) {
+            return;
+        },
+        'list_to_integer/2': function (_cor1, _cor0) {
+            return;
+        },
+        'list_to_pid/1': function (_cor0) {
+            return;
+        },
+        'list_to_port/1': function (_cor0) {
+            return;
+        },
+        'list_to_ref/1': function (_cor0) {
+            return;
+        },
+        'list_to_tuple/1': function (_cor0) {
+            return;
+        },
+        'localtime_to_universaltime/1': function (_cor0) {
+            return;
+        },
+        'localtime_to_universaltime/2': function (_cor1, _cor0) {
+            return;
+        },
+        'pid_to_list/1': function (_cor0) {
+            return;
+        },
+        'port_to_list/1': function (_cor0) {
+            return;
+        },
+        'ref_to_list/1': function (_cor0) {
+            return;
+        },
+        'term_to_binary/1': function (_cor0) {
+            return;
+        },
+        'term_to_binary/2': function (_cor1, _cor0) {
+            return;
+        },
+        'tuple_to_list/1': function (_cor0) {
+            return;
+        },
+        'universaltime_to_localtime/1': function (_cor0) {
+            return;
+        },
+
         'is_atom/1': function (_cor0) {
             return _cor0 instanceof Atom;
         },
