@@ -487,7 +487,7 @@ assemble_case_condition(Params,Vars,Match,Evaluate)->
     []).
 
 recurse_var_declaration({c_var,_,Name})->
-    [estree:variable_declarator(estree:identifier(atom_to_binary(Name,utf8)),estree:identifier(<<"undefined">>))];
+    [estree:variable_declarator(estree:identifier(atom_to_binary(Name,utf8)),estree:identifier(<<"null">>))];
 recurse_var_declaration({c_literal,_,Name})->
     [];
 recurse_var_declaration({c_tuple,_,Elements})->
@@ -626,7 +626,7 @@ declarators_from_list(List)->
             {c_var,_,Name} -> { true,{Name,
                                 estree:variable_declarator(
                                     estree:identifier(atom_to_binary(Name,utf8)),
-                                    estree:identifier(<<"undefined">>))}};
+                                    estree:identifier(<<"null">>))}};
             {c_alias,_,{c_var,_,Name},Value} -> {true,{Name,
                                                  estree:variable_declarator(
                                                      estree:identifier(atom_to_binary(Name,utf8)),
