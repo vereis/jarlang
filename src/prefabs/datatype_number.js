@@ -88,9 +88,9 @@ ErlNumber.prototype.greaterThanOrEq = function(val) {
 
 ErlNumber.prototype.match = function(val) {
     if (isNaN(val) || !this.equals(val)) {
-        return undefined;
+        return false;
     }
-    return val;
+    return true;
 }
 
 

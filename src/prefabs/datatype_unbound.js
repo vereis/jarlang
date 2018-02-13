@@ -10,7 +10,7 @@ Unbound.prototype.toString = function() {
 }
 
 Unbound.prototype.match = function(X) {
-    return X;
+    return true;
 }
 
 Unbound.prototype.value = function() {

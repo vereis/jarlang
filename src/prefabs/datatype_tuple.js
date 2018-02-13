@@ -76,6 +76,27 @@ Tuple.prototype.toString = function() {
     return `{${[...this].join(",")}}`;
 }
 
+Tuple.prototype.match = function(X) {
+    if(!Tuple.isTuple(X))return false;
+    // Shortcircuit comparison because unequal lengths must mean inequality
+    if (this.size() != X.size()) {
+        return false;
+    }
+    else {
+        let len = X.size();
+        for (let i = 0; i < len; i++) {
+            let c = this.nth(i).match(X.nth(i));
+            if (c) {
+                continue;
+            }
+            else {
+                return false;
+            }
+        }
+        return true;
+    }
+}
+
 
 if (typeof exports != "undefined") {
     exports.Tuple = Tuple;

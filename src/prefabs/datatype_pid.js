@@ -70,11 +70,10 @@ Pid.prototype.isUnbound = function() {
 }
 
 Pid.prototype.match = function(X) {
-    // Since 'false' is a legitimate atom in Erlang, we return undefined instead of false for a failure case
     if (Pid.isPid(X) && this.value === X.value) {
-        return X;
+        return true;
     }
     else {
-        return undefined;
+        return false;
     }
 }

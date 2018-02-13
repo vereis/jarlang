@@ -103,7 +103,7 @@ List.prototype.cons = function(appendage) {
     return clone;
 };
 
-List.prototype.value = function() {
+List.prototype.getValue = function() {
     return [...this];  
 };
 
@@ -138,6 +138,18 @@ List.prototype.toString = function() {
     }
     
     return '[]';
+}
+
+List.prototype.match = function(X) {
+    let a,b,c;
+    if(X==undefined)return true;
+    a = List.isList(X);
+    if(a){
+        b = this.value==undefined ? X.size()==0 :
+            this.value.match(X.value);
+        c = this.next !== undefined ? this.next.match(X.next) : true;
+    }
+    return a && b && c;
 }
 
 

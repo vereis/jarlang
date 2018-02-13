@@ -19,10 +19,10 @@ ErlangDatatype.prototype.toString = function() {
 
 ErlangDatatype.prototype.match = function(X) {
     if (ErlangDatatype.isErlangDatatype(X) ? this.value === X.value : this.value === X) {
-        return X;
+        return true;
     }
     else {
-        return undefined;
+        return false;
     }
 }
 
