@@ -15,13 +15,13 @@ Process.sendMessage = (pid, msg) => {
 
 // Static function to get a process from a pid
 Process.getProcess = (pid) => {
-    return __erlang.processes[__erlang.pids[pid.toString()]];
+    return jrts.processes[jrts.pids[pid.toString()]];
 }
 
 // Spawns a new process with a given lambda and pid generator,
 // automatically registering it with the runtime process queue
 Process.spawn = (lambda, pidGenerator) => {
-    return __erlang.spawn(lambda, pidGenerator);
+    return jrts.spawn(lambda, pidGenerator);
 }
 
 // Prototype Methods
@@ -30,8 +30,8 @@ Process.prototype.toString = function() {
 }
 
 Process.prototype.registerProcess = function() {
-    __erlang.pids[this.pid.toString()] = __erlang.processes.length;
-    __erlang.processes.push(this);
+    jrts.pids[this.pid.toString()] = jrts.processes.length;
+    jrts.processes.push(this);
 }
 
 /* TEST:

@@ -3,7 +3,7 @@ var gulp = require("gulp"),
     rename = require("gulp-rename"),
     uglify = require("gulp-uglify");
 
-var js_files = ["src/prefabs/runtime.js",
+var js_files = ["src/prefabs/jarlang_rts.js",
                 "src/prefabs/module_erlang.js",
                 "src/prefabs/module_io.js",
                 "src/prefabs/datatype_atom.js",
@@ -20,8 +20,12 @@ var js_files = ["src/prefabs/runtime.js",
                 "src/prefabs/datatype_unbound.js",
             ];
 
+var js_dependencies = [
+    "node_modules/bignumber.js/bignumber.min.js"
+];
+
 gulp.task("default", function() {
-    return gulp.src(js_files)
+    return gulp.src(js_files.concat(js_dependencies))
            .pipe(concat("jarlang.js"))
            .pipe(gulp.dest("gulpbuild/"));
 });

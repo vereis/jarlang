@@ -1,6 +1,6 @@
 // Constructor
 function ErlMap(map) {
-    this.value = typeof map == "object" ? map : {};
+    this.value = (typeof map === "object" && !Array.isArray(map)) ? map : {};
 }
 
 // Static Methods

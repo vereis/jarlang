@@ -6,7 +6,6 @@ function ErlNumber(val) {
     this.value = val instanceof BigNumber ? val : new BigNumber(val);
 }
 
-
 // Static Methods
 ErlNumber.isErlNumber = function(val) {
     return val instanceof ErlNumber;
@@ -15,7 +14,6 @@ ErlNumber.isErlNumber = function(val) {
 ErlNumber.cloneNumber = function(val) {
     return new ErlNumber(val.getValue());
 }
-
 
 // Prototype Methods
 ErlNumber.prototype.getValue = function() {
