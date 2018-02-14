@@ -48,14 +48,14 @@ release:
 	@ echo "    Any warnings or errors will stop the build."
 	$(call compile, $(ERLFLAGS), $(OUTDIR), $(GREEN), $(DEVNULL))
 	$(call package, $(OUTDIR), $(GREEN))
-	$(call gulp, $(GREEN), $(OUTDIR))
+	$(call gulp, $(GREEN), $(OUTDIR), default)
 
 nonstrict:
 	@ echo "$(GREEN)==> Building RELEASE NONSTRICT$(NORMAL)"
 	@ echo "    Any warnings or errors will be ignored during build, if they can be."
 	$(call compile, $(ERLFLAGS_NONSTRICT), $(OUTDIR), $(GREEN), $(STDOUT))
 	$(call package, $(OUTDIR), $(GREEN))
-	$(call gulp, $(GREEN), $(OUTDIR))
+	$(call gulp, $(GREEN), $(OUTDIR), default)
 
 debug:
 	@ echo "$(BLUE)==> Building DEBUG$(NORMAL)"
@@ -63,7 +63,7 @@ debug:
 	@ echo "    Debug macro enabled."
 	$(call compile, $(ERLFLAGS_DEBUG), $(DEBUGDIR), $(BLUE), $(STDOUT))
 	$(call package, $(DEBUGDIR), $(BLUE))
-	$(call gulp, $(BLUE), $(DEBUGDIR))
+	$(call gulp, $(BLUE), $(DEBUGDIR), debug)
 
 test:
 	@ echo "$(CYAN)==> Building TEST$(NORMAL)"
@@ -71,11 +71,11 @@ test:
 	@ echo "    Debug macro enabled."
 	@ echo "    Test macro enabled."
 	$(call compile, $(ERLFLAGS_TEST), $(TESTDIR), $(CYAN), $(STDOUT))
-	$(call gulp, $(CYAN), $(TESTDIR))
+	$(call gulp, $(CYAN), $(TESTDIR), debug)
 
 js:
 	@ echo "$(GREEN)==> Building Jarlang Browser Runtime$(NORMAL)"
-	$(call gulp, $(GREEN), $(JSDIR))
+	$(call gulp, $(GREEN), $(JSDIR), debug)
 
 .PHONY: lint
 lint:
@@ -181,9 +181,10 @@ endef
 define gulp
 	@ $(eval COLOR = $(1))
 	@ $(eval TARGET_DIR = $(2))
+	@ $(eval GULPTASK = $(3))
 	@ mkdir -p $(TARGET_DIR)
 	@ echo "$(COLOR)==> Running GULP tasks$(NORMAL)"
-	@ $(GULP)
+	@ $(GULP) $(GULPTASK)
 	@ echo "$(COLOR)==> Writing JS runtime to location: './$(TARGET_DIR)'$(NORMAL)"
 	@ mv gulpbuild/* $(TARGET_DIR)/
 	@ rm -rf gulpbuild/
