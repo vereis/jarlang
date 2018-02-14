@@ -3,7 +3,7 @@
  * Provides all of the neccessary environment functions to allow Jarlang to work as intended
  * such as our process queue
  */
- const __erlang = (function(secondsPerTick) {
+const __erlang = (function (secondsPerTick) {
     'use strict';
 
     // Return a shuffled copy of an array, this is used so that the processes queue
@@ -27,7 +27,7 @@
     const exports = {
         processes: [],
         pids: {},
-        timer: setInterval(function() {
+        timer: setInterval(function () {
             shuffle(exports.processes).map(process => {
                 if (process.lambdas.length) {
                     process.currentLambda = process.lambdas.shift();
@@ -36,10 +36,10 @@
                 }
             });
         }, secondsPerTick !== undefined ? secondsPerTick : 1),
-        spawn: function(lambda, pidGenerator) {
+        spawn: function (lambda, pidGenerator) {
             return new Process(lambda, pidGenerator).pid;
         }
     };
 
     return exports;
- })();
+})();

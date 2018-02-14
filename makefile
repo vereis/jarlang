@@ -27,6 +27,7 @@ ELVIS = $(UTILDIR)/elvis rock --config $(UTILDIR)/elvis.config
 ERLPKG = $(UTILDIR)/erlpkg
 STDOUT = &1
 DEVNULL = /dev/null
+GULP = ./node_modules/.bin/gulp
 
 # Colors
 RED = \033[0;31m
@@ -66,6 +67,10 @@ test:
 	@ echo "    Debug macro enabled."
 	@ echo "    Test macro enabled."
 	$(call compile, $(ERLFLAGS_TEST), $(TESTDIR), $(CYAN), $(STDOUT))
+
+js:
+	@ echo "$(GREEN)==> Building Jarlang Browser Runtime$(NORMAL)"
+	$(call gulp, $(GREEN))
 
 .PHONY: lint
 lint:
@@ -159,5 +164,14 @@ define dialyze
 	@ $(DIALYZER) $(TARGET_DIR)/*.beam || true
 
 	@ echo "$(COLOR)==> Dialyzing complete in: './$(TARGET_DIR)/'$(NORMAL)"
+	@ echo "    Done\n"
+endef
+
+define gulp
+	@ $(eval COLOR = $(1))
+	@ echo "$(COLOR)==> Ensuring NPM packages are installed$(NORMAL)"
+	@ npm install
+	@ echo "$(COLOR)==> Building JS runtime$(NORMAL)"
+	@ $(GULP)
 	@ echo "    Done\n"
 endef
