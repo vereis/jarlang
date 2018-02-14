@@ -23,8 +23,5 @@ var js_files = ["src/prefabs/runtime.js",
 gulp.task("default", function() {
     return gulp.src(js_files)
            .pipe(concat("jarlang.js"))
-           //.pipe(gulp.dest("dist"))
-           //.pipe(rename("uglify.js"))
-           //.pipe(uglify())
-           .pipe(gulp.dest("jbin"));
+           .pipe(gulp.dest("gulpbuild/"));
 });
