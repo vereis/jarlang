@@ -203,6 +203,174 @@ const erlang = function () {
                     break;
             }
             throw '** exception error: undefined function' + ('module_info' + ('/' + arguments.length));
+        },
+        'atom_to_list': function () {
+            switch (arguments.length) {
+                case 1:
+                    return functions['atom_to_list/1'](...arguments);
+                    break;
+            }
+            throw '** exception error: undefined function' + ('atom_to_list' + ('/' + arguments.length));
+        },
+        'list_to_atom': function () {
+            switch (arguments.length) {
+                case 1:
+                    return functions['list_to_atom/1'](...arguments);
+                    break;
+            }
+            throw '** exception error: undefined function' + ('list_to_atom' + ('/' + arguments.length));
+        },
+        'list_to_existing_atom': function () {
+            switch (arguments.length) {
+                case 1:
+                    return functions['list_to_existing_atom/1'](...arguments);
+                    break;
+            }
+            throw '** exception error: undefined function' + ('list_to_existing_atom' + ('/' + arguments.length));
+        },
+        'is_atom': function () {
+            switch (arguments.length) {
+                case 1:
+                    return functions['is_atom/1'](...arguments);
+                    break;
+            }
+            throw '** exception error: undefined function' + ('is_atom' + ('/' + arguments.length));
+        },
+        'is_binary': function () {
+            switch (arguments.length) {
+                case 1:
+                    return functions['is_binary/1'](...arguments);
+                    break;
+            }
+            throw '** exception error: undefined function' + ('is_binary' + ('/' + arguments.length));
+        },
+        'is_bitstring': function () {
+            switch (arguments.length) {
+                case 1:
+                    return functions['is_bitstring/1'](...arguments);
+                    break;
+            }
+            throw '** exception error: undefined function' + ('is_bitstring' + ('/' + arguments.length));
+        },
+        'is_boolean': function () {
+            switch (arguments.length) {
+                case 1:
+                    return functions['is_boolean/1'](...arguments);
+                    break;
+            }
+            throw '** exception error: undefined function' + ('is_boolean' + ('/' + arguments.length));
+        },
+        'is_float': function () {
+            switch (arguments.length) {
+                case 1:
+                    return functions['is_float/1'](...arguments);
+                    break;
+            }
+            throw '** exception error: undefined function' + ('is_float' + ('/' + arguments.length));
+        },
+        'is_function': function () {
+            switch (arguments.length) {
+                case 1:
+                    return functions['is_function/1'](...arguments);
+                    break;
+            }
+            throw '** exception error: undefined function' + ('is_function' + ('/' + arguments.length));
+        },
+        'is_integer': function () {
+            switch (arguments.length) {
+                case 1:
+                    return functions['is_integer/1'](...arguments);
+                    break;
+            }
+            throw '** exception error: undefined function' + ('is_integer' + ('/' + arguments.length));
+        },
+        'is_list': function () {
+            switch (arguments.length) {
+                case 1:
+                    return functions['is_list/1'](...arguments);
+                    break;
+            }
+            throw '** exception error: undefined function' + ('is_list' + ('/' + arguments.length));
+        },
+        'is_map': function () {
+            switch (arguments.length) {
+                case 1:
+                    return functions['is_map/1'](...arguments);
+                    break;
+            }
+            throw '** exception error: undefined function' + ('is_map' + ('/' + arguments.length));
+        },
+        'is_number': function () {
+            switch (arguments.length) {
+                case 1:
+                    return functions['is_number/1'](...arguments);
+                    break;
+            }
+            throw '** exception error: undefined function' + ('is_number' + ('/' + arguments.length));
+        },
+        'is_pid': function () {
+            switch (arguments.length) {
+                case 1:
+                    return functions['is_pid/1'](...arguments);
+                    break;
+            }
+            throw '** exception error: undefined function' + ('is_pid' + ('/' + arguments.length));
+        },
+        'is_port': function () {
+            switch (arguments.length) {
+                case 1:
+                    return functions['is_port/1'](...arguments);
+                    break;
+            }
+            throw '** exception error: undefined function' + ('is_port' + ('/' + arguments.length));
+        },
+        'is_reference': function () {
+            switch (arguments.length) {
+                case 1:
+                    return functions['is_reference/1'](...arguments);
+                    break;
+            }
+            throw '** exception error: undefined function' + ('is_reference' + ('/' + arguments.length));
+        },
+        'is_tuple': function () {
+            switch (arguments.length) {
+                case 1:
+                    return functions['is_tuple/1'](...arguments);
+                    break;
+            }
+            throw '** exception error: undefined function' + ('is_tuple' + ('/' + arguments.length));
+        },
+        'abs': function () {
+            switch (arguments.length) {
+                case 1:
+                    return functions['abs/1'](...arguments);
+                    break;
+            }
+            throw '** exception error: undefined function' + ('abs' + ('/' + arguments.length));
+        },
+        'ceil': function () {
+            switch (arguments.length) {
+                case 1:
+                    return functions['ceil/1'](...arguments);
+                    break;
+            }
+            throw '** exception error: undefined function' + ('ceil' + ('/' + arguments.length));
+        },
+        'floor': function () {
+            switch (arguments.length) {
+                case 1:
+                    return functions['floor/1'](...arguments);
+                    break;
+            }
+            throw '** exception error: undefined function' + ('floor' + ('/' + arguments.length));
+        },
+        'trunc': function () {
+            switch (arguments.length) {
+                case 1:
+                    return functions['trunc/1'](...arguments);
+                    break;
+            }
+            throw '** exception error: undefined function' + ('trunc' + ('/' + arguments.length));
         }
     };
 
