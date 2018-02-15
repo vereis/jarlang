@@ -32,47 +32,39 @@ Float.prototype.isUnbound = function() {
 };
 
 Float.prototype.add = function(val) {
-    return new Float(this.value.plus(val instanceof Float ? val.getValue() : val));
+    return new Float(this.value.plus((val instanceof Int || val instanceof Float) ? val.getValue() : val));
 };
 
 Float.prototype.subtract = function(val) {
-    return new Float(this.value.minus(val instanceof Float ? val.getValue() : val));
+    return new Float(this.value.minus((val instanceof Int || val instanceof Float) ? val.getValue() : val));
 };
 
 Float.prototype.multiply = function(val) {
-    return new Float(this.value.times(val instanceof Float ? val.getValue() : val));
+    return new Float(this.value.times((val instanceof Int || val instanceof Float) ? val.getValue() : val));
 };
 
 Float.prototype.divide = function(val) {
-    return new Float(this.value.div(val instanceof Float ? val.getValue() : val));
-};
-
-Float.prototype.intDivide = function(val) {
-    return new Float(this.value.divToInt(val instanceof Float ? val.getValue() : val));
-};
-
-Float.prototype.remainder = function(val) {
-    return new Float(this.value.mod(val instanceof Float ? val.getValue() : val));
+    return new Float(this.value.div((val instanceof Int || val instanceof Float) ? val.getValue() : val));
 };
 
 Float.prototype.equals = function(val) {
-    return this.value.equals(val instanceof Float ? val.getValue() : val);
+    return this.value.equals((val instanceof Int || val instanceof Float) ? val.getValue() : val);
 };
 
 Float.prototype.lessThan = function(val) {
-    return this.value.lessThan(val instanceof Float ? val.getValue() : val);
+    return this.value.lessThan((val instanceof Int || val instanceof Float) ? val.getValue() : val);
 };
 
 Float.prototype.lessThanOrEq = function(val) {
-    return this.value.lessThanOrEqualTo(val instanceof Float ? val.getValue() : val);
+    return this.value.lessThanOrEqualTo((val instanceof Int || val instanceof Float) ? val.getValue() : val);
 };
 
 Float.prototype.greaterThan = function(val) {
-    return this.value.greaterThan(val instanceof Float ? val.getValue() : val);
+    return this.value.greaterThan((val instanceof Int || val instanceof Float) ? val.getValue() : val);
 };
 
 Float.prototype.greaterThanOrEq = function(val) {
-    return this.value.greaterThanOrEqualTo(val instanceof Float ? val.getValue() : val);
+    return this.value.greaterThanOrEqualTo((val instanceof Int || val instanceof Float) ? val.getValue() : val);
 };
 
 Float.prototype.match = function(val) {
