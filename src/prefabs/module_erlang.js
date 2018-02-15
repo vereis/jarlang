@@ -2,7 +2,7 @@ const erlang = function () {
     'use_strict';
     const exports = {
         '+': function () {
-            let args = arguments;
+            let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 2:
                     return jrts.spawn(function() {
@@ -12,7 +12,7 @@ const erlang = function () {
             throw '** exception error: undefined function' + ('+' + ('/' + arguments.length));
         },
         '-': function () {
-            let args = arguments;
+            let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 2:
                     return jrts.spawn(function() { 
@@ -22,7 +22,7 @@ const erlang = function () {
             throw '** exception error: undefined function' + ('-' + ('/' + arguments.length));
         },
         '*': function () {
-            let args = arguments;
+            let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 2:
                     return jrts.spawn(function() { 
@@ -32,7 +32,7 @@ const erlang = function () {
             throw '** exception error: undefined function' + ('*' + ('/' + arguments.length));
         },
         '/': function () {
-            let args = arguments;
+            let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 2:
                     return jrts.spawn(function() { 
@@ -42,7 +42,7 @@ const erlang = function () {
             throw '** exception error: undefined function' + ('/' + ('/' + arguments.length));
         },
         'rem': function () {
-            let args = arguments;
+            let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 2:
                     return jrts.spawn(function() { 
@@ -52,7 +52,7 @@ const erlang = function () {
             throw '** exception error: undefined function' + ('rem' + ('/' + arguments.length));
         },
         'div': function () {
-            let args = arguments;
+            let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 2:
                     return jrts.spawn(function() { 
@@ -62,7 +62,7 @@ const erlang = function () {
             throw '** exception error: undefined function' + ('div' + ('/' + arguments.length));
         },
         '==': function () {
-            let args = arguments;
+            let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 2:
                     return jrts.spawn(function() { 
@@ -72,7 +72,7 @@ const erlang = function () {
             throw '** exception error: undefined function' + ('==' + ('/' + arguments.length));
         },
         '/=': function () {
-            let args = arguments;
+            let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 2:
                     return jrts.spawn(function() { 
@@ -82,7 +82,7 @@ const erlang = function () {
             throw '** exception error: undefined function' + ('/=' + ('/' + arguments.length));
         },
         '<': function () {
-            let args = arguments;
+            let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 2:
                     return jrts.spawn(function() { 
@@ -92,7 +92,7 @@ const erlang = function () {
             throw '** exception error: undefined function' + ('<' + ('/' + arguments.length));
         },
         '=<': function () {
-            let args = arguments;
+            let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 2:
                     return jrts.spawn(function() { 
@@ -102,7 +102,7 @@ const erlang = function () {
             throw '** exception error: undefined function' + ('=<' + ('/' + arguments.length));
         },
         '>': function () {
-            let args = arguments;
+            let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 2:
                     return jrts.spawn(function() { 
@@ -112,7 +112,7 @@ const erlang = function () {
             throw '** exception error: undefined function' + ('>' + ('/' + arguments.length));
         },
         '>=': function () {
-            let args = arguments;
+            let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 2:
                     return jrts.spawn(function() { 
@@ -122,7 +122,7 @@ const erlang = function () {
             throw '** exception error: undefined function' + ('>=' + ('/' + arguments.length));
         },
         '=:=': function () {
-            let args = arguments;
+            let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 2:
                     return jrts.spawn(function() { 
@@ -132,7 +132,7 @@ const erlang = function () {
             throw '** exception error: undefined function' + ('=:=' + ('/' + arguments.length));
         },
         '=/=': function () {
-            let args = arguments;
+            let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 2:
                     return jrts.spawn(function() { 
@@ -142,7 +142,7 @@ const erlang = function () {
             throw '** exception error: undefined function' + ('=/=' + ('/' + arguments.length));
         },
         'compare': function () {
-            let args = arguments;
+            let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 2:
                     return jrts.spawn(function() { 
@@ -152,7 +152,7 @@ const erlang = function () {
             throw '** exception error: undefined function' + ('compare' + ('/' + arguments.length));
         },
         'match': function () {
-            let args = arguments;
+            let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 2:
                     return jrts.spawn(function() { 
@@ -162,7 +162,7 @@ const erlang = function () {
             throw '** exception error: undefined function' + ('match' + ('/' + arguments.length));
         },
         'or': function () {
-            let args = arguments;
+            let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 2:
                     return jrts.spawn(function() { 
@@ -172,7 +172,7 @@ const erlang = function () {
             throw '** exception error: undefined function' + ('or' + ('/' + arguments.length));
         },
         'and': function () {
-            let args = arguments;
+            let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 2:
                     return jrts.spawn(function() { 
@@ -182,7 +182,7 @@ const erlang = function () {
             throw '** exception error: undefined function' + ('and' + ('/' + arguments.length));
         },
         'not': function () {
-            let args = arguments;
+            let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 1:
                     return jrts.spawn(function() { 
@@ -192,7 +192,7 @@ const erlang = function () {
             throw '** exception error: undefined function' + ('not' + ('/' + arguments.length));
         },
         'xor': function () {
-            let args = arguments;
+            let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 2:
                     return jrts.spawn(function() { 
@@ -202,7 +202,7 @@ const erlang = function () {
             throw '** exception error: undefined function' + ('xor' + ('/' + arguments.length));
         },
         'band': function () {
-            let args = arguments;
+            let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 2:
                     return jrts.spawn(function() { 
@@ -212,7 +212,7 @@ const erlang = function () {
             throw '** exception error: undefined function' + ('band' + ('/' + arguments.length));
         },
         'bor': function () {
-            let args = arguments;
+            let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 2:
                     return jrts.spawn(function() { 
@@ -222,7 +222,7 @@ const erlang = function () {
             throw '** exception error: undefined function' + ('bor' + ('/' + arguments.length));
         },
         'bxor': function () {
-            let args = arguments;
+            let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 2:
                     return jrts.spawn(function() { 
@@ -232,7 +232,7 @@ const erlang = function () {
             throw '** exception error: undefined function' + ('bxor' + ('/' + arguments.length));
         },
         'bnot': function () {
-            let args = arguments;
+            let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 1:
                     return jrts.spawn(function() { 
@@ -242,7 +242,7 @@ const erlang = function () {
             throw '** exception error: undefined function' + ('bnot' + ('/' + arguments.length));
         },
         'module_info': function () {
-            let args = arguments;
+            let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 0:
                     return jrts.spawn(function() { 
@@ -256,7 +256,7 @@ const erlang = function () {
             throw '** exception error: undefined function' + ('module_info' + ('/' + arguments.length));
         },
         'atom_to_list': function () {
-            let args = arguments;
+            let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 1:
                     return jrts.spawn(function() { 
@@ -266,7 +266,7 @@ const erlang = function () {
             throw '** exception error: undefined function' + ('atom_to_list' + ('/' + arguments.length));
         },
         'list_to_atom': function () {
-            let args = arguments;
+            let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 1:
                     return jrts.spawn(function() { 
@@ -276,7 +276,7 @@ const erlang = function () {
             throw '** exception error: undefined function' + ('list_to_atom' + ('/' + arguments.length));
         },
         'list_to_existing_atom': function () {
-            let args = arguments;
+            let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 1:
                     return jrts.spawn(function() { 
@@ -286,7 +286,7 @@ const erlang = function () {
             throw '** exception error: undefined function' + ('list_to_existing_atom' + ('/' + arguments.length));
         },
         'is_atom': function () {
-            let args = arguments;
+            let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 1:
                     return jrts.spawn(function() { 
@@ -296,7 +296,7 @@ const erlang = function () {
             throw '** exception error: undefined function' + ('is_atom' + ('/' + arguments.length));
         },
         'is_binary': function () {
-            let args = arguments;
+            let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 1:
                     return jrts.spawn(function() { 
@@ -306,7 +306,7 @@ const erlang = function () {
             throw '** exception error: undefined function' + ('is_binary' + ('/' + arguments.length));
         },
         'is_bitstring': function () {
-            let args = arguments;
+            let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 1:
                     return jrts.spawn(function() { 
@@ -316,7 +316,7 @@ const erlang = function () {
             throw '** exception error: undefined function' + ('is_bitstring' + ('/' + arguments.length));
         },
         'is_boolean': function () {
-            let args = arguments;
+            let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 1:
                     return jrts.spawn(function() { 
@@ -326,7 +326,7 @@ const erlang = function () {
             throw '** exception error: undefined function' + ('is_boolean' + ('/' + arguments.length));
         },
         'is_float': function () {
-            let args = arguments;
+            let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 1:
                     return jrts.spawn(function() { 
@@ -336,7 +336,7 @@ const erlang = function () {
             throw '** exception error: undefined function' + ('is_float' + ('/' + arguments.length));
         },
         'is_function': function () {
-            let args = arguments;
+            let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 1:
                     return jrts.spawn(function() { 
@@ -346,7 +346,7 @@ const erlang = function () {
             throw '** exception error: undefined function' + ('is_function' + ('/' + arguments.length));
         },
         'is_integer': function () {
-            let args = arguments;
+            let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 1:
                     return jrts.spawn(function() { 
@@ -356,7 +356,7 @@ const erlang = function () {
             throw '** exception error: undefined function' + ('is_integer' + ('/' + arguments.length));
         },
         'is_list': function () {
-            let args = arguments;
+            let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 1:
                     return jrts.spawn(function() { 
@@ -366,7 +366,7 @@ const erlang = function () {
             throw '** exception error: undefined function' + ('is_list' + ('/' + arguments.length));
         },
         'is_map': function () {
-            let args = arguments;
+            let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 1:
                     return jrts.spawn(function() { 
@@ -376,7 +376,7 @@ const erlang = function () {
             throw '** exception error: undefined function' + ('is_map' + ('/' + arguments.length));
         },
         'is_number': function () {
-            let args = arguments;
+            let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 1:
                     return jrts.spawn(function() { 
@@ -386,7 +386,7 @@ const erlang = function () {
             throw '** exception error: undefined function' + ('is_number' + ('/' + arguments.length));
         },
         'is_pid': function () {
-            let args = arguments;
+            let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 1:
                     return jrts.spawn(function() { 
@@ -396,7 +396,7 @@ const erlang = function () {
             throw '** exception error: undefined function' + ('is_pid' + ('/' + arguments.length));
         },
         'is_port': function () {
-            let args = arguments;
+            let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 1:
                     return jrts.spawn(function() { 
@@ -406,7 +406,7 @@ const erlang = function () {
             throw '** exception error: undefined function' + ('is_port' + ('/' + arguments.length));
         },
         'is_reference': function () {
-            let args = arguments;
+            let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 1:
                     return jrts.spawn(function() { 
@@ -416,7 +416,7 @@ const erlang = function () {
             throw '** exception error: undefined function' + ('is_reference' + ('/' + arguments.length));
         },
         'is_tuple': function () {
-            let args = arguments;
+            let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 1:
                     return jrts.spawn(function() { 
@@ -426,7 +426,7 @@ const erlang = function () {
             throw '** exception error: undefined function' + ('is_tuple' + ('/' + arguments.length));
         },
         'abs': function () {
-            let args = arguments;
+            let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 1:
                     return jrts.spawn(function() { 
@@ -436,7 +436,7 @@ const erlang = function () {
             throw '** exception error: undefined function' + ('abs' + ('/' + arguments.length));
         },
         'ceil': function () {
-            let args = arguments;
+            let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 1:
                     return jrts.spawn(function() { 
@@ -446,7 +446,7 @@ const erlang = function () {
             throw '** exception error: undefined function' + ('ceil' + ('/' + arguments.length));
         },
         'floor': function () {
-            let args = arguments;
+            let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 1:
                     return jrts.spawn(function() { 
@@ -456,7 +456,7 @@ const erlang = function () {
             throw '** exception error: undefined function' + ('floor' + ('/' + arguments.length));
         },
         'trunc': function () {
-            let args = arguments;
+            let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 1:
                     return jrts.spawn(function() { 
