@@ -64,7 +64,7 @@ debug:
 	@ echo "    Debug macro enabled."
 	$(call compile, $(ERLFLAGS_DEBUG), $(DEBUGDIR), $(BLUE), $(STDOUT))
 	$(call package, $(DEBUGDIR), $(BLUE))
-	$(call gulp, $(BLUE), $(DEBUGDIR), debug)
+	$(call gulp, $(BLUE), $(DEBUGDIR), es6)
 
 test:
 	@ echo "$(CYAN)==> Building TEST$(NORMAL)"
@@ -72,11 +72,19 @@ test:
 	@ echo "    Debug macro enabled."
 	@ echo "    Test macro enabled."
 	$(call compile, $(ERLFLAGS_TEST), $(TESTDIR), $(CYAN), $(STDOUT))
-	$(call gulp, $(CYAN), $(TESTDIR), debug)
+	$(call gulp, $(CYAN), $(TESTDIR), es6)
 
-js:
-	@ echo "$(GREEN)==> Building Jarlang Browser Runtime$(NORMAL)"
-	$(call gulp, $(GREEN), $(JSDIR), debug)
+es6:
+	@ echo "$(GREEN)==> Building Jarlang Browser Runtime (ES6+)$(NORMAL)"
+	$(call gulp, $(GREEN), $(JSDIR), es6)
+
+es5:
+	@ echo "$(BLUE)==> Building Jarlang Browser Runtime (ES5)$(NORMAL)"
+	$(call gulp, $(BLUE), $(JSDIR), es5)
+
+min:
+	@ echo "$(CYAN)==> Building Jarlang Browser Runtime (MINIFIED)$(NORMAL)"
+	$(call gulp, $(CYAN), $(JSDIR), min)
 
 .PHONY: lint
 lint:

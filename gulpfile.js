@@ -31,15 +31,21 @@ function build_rts(files, name) {
                .pipe(concat(name || "jarlang.js"));
 }
 
-gulp.task("default", function() {
+gulp.task("es6", function() {
     return build_rts()
-           .pipe(babel())
-           .pipe(uglify())
            .pipe(gulp.dest("gulpbuild/"));
 });
 
-gulp.task("debug", function() {
+gulp.task("es5", function() {
     return build_rts()
+           .pipe(babel())
+           .pipe(gulp.dest("gulpbuild/"));
+});
+
+gulp.task("min", function() {
+    return build_rts()
+           .pipe(babel())
+           .pipe(uglify())
            .pipe(gulp.dest("gulpbuild/"));
 });
 
@@ -47,4 +53,12 @@ gulp.task("lint", function() {
     return gulp.src(js_files)
                .pipe(lint())
                .pipe(lint.reporter('default'));
+});
+
+// Same as min
+gulp.task("default", function() {
+    return build_rts()
+           .pipe(babel())
+           .pipe(uglify())
+           .pipe(gulp.dest("gulpbuild/"));
 });
