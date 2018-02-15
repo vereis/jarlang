@@ -1,7 +1,7 @@
 %%% Module Description:
 %%% Recursively descends into a core erlang AST and generates an ESTREE equivalent
 -module(asttrans).
--author(["Andrew Johnson", "Chris Bailey"]).
+-author(["Andrew Johnson", "Chris Bailey", "Nick Laine"]).
 
 -define(VERSION, "2.1.0").
 
@@ -211,8 +211,10 @@ parse_apply(ReturnAtom,Params,{c_apply, _, {_, _, FunctionName}, Parameters})->
 %% Parses a c_literal node.
 parse_literal(return,Params,{c_literal,_,Value})->
     estree:return_statement(parse_literal(noreturn,Params,{c_literal,[],Value}));
-parse_literal(noreturn,Params,{c_literal,_,Value}) when is_number(Value)->
-    estree:new_expression(estree:identifier(<<"ErlNumber">>),[estree:literal(Value)]);
+parse_literal(noreturn,Params,{c_literal,_,Value}) when is_integer(Value)->
+    estree:new_expression(estree:identifier(<<"Int">>),[estree:literal(Value)]);
+parse_literal(noreturn,Params,{c_literal,_,Value}) when is_float(Value)->
+    estree:new_expression(estree:identifier(<<"Float">>),[estree:literal(Value)]);
 parse_literal(noreturn,Params,{c_literal,_,Value}) when is_atom(Value)->
     estree:new_expression(estree:identifier(<<"Atom">>),[estree:literal(atom_to_binary(Value, utf8))]);
 

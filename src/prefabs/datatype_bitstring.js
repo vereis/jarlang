@@ -6,7 +6,7 @@ function BitString () {
     var tmp = [];
 
     for (var i = 0; i < arguments.length; i++) {
-        if (!(ErlNumber.isErlNumber(arguments[i]) && arguments[i].isInteger()) && !List.isString(arguments[i])) {
+        if (!Int.isInt(arguments[i]) && !List.isString(arguments[i])) {
             throw "bad argument";
         }
 

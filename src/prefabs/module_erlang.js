@@ -705,37 +705,37 @@ const erlang = function () {
 
     const functions = {
         '+/2': function (_cor1, _cor0) {
-            if (ErlNumber.isErlNumber(_cor1) && ErlNumber.isErlNumber(_cor0)) {
+            if ((Int.isInt(_cor1) || Float.isFloat(_cor1)) && (Int.isInt(_cor0) || Float.isFloat(_cor0))) {
                 return _cor1.add(_cor0);
             }
             throw '** exception error: an error occurred when evaluating an arithmetic expression in operator +/2 called as ' + _cor1 + ' + ' + _cor0;
         },
         '-/2': function (_cor1, _cor0) {
-            if (ErlNumber.isErlNumber(_cor1) && ErlNumber.isErlNumber(_cor0)) {
+            if ((Int.isInt(_cor1) || Float.isFloat(_cor1)) && (Int.isInt(_cor0) || Float.isFloat(_cor0))) {
                 return _cor1.subtract(_cor0);
             }
             throw '** exception error: an error occurred when evaluating an arithmetic expression in operator -/2 called as ' + _cor1 + ' - ' + _cor0;
         },
         '*/2': function (_cor1, _cor0) {
-            if (ErlNumber.isErlNumber(_cor1) && ErlNumber.isErlNumber(_cor0)) {
+            if ((Int.isInt(_cor1) || Float.isFloat(_cor1)) && (Int.isInt(_cor0) || Float.isFloat(_cor0))) {
                 return _cor1.multiply(_cor0);
             }
             throw '** exception error: an error occurred when evaluating an arithmetic expression in operator */2 called as ' + _cor1 + ' * ' + _cor0;
         },
         'division/2': function (_cor1, _cor0) {
-            if (ErlNumber.isErlNumber(_cor1) && ErlNumber.isErlNumber(_cor0)) {
+            if ((Int.isInt(_cor1) || Float.isFloat(_cor1)) && (Int.isInt(_cor0) || Float.isFloat(_cor0))) {
                 return _cor1.divide(_cor0);
             }
             throw '** exception error: an error occurred when evaluating an arithmetic expression in operator \'/\'/2 called as ' + _cor1 + ' / ' + _cor0;
         },
         'rem/2': function (_cor1, _cor0) {
-            if (ErlNumber.isErlNumber(_cor1) && ErlNumber.isErlNumber(_cor0)) {
+            if (Int.isInt(_cor1) && Int.isInt(_cor0)) {
                 return _cor1.remainder(_cor0);
             }
             throw '** exception error: an error occurred when evaluating an arithmetic expression in operator rem/2 called as ' + _cor1 + ' rem ' + _cor0;
         },
         'div/2': function (_cor1, _cor0) {
-            if (ErlNumber.isErlNumber(_cor1) && ErlNumber.isErlNumber(_cor0)) {
+            if (Int.isInt(_cor1) && Int.isInt(_cor0)) {
                 return _cor1.intDivide(_cor0);
             }
             throw '** exception error: an error occurred when evaluating an arithmetic expression in operator div/2 called as ' + _cor1 + ' div ' + _cor0;
@@ -949,13 +949,13 @@ const erlang = function () {
             return Atom.isAtom(_cor0) && (_cor0.toString() == "true" || _cor0.toString == "false");
         },
         'is_float/1': function (_cor0) {
-            return ErlNumber.isErlNumber(_cor0) && _cor0.isFloat();
+            return Float.isFloat(_cor0);
         },
         'is_function/1': function (_cor0) {
             return Fun.isFun(_cor0);
         },
         'is_integer/1': function (_cor0) {
-            return ErlNumber.isErlNumber(_cor0) && _cor0.isInteger();
+            return Int.isInt(_cor0);
         },
         'is_list/1': function (_cor0) {
             return List.isList(_cor0);
@@ -964,7 +964,7 @@ const erlang = function () {
             return ErlMap.isErlMap(_cor0);
         },
         'is_number/1': function (_cor0) {
-            return ErlNumber.isErlNumber(_cor0);
+            return Int.isInt(_cor0) || Float.isFloat(_cor0);
         },
         'is_pid/1': function (_cor0) {
             return Pid.isPid(_cor0);
@@ -980,16 +980,16 @@ const erlang = function () {
         },
 
         'abs/1': function (_cor0) {
-            return new ErlNumber(_cor0.getValue().abs());
+            return Int.isInt(_cor0) ? new Int(_cor0.getValue().abs()) : new Float(_cor0.getValue().abs());
         },
         'ceil/1': function (_cor0) {
-            return new ErlNumber(_cor0.getValue().ceil());
+            return new Int(_cor0.getValue().ceil());
         },
         'floor/1': function (_cor0) {
-            return new ErlNumber(_cor0.getValue().floor());
+            return new Int(_cor0.getValue().floor());
         },
         'trunc/1': function (_cor0) {
-            return new ErlNumber(_cor0.getValue().trunc());
+            return new Int(_cor0.getValue().trunc());
         }
     };
 
@@ -1000,8 +1000,11 @@ const erlang = function () {
         if (_cor1 == undefined) {
             return true;
         }
-        else if (_cor1 instanceof ErlNumber) {
-            return _cor0 instanceof ErlNumber && _cor1.equals(_cor0);
+        else if (_cor1 instanceof Int) {
+            return (_cor0 instanceof Int || _cor0 instanceof Float) && _cor1.equals(_cor0);
+        }
+        else if (_cor1 instanceof Float) {
+            return (_cor0 instanceof Int || _cor0 instanceof Float) && _cor1.equals(_cor0);
         }
         else if (_cor1 instanceof Atom) {
             return _cor0 instanceof Atom && _cor1.value == _cor0.value;
@@ -1051,15 +1054,15 @@ const erlang = function () {
 
     //returns negative if _cor1 evaluates to less than _cor0, returns 0 if they evaluate equal. Magnitude is not representative of anything
     function compare(_cor1, _cor0) {
-        if (_cor1 instanceof ErlNumber) {
-            if (_cor0 instanceof ErlNumber) {
+        if (_cor1 instanceof Int || _cor1 instanceof Float) {
+            if (_cor0 instanceof Int || _cor0 instanceof Float) {
                 return _cor1.subtract(_cor0);
             }
 
             return -1;
         }
         else if (_cor1 instanceof Atom) {
-            if (_cor0 instanceof ErlNumber) {
+            if (_cor0 instanceof Int || _cor0 instanceof Float) {
                 return 1;
             }
             else if (_cor0 instanceof Atom) {
@@ -1077,7 +1080,7 @@ const erlang = function () {
             return -1;
         }
         else if (_cor1 instanceof Reference) {
-            if (_cor0 instanceof ErlNumber || _cor0 instanceof Atom) {
+            if (_cor0 instanceof Int || _cor0 instanceof Float || _cor0 instanceof Atom) {
                 return 1;
             }
             else if (_cor0 instanceof Reference) {
@@ -1095,7 +1098,8 @@ const erlang = function () {
             return -1;
         }
         else if (_cor1 instanceof Fun) {
-            if (_cor0 instanceof ErlNumber ||
+            if (_cor0 instanceof Int ||
+                _cor0 instanceof Float ||
                 _cor0 instanceof Atom ||
                 _cor0 instanceof Reference) {
                 return 1;
@@ -1107,7 +1111,8 @@ const erlang = function () {
             return -1;
         }
         else if (_cor1 instanceof Port) {
-            if (_cor0 instanceof ErlNumber ||
+            if (_cor0 instanceof Int ||
+                _cor0 instanceof Float ||
                 _cor0 instanceof Atom ||
                 _cor0 instanceof Reference ||
                 _cor0 instanceof Fun) {
@@ -1120,7 +1125,8 @@ const erlang = function () {
             return -1;
         }
         else if (_cor1 instanceof Pid) {
-            if (_cor0 instanceof ErlNumber ||
+            if (_cor0 instanceof Int ||
+                _cor0 instanceof Float ||
                 _cor0 instanceof Atom ||
                 _cor0 instanceof Reference ||
                 _cor0 instanceof Fun ||
@@ -1134,7 +1140,8 @@ const erlang = function () {
             return -1;
         }
         else if (_cor1 instanceof Tuple) {
-            if (_cor0 instanceof ErlNumber ||
+            if (_cor0 instanceof Int ||
+                _cor0 instanceof Float ||
                 _cor0 instanceof Atom ||
                 _cor0 instanceof Reference ||
                 _cor0 instanceof Fun ||
@@ -1168,7 +1175,8 @@ const erlang = function () {
             return -1;
         }
         else if (_cor1 instanceof Map) {
-            if (_cor0 instanceof ErlNumber ||
+            if (_cor0 instanceof Int ||
+                _cor0 instanceof Float ||
                 _cor0 instanceof Atom ||
                 _cor0 instanceof Reference ||
                 _cor0 instanceof Fun ||
@@ -1184,7 +1192,8 @@ const erlang = function () {
             return -1;
         }
         else if (_cor1 instanceof List) {
-            if (_cor0 instanceof ErlNumber ||
+            if (_cor0 instanceof Int ||
+                _cor0 instanceof Float ||
                 _cor0 instanceof Atom ||
                 _cor0 instanceof Reference ||
                 _cor0 instanceof Fun ||
@@ -1232,7 +1241,8 @@ const erlang = function () {
             return -1;
         }
         else if (_cor1 instanceof BitString) {
-            if (_cor0 instanceof ErlNumber ||
+            if (_cor0 instanceof Int ||
+                _cor0 instanceof Float ||
                 _cor0 instanceof Atom ||
                 _cor0 instanceof Reference ||
                 _cor0 instanceof Fun ||

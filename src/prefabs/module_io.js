@@ -59,7 +59,7 @@ const io = function () {
                 cols = process.stdout.columns;
             }
 
-            return new Tuple(new Atom("ok"), new ErlNumber(cols));
+            return new Tuple(new Atom("ok"), new Int(cols));
         },
         'columns/1': function (_cor0) {
             return this['columns/0']();
@@ -167,7 +167,7 @@ const io = function () {
                 rows = process.stdout.rows;
             }
 
-            return new Tuple(new Atom("ok"), new ErlNumber(rows));
+            return new Tuple(new Atom("ok"), new Int(rows));
         },
         'rows/1': function (_cor0) {
             return this['rows/0']();

@@ -33,7 +33,11 @@ const jrts = (function (secondsPerTick) {
         let erlVar = null;
         switch (typeof variable) {
             case "number":
-                erlVar = new ErlNumber(variable);
+                if (Number.isInteger(variable)) {
+                    erlVar = new Int(variable);
+                } else {
+                    erlVar = new Float(variable);
+                }
                 break;
             case "string":
                 erlVar = new List(...(variable.split("").map(char => char.charCodeAt(0))));
@@ -75,7 +79,8 @@ const jrts = (function (secondsPerTick) {
             case "ErlMap":
                 jsVar = variable.value;
                 break;
-            case "ErlNumber":
+            case "Int":
+            case "Float":
                 jsVar = Number(variable.getValue().valueOf());
                 break;
             case "Pid":
