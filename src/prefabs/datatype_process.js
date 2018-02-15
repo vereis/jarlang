@@ -10,6 +10,9 @@ function Process(lambda, pidGenerator) {
     this.registerProcess();
 }
 
+// Static function to check whether or not a calling function is a process
+Process.isProcess = (process) => process instanceof Process;
+
 // Static function to send messages to other processes by looking up pids in pid_map;
 Process.sendMessage = (pid, msg) => {
     return Process.getProcess(pid).messages.push(msg);

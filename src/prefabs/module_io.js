@@ -1,23 +1,51 @@
 const io = function () {
     'use_strict';
     const exports = {
-        
+
         'format': function () {
+            let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
-            case 1:
-                return functions['format/1'](...arguments);
-            case 2:
-                return functions['format/2'](...arguments);
+                case 1:
+                    if (Process.isProcess(this)) {
+                        return functions['format/1'].bind(this)(...args);
+                    } else {
+                        return jrts.spawn(function() {
+                            return functions['format/1'](...args);
+                        });
+                    }
+                    break;
+                case 2:
+                    if (Process.isProcess(this)) {
+                        return functions['format/2'].bind(this)(...args);
+                    } else {
+                        return jrts.spawn(function() {
+                            return functions['format/2'](...args);
+                        });
+                    }
             }
             throw '** exception error: undefined function' + ('format' + ('/' + arguments.length));
         },
-        
+
         'module_info': function () {
+            let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
-            case 0:
-                return functions['module_info/0'](...arguments);
-            case 1:
-                return functions['module_info/1'](...arguments);
+                case 0:
+                    if (Process.isProcess(this)) {
+                        return functions['module_info/0'].bind(this)(...args);
+                    } else {
+                        return jrts.spawn(function() {
+                            return functions['module_info/0'](...args);
+                        });
+                    }
+                    break;
+                case 1:
+                    if (Process.isProcess(this)) {
+                        return functions['module_info/1'].bind(this)(...args);
+                    } else {
+                        return jrts.spawn(function() {
+                            return functions['module_info/1'](...args);
+                        });
+                    }
             }
             throw '** exception error: undefined function' + ('module_info' + ('/' + arguments.length));
         }
@@ -36,7 +64,7 @@ const io = function () {
         'columns/1': function (_cor0) {
             return this['columns/0']();
         },
-        
+
         'format/1': function (_cor0) {
             console.log(_cor0.toString());
             return new Atom("ok");

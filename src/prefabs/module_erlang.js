@@ -5,9 +5,14 @@ const erlang = function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 2:
-                    return jrts.spawn(function() {
-                        return functions['+/2'](...args);
-                    });
+                    if (Process.isProcess(this)) {
+                        return functions['+/2'].bind(this)(...args);
+                    }
+                    else {
+                        return jrts.spawn(function () {
+                            return functions['+/2'](...args);
+                        });
+                    }
             }
             throw '** exception error: undefined function' + ('+' + ('/' + arguments.length));
         },
@@ -15,9 +20,14 @@ const erlang = function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 2:
-                    return jrts.spawn(function() { 
-                        return functions['-/2'](...args);
-                    });
+                    if (Process.isProcess(this)) {
+                        return functions['-/2'].bind(this)(...args);
+                    }
+                    else {
+                        return jrts.spawn(function () {
+                            return functions['-/2'](...args);
+                        });
+                    }
             }
             throw '** exception error: undefined function' + ('-' + ('/' + arguments.length));
         },
@@ -25,9 +35,14 @@ const erlang = function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 2:
-                    return jrts.spawn(function() { 
-                        return functions['*/2'](...args);
-                    });
+                    if (Process.isProcess(this)) {
+                        return functions['*/2'].bind(this)(...args);
+                    }
+                    else {
+                        return jrts.spawn(function () {
+                            return functions['*/2'](...args);
+                        });
+                    }
             }
             throw '** exception error: undefined function' + ('*' + ('/' + arguments.length));
         },
@@ -35,9 +50,14 @@ const erlang = function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 2:
-                    return jrts.spawn(function() { 
-                        return functions['//2'](...args);
-                    });
+                    if (Process.isProcess(this)) {
+                        return functions['//2'].bind(this)(...args);
+                    }
+                    else {
+                        return jrts.spawn(function () {
+                            return functions['//2'](...args);
+                        });
+                    }
             }
             throw '** exception error: undefined function' + ('/' + ('/' + arguments.length));
         },
@@ -45,9 +65,14 @@ const erlang = function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 2:
-                    return jrts.spawn(function() { 
-                        return functions['rem/2'](...args);
-                    });
+                    if (Process.isProcess(this)) {
+                        return functions['rem/2'].bind(this)(...args);
+                    }
+                    else {
+                        return jrts.spawn(function () {
+                            return functions['rem/2'](...args);
+                        });
+                    }
             }
             throw '** exception error: undefined function' + ('rem' + ('/' + arguments.length));
         },
@@ -55,9 +80,14 @@ const erlang = function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 2:
-                    return jrts.spawn(function() { 
-                        return functions['div/2'](...args);
-                    });
+                    if (Process.isProcess(this)) {
+                        return functions['div/2'].bind(this)(...args);
+                    }
+                    else {
+                        return jrts.spawn(function () {
+                            return functions['div/2'](...args);
+                        });
+                    }
             }
             throw '** exception error: undefined function' + ('div' + ('/' + arguments.length));
         },
@@ -65,9 +95,14 @@ const erlang = function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 2:
-                    return jrts.spawn(function() { 
-                        return functions['==/2'](...args);
-                    });
+                    if (Process.isProcess(this)) {
+                        return functions['==/2'].bind(this)(...args);
+                    }
+                    else {
+                        return jrts.spawn(function () {
+                            return functions['==/2'](...args);
+                        });
+                    }
             }
             throw '** exception error: undefined function' + ('==' + ('/' + arguments.length));
         },
@@ -75,9 +110,14 @@ const erlang = function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 2:
-                    return jrts.spawn(function() { 
-                        return functions['/=/2'](...args);
-                    });
+                    if (Process.isProcess(this)) {
+                        return functions['/=/2'].bind(this)(...args);
+                    }
+                    else {
+                        return jrts.spawn(function () {
+                            return functions['/=/2'](...args);
+                        });
+                    }
             }
             throw '** exception error: undefined function' + ('/=' + ('/' + arguments.length));
         },
@@ -85,9 +125,14 @@ const erlang = function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 2:
-                    return jrts.spawn(function() { 
-                        return functions['</2'](...args);
-                    });
+                    if (Process.isProcess(this)) {
+                        return functions['</2'].bind(this)(...args);
+                    }
+                    else {
+                        return jrts.spawn(function () {
+                            return functions['</2'](...args);
+                        });
+                    }
             }
             throw '** exception error: undefined function' + ('<' + ('/' + arguments.length));
         },
@@ -95,9 +140,14 @@ const erlang = function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 2:
-                    return jrts.spawn(function() { 
-                        return functions['=</2'](...args);
-                    });
+                    if (Process.isProcess(this)) {
+                        return functions['=</2'].bind(this)(...args);
+                    }
+                    else {
+                        return jrts.spawn(function () {
+                            return functions['=</2'](...args);
+                        });
+                    }
             }
             throw '** exception error: undefined function' + ('=<' + ('/' + arguments.length));
         },
@@ -105,9 +155,14 @@ const erlang = function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 2:
-                    return jrts.spawn(function() { 
-                        return functions['>/2'](...args);
-                    });
+                    if (Process.isProcess(this)) {
+                        return functions['>/2'].bind(this)(...args);
+                    }
+                    else {
+                        return jrts.spawn(function () {
+                            return functions['>/2'](...args);
+                        });
+                    }
             }
             throw '** exception error: undefined function' + ('>' + ('/' + arguments.length));
         },
@@ -115,9 +170,14 @@ const erlang = function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 2:
-                    return jrts.spawn(function() { 
-                        return functions['>=/2'](...args);
-                    });
+                    if (Process.isProcess(this)) {
+                        return functions['>=/2'].bind(this)(...args);
+                    }
+                    else {
+                        return jrts.spawn(function () {
+                            return functions['>=/2'](...args);
+                        });
+                    }
             }
             throw '** exception error: undefined function' + ('>=' + ('/' + arguments.length));
         },
@@ -125,9 +185,14 @@ const erlang = function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 2:
-                    return jrts.spawn(function() { 
-                        return functions['=:=/2'](...args);
-                    });
+                    if (Process.isProcess(this)) {
+                        return functions['=:=/2'].bind(this)(...args);
+                    }
+                    else {
+                        return jrts.spawn(function () {
+                            return functions['=:=/2'](...args);
+                        });
+                    }
             }
             throw '** exception error: undefined function' + ('=:=' + ('/' + arguments.length));
         },
@@ -135,9 +200,14 @@ const erlang = function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 2:
-                    return jrts.spawn(function() { 
-                        return functions['=/=/2'](...args);
-                    });
+                    if (Process.isProcess(this)) {
+                        return functions['=/=/2'].bind(this)(...args);
+                    }
+                    else {
+                        return jrts.spawn(function () {
+                            return functions['=/=/2'](...args);
+                        });
+                    }
             }
             throw '** exception error: undefined function' + ('=/=' + ('/' + arguments.length));
         },
@@ -145,9 +215,14 @@ const erlang = function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 2:
-                    return jrts.spawn(function() { 
-                        return functions['compare/2'](...args);
-                    });
+                    if (Process.isProcess(this)) {
+                        return functions['compare/2'].bind(this)(...args);
+                    }
+                    else {
+                        return jrts.spawn(function () {
+                            return functions['compare/2'](...args);
+                        });
+                    }
             }
             throw '** exception error: undefined function' + ('compare' + ('/' + arguments.length));
         },
@@ -155,9 +230,14 @@ const erlang = function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 2:
-                    return jrts.spawn(function() { 
-                        return functions['match/2'](...args);
-                    });
+                    if (Process.isProcess(this)) {
+                        return functions['match/2'].bind(this)(...args);
+                    }
+                    else {
+                        return jrts.spawn(function () {
+                            return functions['match/2'](...args);
+                        });
+                    }
             }
             throw '** exception error: undefined function' + ('match' + ('/' + arguments.length));
         },
@@ -165,9 +245,14 @@ const erlang = function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 2:
-                    return jrts.spawn(function() { 
-                        return functions['or/2'](...args);
-                    });
+                    if (Process.isProcess(this)) {
+                        return functions['or/2'].bind(this)(...args);
+                    }
+                    else {
+                        return jrts.spawn(function () {
+                            return functions['or/2'](...args);
+                        });
+                    }
             }
             throw '** exception error: undefined function' + ('or' + ('/' + arguments.length));
         },
@@ -175,9 +260,14 @@ const erlang = function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 2:
-                    return jrts.spawn(function() { 
-                        return functions['and/2'](...args);
-                    });
+                    if (Process.isProcess(this)) {
+                        return functions['and/2'].bind(this)(...args);
+                    }
+                    else {
+                        return jrts.spawn(function () {
+                            return functions['and/2'](...args);
+                        });
+                    }
             }
             throw '** exception error: undefined function' + ('and' + ('/' + arguments.length));
         },
@@ -185,9 +275,14 @@ const erlang = function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 1:
-                    return jrts.spawn(function() { 
-                        return functions['not/1'](...args);
-                    });
+                    if (Process.isProcess(this)) {
+                        return functions['not/1'].bind(this)(...args);
+                    }
+                    else {
+                        return jrts.spawn(function () {
+                            return functions['not/1'](...args);
+                        });
+                    }
             }
             throw '** exception error: undefined function' + ('not' + ('/' + arguments.length));
         },
@@ -195,9 +290,14 @@ const erlang = function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 2:
-                    return jrts.spawn(function() { 
-                        return functions['xor/2'](...args);
-                    });
+                    if (Process.isProcess(this)) {
+                        return functions['xor/2'].bind(this)(...args);
+                    }
+                    else {
+                        return jrts.spawn(function () {
+                            return functions['xor/2'](...args);
+                        });
+                    }
             }
             throw '** exception error: undefined function' + ('xor' + ('/' + arguments.length));
         },
@@ -205,9 +305,14 @@ const erlang = function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 2:
-                    return jrts.spawn(function() { 
-                        return functions['band/2'](...args);
-                    });
+                    if (Process.isProcess(this)) {
+                        return functions['band/2'].bind(this)(...args);
+                    }
+                    else {
+                        return jrts.spawn(function () {
+                            return functions['band/2'](...args);
+                        });
+                    }
             }
             throw '** exception error: undefined function' + ('band' + ('/' + arguments.length));
         },
@@ -215,9 +320,14 @@ const erlang = function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 2:
-                    return jrts.spawn(function() { 
-                        return functions['bor/2'](...args);
-                    });
+                    if (Process.isProcess(this)) {
+                        return functions['bor/2'].bind(this)(...args);
+                    }
+                    else {
+                        return jrts.spawn(function () {
+                            return functions['bor/2'](...args);
+                        });
+                    }
             }
             throw '** exception error: undefined function' + ('bor' + ('/' + arguments.length));
         },
@@ -225,9 +335,14 @@ const erlang = function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 2:
-                    return jrts.spawn(function() { 
-                        return functions['bxor/2'](...args);
-                    });
+                    if (Process.isProcess(this)) {
+                        return functions['bxor/2'].bind(this)(...args);
+                    }
+                    else {
+                        return jrts.spawn(function () {
+                            return functions['bxor/2'](...args);
+                        });
+                    }
             }
             throw '** exception error: undefined function' + ('bxor' + ('/' + arguments.length));
         },
@@ -235,9 +350,14 @@ const erlang = function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 1:
-                    return jrts.spawn(function() { 
-                        return functions['bnot/1'](...args);
-                    });
+                    if (Process.isProcess(this)) {
+                        return functions['bnot/1'].bind(this)(...args);
+                    }
+                    else {
+                        return jrts.spawn(function () {
+                            return functions['bnot/1'](...args);
+                        });
+                    }
             }
             throw '** exception error: undefined function' + ('bnot' + ('/' + arguments.length));
         },
@@ -245,13 +365,24 @@ const erlang = function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 0:
-                    return jrts.spawn(function() { 
-                        return functions['module_info/0'](...args);
-                    });
+                    if (Process.isProcess(this)) {
+                        return functions['module_info/0'].bind(this)(...args);
+                    }
+                    else {
+                        return jrts.spawn(function () {
+                            return functions['module_info/0'](...args);
+                        });
+                    }
+                    break;
                 case 1:
-                    return jrts.spawn(function() { 
-                        return functions['module_info/1'](...args);
-                    });
+                    if (Process.isProcess(this)) {
+                        return functions['module_info/1'].bind(this)(...args);
+                    }
+                    else {
+                        return jrts.spawn(function () {
+                            return functions['module_info/1'](...args);
+                        });
+                    }
             }
             throw '** exception error: undefined function' + ('module_info' + ('/' + arguments.length));
         },
@@ -259,9 +390,14 @@ const erlang = function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 1:
-                    return jrts.spawn(function() { 
-                        return functions['atom_to_list/1'](...args);
-                    });
+                    if (Process.isProcess(this)) {
+                        return functions['atom_to_list/1'].bind(this)(...args);
+                    }
+                    else {
+                        return jrts.spawn(function () {
+                            return functions['atom_to_list/1'](...args);
+                        });
+                    }
             }
             throw '** exception error: undefined function' + ('atom_to_list' + ('/' + arguments.length));
         },
@@ -269,9 +405,14 @@ const erlang = function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 1:
-                    return jrts.spawn(function() { 
-                        return functions['list_to_atom/1'](...args);
-                    });
+                    if (Process.isProcess(this)) {
+                        return functions['list_to_atom/1'].bind(this)(...args);
+                    }
+                    else {
+                        return jrts.spawn(function () {
+                            return functions['list_to_atom/1'](...args);
+                        });
+                    }
             }
             throw '** exception error: undefined function' + ('list_to_atom' + ('/' + arguments.length));
         },
@@ -279,9 +420,14 @@ const erlang = function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 1:
-                    return jrts.spawn(function() { 
-                        return functions['list_to_existing_atom/1'](...args);
-                    });
+                    if (Process.isProcess(this)) {
+                        return functions['list_to_existing_atom/1'].bind(this)(...args);
+                    }
+                    else {
+                        return jrts.spawn(function () {
+                            return functions['list_to_existing_atom/1'](...args);
+                        });
+                    }
             }
             throw '** exception error: undefined function' + ('list_to_existing_atom' + ('/' + arguments.length));
         },
@@ -289,9 +435,14 @@ const erlang = function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 1:
-                    return jrts.spawn(function() { 
-                        return functions['is_atom/1'](...args);
-                    });
+                    if (Process.isProcess(this)) {
+                        return functions['is_atom/1'].bind(this)(...args);
+                    }
+                    else {
+                        return jrts.spawn(function () {
+                            return functions['is_atom/1'](...args);
+                        });
+                    }
             }
             throw '** exception error: undefined function' + ('is_atom' + ('/' + arguments.length));
         },
@@ -299,9 +450,14 @@ const erlang = function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 1:
-                    return jrts.spawn(function() { 
-                        return functions['is_binary/1'](...args);
-                    });
+                    if (Process.isProcess(this)) {
+                        return functions['is_binary/1'].bind(this)(...args);
+                    }
+                    else {
+                        return jrts.spawn(function () {
+                            return functions['is_binary/1'](...args);
+                        });
+                    }
             }
             throw '** exception error: undefined function' + ('is_binary' + ('/' + arguments.length));
         },
@@ -309,9 +465,14 @@ const erlang = function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 1:
-                    return jrts.spawn(function() { 
-                        return functions['is_bitstring/1'](...args);
-                    });
+                    if (Process.isProcess(this)) {
+                        return functions['is_bitstring/1'].bind(this)(...args);
+                    }
+                    else {
+                        return jrts.spawn(function () {
+                            return functions['is_bitstring/1'](...args);
+                        });
+                    }
             }
             throw '** exception error: undefined function' + ('is_bitstring' + ('/' + arguments.length));
         },
@@ -319,9 +480,14 @@ const erlang = function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 1:
-                    return jrts.spawn(function() { 
-                        return functions['is_boolean/1'](...args);
-                    });
+                    if (Process.isProcess(this)) {
+                        return functions['is_boolean/1'].bind(this)(...args);
+                    }
+                    else {
+                        return jrts.spawn(function () {
+                            return functions['is_boolean/1'](...args);
+                        });
+                    }
             }
             throw '** exception error: undefined function' + ('is_boolean' + ('/' + arguments.length));
         },
@@ -329,9 +495,14 @@ const erlang = function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 1:
-                    return jrts.spawn(function() { 
-                        return functions['is_float/1'](...args);
-                    });
+                    if (Process.isProcess(this)) {
+                        return functions['is_float/1'].bind(this)(...args);
+                    }
+                    else {
+                        return jrts.spawn(function () {
+                            return functions['is_float/1'](...args);
+                        });
+                    }
             }
             throw '** exception error: undefined function' + ('is_float' + ('/' + arguments.length));
         },
@@ -339,9 +510,14 @@ const erlang = function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 1:
-                    return jrts.spawn(function() { 
-                        return functions['is_function/1'](...args);
-                    });
+                    if (Process.isProcess(this)) {
+                        return functions['is_function/1'].bind(this)(...args);
+                    }
+                    else {
+                        return jrts.spawn(function () {
+                            return functions['is_function/1'](...args);
+                        });
+                    }
             }
             throw '** exception error: undefined function' + ('is_function' + ('/' + arguments.length));
         },
@@ -349,9 +525,14 @@ const erlang = function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 1:
-                    return jrts.spawn(function() { 
-                        return functions['is_integer/1'](...args);
-                    });
+                    if (Process.isProcess(this)) {
+                        return functions['is_integer/1'].bind(this)(...args);
+                    }
+                    else {
+                        return jrts.spawn(function () {
+                            return functions['is_integer/1'](...args);
+                        });
+                    }
             }
             throw '** exception error: undefined function' + ('is_integer' + ('/' + arguments.length));
         },
@@ -359,9 +540,14 @@ const erlang = function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 1:
-                    return jrts.spawn(function() { 
-                        return functions['is_list/1'](...args);
-                    });
+                    if (Process.isProcess(this)) {
+                        return functions['is_list/1'].bind(this)(...args);
+                    }
+                    else {
+                        return jrts.spawn(function () {
+                            return functions['is_list/1'](...args);
+                        });
+                    }
             }
             throw '** exception error: undefined function' + ('is_list' + ('/' + arguments.length));
         },
@@ -369,9 +555,14 @@ const erlang = function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 1:
-                    return jrts.spawn(function() { 
-                        return functions['is_map/1'](...args);
-                    });
+                    if (Process.isProcess(this)) {
+                        return functions['is_map/1'].bind(this)(...args);
+                    }
+                    else {
+                        return jrts.spawn(function () {
+                            return functions['is_map/1'](...args);
+                        });
+                    }
             }
             throw '** exception error: undefined function' + ('is_map' + ('/' + arguments.length));
         },
@@ -379,9 +570,14 @@ const erlang = function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 1:
-                    return jrts.spawn(function() { 
-                        return functions['is_number/1'](...args);
-                    });
+                    if (Process.isProcess(this)) {
+                        return functions['is_number/1'].bind(this)(...args);
+                    }
+                    else {
+                        return jrts.spawn(function () {
+                            return functions['is_number/1'](...args);
+                        });
+                    }
             }
             throw '** exception error: undefined function' + ('is_number' + ('/' + arguments.length));
         },
@@ -389,9 +585,14 @@ const erlang = function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 1:
-                    return jrts.spawn(function() { 
-                        return functions['is_pid/1'](...args);
-                    });
+                    if (Process.isProcess(this)) {
+                        return functions['is_pid/1'].bind(this)(...args);
+                    }
+                    else {
+                        return jrts.spawn(function () {
+                            return functions['is_pid/1'](...args);
+                        });
+                    }
             }
             throw '** exception error: undefined function' + ('is_pid' + ('/' + arguments.length));
         },
@@ -399,9 +600,14 @@ const erlang = function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 1:
-                    return jrts.spawn(function() { 
-                        return functions['is_port/1'](...args);
-                    });
+                    if (Process.isProcess(this)) {
+                        return functions['is_port/1'].bind(this)(...args);
+                    }
+                    else {
+                        return jrts.spawn(function () {
+                            return functions['is_port/1'](...args);
+                        });
+                    }
             }
             throw '** exception error: undefined function' + ('is_port' + ('/' + arguments.length));
         },
@@ -409,9 +615,14 @@ const erlang = function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 1:
-                    return jrts.spawn(function() { 
-                        return functions['is_reference/1'](...args);
-                    });
+                    if (Process.isProcess(this)) {
+                        return functions['is_reference/1'].bind(this)(...args);
+                    }
+                    else {
+                        return jrts.spawn(function () {
+                            return functions['is_reference/1'](...args);
+                        });
+                    }
             }
             throw '** exception error: undefined function' + ('is_reference' + ('/' + arguments.length));
         },
@@ -419,9 +630,14 @@ const erlang = function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 1:
-                    return jrts.spawn(function() { 
-                        return functions['is_tuple/1'](...args);
-                    });
+                    if (Process.isProcess(this)) {
+                        return functions['is_tuple/1'].bind(this)(...args);
+                    }
+                    else {
+                        return jrts.spawn(function () {
+                            return functions['is_tuple/1'](...args);
+                        });
+                    }
             }
             throw '** exception error: undefined function' + ('is_tuple' + ('/' + arguments.length));
         },
@@ -429,9 +645,14 @@ const erlang = function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 1:
-                    return jrts.spawn(function() { 
-                        return functions['abs/1'](...args);
-                    });
+                    if (Process.isProcess(this)) {
+                        return functions['abs/1'].bind(this)(...args);
+                    }
+                    else {
+                        return jrts.spawn(function () {
+                            return functions['abs/1'](...args);
+                        });
+                    }
             }
             throw '** exception error: undefined function' + ('abs' + ('/' + arguments.length));
         },
@@ -439,9 +660,14 @@ const erlang = function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 1:
-                    return jrts.spawn(function() { 
-                        return functions['ceil/1'](...args);
-                    });
+                    if (Process.isProcess(this)) {
+                        return functions['ceil/1'].bind(this)(...args);
+                    }
+                    else {
+                        return jrts.spawn(function () {
+                            return functions['ceil/1'](...args);
+                        });
+                    }
             }
             throw '** exception error: undefined function' + ('ceil' + ('/' + arguments.length));
         },
@@ -449,9 +675,14 @@ const erlang = function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 1:
-                    return jrts.spawn(function() { 
-                        return functions['floor/1'](...args);
-                    });
+                    if (Process.isProcess(this)) {
+                        return functions['floor/1'].bind(this)(...args);
+                    }
+                    else {
+                        return jrts.spawn(function () {
+                            return functions['floor/1'](...args);
+                        });
+                    }
             }
             throw '** exception error: undefined function' + ('floor' + ('/' + arguments.length));
         },
@@ -459,9 +690,14 @@ const erlang = function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
                 case 1:
-                    return jrts.spawn(function() { 
-                        return functions['trunc/1'](...args);
-                    });
+                    if (Process.isProcess(this)) {
+                        return functions['trunc/1'].bind(this)(...args);
+                    }
+                    else {
+                        return jrts.spawn(function () {
+                            return functions['trunc/1'](...args);
+                        });
+                    }
             }
             throw '** exception error: undefined function' + ('trunc' + ('/' + arguments.length));
         }
@@ -819,7 +1055,7 @@ const erlang = function () {
             if (_cor0 instanceof ErlNumber) {
                 return _cor1.subtract(_cor0);
             }
-            
+
             return -1;
         }
         else if (_cor1 instanceof Atom) {
@@ -837,7 +1073,7 @@ const erlang = function () {
                     return 0;
                 }
             }
-            
+
             return -1;
         }
         else if (_cor1 instanceof Reference) {
@@ -855,56 +1091,56 @@ const erlang = function () {
                     return 0;
                 }
             }
-            
+
             return -1;
         }
         else if (_cor1 instanceof Fun) {
-            if (_cor0 instanceof ErlNumber || 
-                _cor0 instanceof Atom || 
+            if (_cor0 instanceof ErlNumber ||
+                _cor0 instanceof Atom ||
                 _cor0 instanceof Reference) {
-                    return 1;
+                return 1;
             }
             else if (_cor0 instanceof Fun) {
                 throw "Fun is not implemented yet";
             }
-            
+
             return -1;
         }
         else if (_cor1 instanceof Port) {
-            if (_cor0 instanceof ErlNumber || 
-                _cor0 instanceof Atom || 
-                _cor0 instanceof Reference || 
+            if (_cor0 instanceof ErlNumber ||
+                _cor0 instanceof Atom ||
+                _cor0 instanceof Reference ||
                 _cor0 instanceof Fun) {
-                    return 1;
+                return 1;
             }
             else if (_cor0 instanceof Port) {
                 throw "Port is not implemented yet";
             }
-            
+
             return -1;
         }
         else if (_cor1 instanceof Pid) {
-            if (_cor0 instanceof ErlNumber || 
-                _cor0 instanceof Atom || 
-                _cor0 instanceof Reference || 
-                _cor0 instanceof Fun || 
+            if (_cor0 instanceof ErlNumber ||
+                _cor0 instanceof Atom ||
+                _cor0 instanceof Reference ||
+                _cor0 instanceof Fun ||
                 _cor0 instanceof Port) {
-                    return 1;
+                return 1;
             }
             else if (_cor0 instanceof Pid) {
                 throw "Pid is not implemented yet";
             }
-            
+
             return -1;
         }
         else if (_cor1 instanceof Tuple) {
-            if (_cor0 instanceof ErlNumber || 
-                _cor0 instanceof Atom || 
-                _cor0 instanceof Reference || 
-                _cor0 instanceof Fun || 
-                _cor0 instanceof Port || 
+            if (_cor0 instanceof ErlNumber ||
+                _cor0 instanceof Atom ||
+                _cor0 instanceof Reference ||
+                _cor0 instanceof Fun ||
+                _cor0 instanceof Port ||
                 _cor0 instanceof Pid) {
-                    return 1;
+                return 1;
             }
             else if (_cor0 instanceof Tuple) {
                 if (_cor1.size() < _cor0.size()) {
@@ -928,44 +1164,44 @@ const erlang = function () {
                     return 0;
                 }
             }
-            
+
             return -1;
         }
         else if (_cor1 instanceof Map) {
-            if (_cor0 instanceof ErlNumber || 
-                _cor0 instanceof Atom || 
-                _cor0 instanceof Reference || 
-                _cor0 instanceof Fun || 
-                _cor0 instanceof Port || 
-                _cor0 instanceof Pid || 
+            if (_cor0 instanceof ErlNumber ||
+                _cor0 instanceof Atom ||
+                _cor0 instanceof Reference ||
+                _cor0 instanceof Fun ||
+                _cor0 instanceof Port ||
+                _cor0 instanceof Pid ||
                 _cor0 instanceof Tuple) {
-                    return 1;
+                return 1;
             }
             else if (_cor0 instanceof Map) {
                 throw "Map is not implemented yet";
             }
-            
+
             return -1;
         }
         else if (_cor1 instanceof List) {
-            if (_cor0 instanceof ErlNumber || 
-                _cor0 instanceof Atom || 
-                _cor0 instanceof Reference || 
-                _cor0 instanceof Fun || 
-                _cor0 instanceof Port || 
-                _cor0 instanceof Pid || 
-                _cor0 instanceof Tuple || 
+            if (_cor0 instanceof ErlNumber ||
+                _cor0 instanceof Atom ||
+                _cor0 instanceof Reference ||
+                _cor0 instanceof Fun ||
+                _cor0 instanceof Port ||
+                _cor0 instanceof Pid ||
+                _cor0 instanceof Tuple ||
                 _cor0 instanceof Map) {
-                    return 1;
+                return 1;
             }
             else if (_cor0 instanceof List) {
                 if (List.isEmptyList(_cor1)) {
                     if (!List.isEmptyList(_cor0)) {
                         return -1;
                     }
-                    
+
                     return 0;
-                } 
+                }
                 else {
                     if (List.isEmptyList(_cor0)) {
                         return 1;
@@ -988,7 +1224,7 @@ const erlang = function () {
                         else if (_cor1.size() > _cor0.size()) {
                             return 1;
                         }
-                        
+
                         return 0;
                     }
                 }
@@ -996,27 +1232,27 @@ const erlang = function () {
             return -1;
         }
         else if (_cor1 instanceof BitString) {
-            if (_cor0 instanceof ErlNumber || 
-                _cor0 instanceof Atom || 
-                _cor0 instanceof Reference || 
-                _cor0 instanceof Fun || 
-                _cor0 instanceof Port || 
-                _cor0 instanceof Pid || 
-                _cor0 instanceof Tuple || 
-                _cor0 instanceof Map || 
+            if (_cor0 instanceof ErlNumber ||
+                _cor0 instanceof Atom ||
+                _cor0 instanceof Reference ||
+                _cor0 instanceof Fun ||
+                _cor0 instanceof Port ||
+                _cor0 instanceof Pid ||
+                _cor0 instanceof Tuple ||
+                _cor0 instanceof Map ||
                 _cor0 instanceof List) {
-                    return 1;
+                return 1;
             }
             else if (_cor0 instanceof BitString) {
                 throw "BitString is not implemented yet";
             }
-            
+
             return -1;
         }
-        
+
         //If _cor1 is not an Erlang datatype wrapper then fail over to js comparisons and hope for the best
         else {
-             if (_cor1 < _cor0) return -1;
+            if (_cor1 < _cor0) return -1;
             else if (_cor1 > _cor0) return 1;
             else return 0;
         }
