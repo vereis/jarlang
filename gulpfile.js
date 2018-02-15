@@ -23,7 +23,7 @@ var js_files = ["src/prefabs/jarlang_rts.js",
             ];
 
 var js_dependencies = [
-    "node_modules/bignumber.js/bignumber.min.js"
+    "node_modules/bignumber.js/bignumber.js"
 ];
 
 function build_rts(files, name) {

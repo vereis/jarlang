@@ -1,3 +1,7 @@
+/**
+ * Class constructor for representing atoms in Jarlang's runtime
+ * Atoms created are singletons which are added to a global atom table in jrts.atoms
+ */
 // Constructor
 function Atom(name) {
     this.value = name;

@@ -61,6 +61,16 @@ Pid.prototype.value = function() {
     return this.id_a;
 };
 
+Pid.prototype.result = function(noConvertToJs) {
+    const procValue = Process.getProcess(this).value;
+    if (noConvertToJs) {
+        return procValue;
+    }
+    else {
+        return jrts.erlangToJs(procValue);
+    }
+};
+
 Pid.prototype.toString = function() {
     return `<${this.node}.${this.id_a}.${this.id_b}>`;
 };

@@ -2,326 +2,466 @@ const erlang = function () {
     'use_strict';
     const exports = {
         '+': function () {
+            let args = arguments;
             switch (arguments.length) {
                 case 2:
-                    return functions['+/2'](...arguments);
+                    return jrts.spawn(function() {
+                        return functions['+/2'](...args);
+                    });
             }
             throw '** exception error: undefined function' + ('+' + ('/' + arguments.length));
         },
         '-': function () {
+            let args = arguments;
             switch (arguments.length) {
                 case 2:
-                    return functions['-/2'](...arguments);
+                    return jrts.spawn(function() { 
+                        return functions['-/2'](...args);
+                    });
             }
             throw '** exception error: undefined function' + ('-' + ('/' + arguments.length));
         },
         '*': function () {
+            let args = arguments;
             switch (arguments.length) {
                 case 2:
-                    return functions['*/2'](...arguments);
+                    return jrts.spawn(function() { 
+                        return functions['*/2'](...args);
+                    });
             }
             throw '** exception error: undefined function' + ('*' + ('/' + arguments.length));
         },
         '/': function () {
+            let args = arguments;
             switch (arguments.length) {
                 case 2:
-                    return functions['//2'](...arguments);
+                    return jrts.spawn(function() { 
+                        return functions['//2'](...args);
+                    });
             }
             throw '** exception error: undefined function' + ('/' + ('/' + arguments.length));
         },
         'rem': function () {
+            let args = arguments;
             switch (arguments.length) {
                 case 2:
-                    return functions['rem/2'](...arguments);
+                    return jrts.spawn(function() { 
+                        return functions['rem/2'](...args);
+                    });
             }
             throw '** exception error: undefined function' + ('rem' + ('/' + arguments.length));
         },
         'div': function () {
+            let args = arguments;
             switch (arguments.length) {
                 case 2:
-                    return functions['div/2'](...arguments);
+                    return jrts.spawn(function() { 
+                        return functions['div/2'](...args);
+                    });
             }
             throw '** exception error: undefined function' + ('div' + ('/' + arguments.length));
         },
         '==': function () {
+            let args = arguments;
             switch (arguments.length) {
                 case 2:
-                    return functions['==/2'](...arguments);
+                    return jrts.spawn(function() { 
+                        return functions['==/2'](...args);
+                    });
             }
             throw '** exception error: undefined function' + ('==' + ('/' + arguments.length));
         },
         '/=': function () {
+            let args = arguments;
             switch (arguments.length) {
                 case 2:
-                    return functions['/=/2'](...arguments);
+                    return jrts.spawn(function() { 
+                        return functions['/=/2'](...args);
+                    });
             }
             throw '** exception error: undefined function' + ('/=' + ('/' + arguments.length));
         },
         '<': function () {
+            let args = arguments;
             switch (arguments.length) {
                 case 2:
-                    return functions['</2'](...arguments);
+                    return jrts.spawn(function() { 
+                        return functions['</2'](...args);
+                    });
             }
             throw '** exception error: undefined function' + ('<' + ('/' + arguments.length));
         },
         '=<': function () {
+            let args = arguments;
             switch (arguments.length) {
                 case 2:
-                    return functions['=</2'](...arguments);
+                    return jrts.spawn(function() { 
+                        return functions['=</2'](...args);
+                    });
             }
             throw '** exception error: undefined function' + ('=<' + ('/' + arguments.length));
         },
         '>': function () {
+            let args = arguments;
             switch (arguments.length) {
                 case 2:
-                    return functions['>/2'](...arguments);
+                    return jrts.spawn(function() { 
+                        return functions['>/2'](...args);
+                    });
             }
             throw '** exception error: undefined function' + ('>' + ('/' + arguments.length));
         },
         '>=': function () {
+            let args = arguments;
             switch (arguments.length) {
                 case 2:
-                    return functions['>=/2'](...arguments);
+                    return jrts.spawn(function() { 
+                        return functions['>=/2'](...args);
+                    });
             }
             throw '** exception error: undefined function' + ('>=' + ('/' + arguments.length));
         },
         '=:=': function () {
+            let args = arguments;
             switch (arguments.length) {
                 case 2:
-                    return functions['=:=/2'](...arguments);
+                    return jrts.spawn(function() { 
+                        return functions['=:=/2'](...args);
+                    });
             }
             throw '** exception error: undefined function' + ('=:=' + ('/' + arguments.length));
         },
         '=/=': function () {
+            let args = arguments;
             switch (arguments.length) {
                 case 2:
-                    return functions['=/=/2'](...arguments);
+                    return jrts.spawn(function() { 
+                        return functions['=/=/2'](...args);
+                    });
             }
             throw '** exception error: undefined function' + ('=/=' + ('/' + arguments.length));
         },
         'compare': function () {
+            let args = arguments;
             switch (arguments.length) {
                 case 2:
-                    return functions['compare/2'](...arguments);
+                    return jrts.spawn(function() { 
+                        return functions['compare/2'](...args);
+                    });
             }
             throw '** exception error: undefined function' + ('compare' + ('/' + arguments.length));
         },
         'match': function () {
+            let args = arguments;
             switch (arguments.length) {
                 case 2:
-                    return functions['match/2'](...arguments);
+                    return jrts.spawn(function() { 
+                        return functions['match/2'](...args);
+                    });
             }
             throw '** exception error: undefined function' + ('match' + ('/' + arguments.length));
         },
         'or': function () {
+            let args = arguments;
             switch (arguments.length) {
                 case 2:
-                    return functions['or/2'](...arguments);
+                    return jrts.spawn(function() { 
+                        return functions['or/2'](...args);
+                    });
             }
             throw '** exception error: undefined function' + ('or' + ('/' + arguments.length));
         },
         'and': function () {
+            let args = arguments;
             switch (arguments.length) {
                 case 2:
-                    return functions['and/2'](...arguments);
+                    return jrts.spawn(function() { 
+                        return functions['and/2'](...args);
+                    });
             }
             throw '** exception error: undefined function' + ('and' + ('/' + arguments.length));
         },
         'not': function () {
+            let args = arguments;
             switch (arguments.length) {
                 case 1:
-                    return functions['not/1'](...arguments);
+                    return jrts.spawn(function() { 
+                        return functions['not/1'](...args);
+                    });
             }
             throw '** exception error: undefined function' + ('not' + ('/' + arguments.length));
         },
         'xor': function () {
+            let args = arguments;
             switch (arguments.length) {
                 case 2:
-                    return functions['xor/2'](...arguments);
+                    return jrts.spawn(function() { 
+                        return functions['xor/2'](...args);
+                    });
             }
             throw '** exception error: undefined function' + ('xor' + ('/' + arguments.length));
         },
         'band': function () {
+            let args = arguments;
             switch (arguments.length) {
                 case 2:
-                    return functions['band/2'](...arguments);
+                    return jrts.spawn(function() { 
+                        return functions['band/2'](...args);
+                    });
             }
             throw '** exception error: undefined function' + ('band' + ('/' + arguments.length));
         },
         'bor': function () {
+            let args = arguments;
             switch (arguments.length) {
                 case 2:
-                    return functions['bor/2'](...arguments);
+                    return jrts.spawn(function() { 
+                        return functions['bor/2'](...args);
+                    });
             }
             throw '** exception error: undefined function' + ('bor' + ('/' + arguments.length));
         },
         'bxor': function () {
+            let args = arguments;
             switch (arguments.length) {
                 case 2:
-                    return functions['bxor/2'](...arguments);
+                    return jrts.spawn(function() { 
+                        return functions['bxor/2'](...args);
+                    });
             }
             throw '** exception error: undefined function' + ('bxor' + ('/' + arguments.length));
         },
         'bnot': function () {
+            let args = arguments;
             switch (arguments.length) {
                 case 1:
-                    return functions['bnot/1'](...arguments);
+                    return jrts.spawn(function() { 
+                        return functions['bnot/1'](...args);
+                    });
             }
             throw '** exception error: undefined function' + ('bnot' + ('/' + arguments.length));
         },
         'module_info': function () {
+            let args = arguments;
             switch (arguments.length) {
                 case 0:
-                    return functions['module_info/0'](...arguments);
+                    return jrts.spawn(function() { 
+                        return functions['module_info/0'](...args);
+                    });
                 case 1:
-                    return functions['module_info/1'](...arguments);
+                    return jrts.spawn(function() { 
+                        return functions['module_info/1'](...args);
+                    });
             }
             throw '** exception error: undefined function' + ('module_info' + ('/' + arguments.length));
         },
         'atom_to_list': function () {
+            let args = arguments;
             switch (arguments.length) {
                 case 1:
-                    return functions['atom_to_list/1'](...arguments);
+                    return jrts.spawn(function() { 
+                        return functions['atom_to_list/1'](...args);
+                    });
             }
             throw '** exception error: undefined function' + ('atom_to_list' + ('/' + arguments.length));
         },
         'list_to_atom': function () {
+            let args = arguments;
             switch (arguments.length) {
                 case 1:
-                    return functions['list_to_atom/1'](...arguments);
+                    return jrts.spawn(function() { 
+                        return functions['list_to_atom/1'](...args);
+                    });
             }
             throw '** exception error: undefined function' + ('list_to_atom' + ('/' + arguments.length));
         },
         'list_to_existing_atom': function () {
+            let args = arguments;
             switch (arguments.length) {
                 case 1:
-                    return functions['list_to_existing_atom/1'](...arguments);
+                    return jrts.spawn(function() { 
+                        return functions['list_to_existing_atom/1'](...args);
+                    });
             }
             throw '** exception error: undefined function' + ('list_to_existing_atom' + ('/' + arguments.length));
         },
         'is_atom': function () {
+            let args = arguments;
             switch (arguments.length) {
                 case 1:
-                    return functions['is_atom/1'](...arguments);
+                    return jrts.spawn(function() { 
+                        return functions['is_atom/1'](...args);
+                    });
             }
             throw '** exception error: undefined function' + ('is_atom' + ('/' + arguments.length));
         },
         'is_binary': function () {
+            let args = arguments;
             switch (arguments.length) {
                 case 1:
-                    return functions['is_binary/1'](...arguments);
+                    return jrts.spawn(function() { 
+                        return functions['is_binary/1'](...args);
+                    });
             }
             throw '** exception error: undefined function' + ('is_binary' + ('/' + arguments.length));
         },
         'is_bitstring': function () {
+            let args = arguments;
             switch (arguments.length) {
                 case 1:
-                    return functions['is_bitstring/1'](...arguments);
+                    return jrts.spawn(function() { 
+                        return functions['is_bitstring/1'](...args);
+                    });
             }
             throw '** exception error: undefined function' + ('is_bitstring' + ('/' + arguments.length));
         },
         'is_boolean': function () {
+            let args = arguments;
             switch (arguments.length) {
                 case 1:
-                    return functions['is_boolean/1'](...arguments);
+                    return jrts.spawn(function() { 
+                        return functions['is_boolean/1'](...args);
+                    });
             }
             throw '** exception error: undefined function' + ('is_boolean' + ('/' + arguments.length));
         },
         'is_float': function () {
+            let args = arguments;
             switch (arguments.length) {
                 case 1:
-                    return functions['is_float/1'](...arguments);
+                    return jrts.spawn(function() { 
+                        return functions['is_float/1'](...args);
+                    });
             }
             throw '** exception error: undefined function' + ('is_float' + ('/' + arguments.length));
         },
         'is_function': function () {
+            let args = arguments;
             switch (arguments.length) {
                 case 1:
-                    return functions['is_function/1'](...arguments);
+                    return jrts.spawn(function() { 
+                        return functions['is_function/1'](...args);
+                    });
             }
             throw '** exception error: undefined function' + ('is_function' + ('/' + arguments.length));
         },
         'is_integer': function () {
+            let args = arguments;
             switch (arguments.length) {
                 case 1:
-                    return functions['is_integer/1'](...arguments);
+                    return jrts.spawn(function() { 
+                        return functions['is_integer/1'](...args);
+                    });
             }
             throw '** exception error: undefined function' + ('is_integer' + ('/' + arguments.length));
         },
         'is_list': function () {
+            let args = arguments;
             switch (arguments.length) {
                 case 1:
-                    return functions['is_list/1'](...arguments);
+                    return jrts.spawn(function() { 
+                        return functions['is_list/1'](...args);
+                    });
             }
             throw '** exception error: undefined function' + ('is_list' + ('/' + arguments.length));
         },
         'is_map': function () {
+            let args = arguments;
             switch (arguments.length) {
                 case 1:
-                    return functions['is_map/1'](...arguments);
+                    return jrts.spawn(function() { 
+                        return functions['is_map/1'](...args);
+                    });
             }
             throw '** exception error: undefined function' + ('is_map' + ('/' + arguments.length));
         },
         'is_number': function () {
+            let args = arguments;
             switch (arguments.length) {
                 case 1:
-                    return functions['is_number/1'](...arguments);
+                    return jrts.spawn(function() { 
+                        return functions['is_number/1'](...args);
+                    });
             }
             throw '** exception error: undefined function' + ('is_number' + ('/' + arguments.length));
         },
         'is_pid': function () {
+            let args = arguments;
             switch (arguments.length) {
                 case 1:
-                    return functions['is_pid/1'](...arguments);
+                    return jrts.spawn(function() { 
+                        return functions['is_pid/1'](...args);
+                    });
             }
             throw '** exception error: undefined function' + ('is_pid' + ('/' + arguments.length));
         },
         'is_port': function () {
+            let args = arguments;
             switch (arguments.length) {
                 case 1:
-                    return functions['is_port/1'](...arguments);
+                    return jrts.spawn(function() { 
+                        return functions['is_port/1'](...args);
+                    });
             }
             throw '** exception error: undefined function' + ('is_port' + ('/' + arguments.length));
         },
         'is_reference': function () {
+            let args = arguments;
             switch (arguments.length) {
                 case 1:
-                    return functions['is_reference/1'](...arguments);
+                    return jrts.spawn(function() { 
+                        return functions['is_reference/1'](...args);
+                    });
             }
             throw '** exception error: undefined function' + ('is_reference' + ('/' + arguments.length));
         },
         'is_tuple': function () {
+            let args = arguments;
             switch (arguments.length) {
                 case 1:
-                    return functions['is_tuple/1'](...arguments);
+                    return jrts.spawn(function() { 
+                        return functions['is_tuple/1'](...args);
+                    });
             }
             throw '** exception error: undefined function' + ('is_tuple' + ('/' + arguments.length));
         },
         'abs': function () {
+            let args = arguments;
             switch (arguments.length) {
                 case 1:
-                    return functions['abs/1'](...arguments);
+                    return jrts.spawn(function() { 
+                        return functions['abs/1'](...args);
+                    });
             }
             throw '** exception error: undefined function' + ('abs' + ('/' + arguments.length));
         },
         'ceil': function () {
+            let args = arguments;
             switch (arguments.length) {
                 case 1:
-                    return functions['ceil/1'](...arguments);
+                    return jrts.spawn(function() { 
+                        return functions['ceil/1'](...args);
+                    });
             }
             throw '** exception error: undefined function' + ('ceil' + ('/' + arguments.length));
         },
         'floor': function () {
+            let args = arguments;
             switch (arguments.length) {
                 case 1:
-                    return functions['floor/1'](...arguments);
+                    return jrts.spawn(function() { 
+                        return functions['floor/1'](...args);
+                    });
             }
             throw '** exception error: undefined function' + ('floor' + ('/' + arguments.length));
         },
         'trunc': function () {
+            let args = arguments;
             switch (arguments.length) {
                 case 1:
-                    return functions['trunc/1'](...arguments);
+                    return jrts.spawn(function() { 
+                        return functions['trunc/1'](...args);
+                    });
             }
             throw '** exception error: undefined function' + ('trunc' + ('/' + arguments.length));
         }

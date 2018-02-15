@@ -1,3 +1,6 @@
+/**
+ * Class constructor for representing BitStrings in Jarlang's runtime
+ */
 // Constructor
 function BitString () {
     var tmp = [];

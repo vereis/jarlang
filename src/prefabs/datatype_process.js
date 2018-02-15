@@ -4,6 +4,8 @@ function Process(lambda, pidGenerator) {
     this.currentLambda = false;
     this.messages = [];
     this.stack    = {};
+    this.value    = null;
+    this.lastRun  = Date.now();
 
     this.registerProcess();
 }

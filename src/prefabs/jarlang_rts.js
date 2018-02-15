@@ -101,21 +101,32 @@ const jrts = (function (secondsPerTick) {
     }
 
     // Set up timer to iterate through processes
-    const timer = setInterval(function () {
+    const eventLoop = setInterval(function () {
         shuffle(exports.processes).map(process => {
             if (process.lambdas.length) {
                 process.currentLambda = process.lambdas.shift();
-                process.currentLambda();
+                process.value = process.currentLambda();
                 process.currentLambda = null;
+                process.lastRun = Date.now();
             }
         });
     }, secondsPerTick !== undefined ? secondsPerTick : 1);
+
+    // const garbageCollection = setInterval(function() {
+    //     for (let pid in jrts.pids) {
+    //         if (Date.now() - Process.getProcess(pid).lastRun > 1000/* * 60 * 2*/) {
+    //             delete jrts.processes[jrts.pids[pid]];
+    //             delete jrts.pids[pid];
+    //             console.log("deleted process: ", pid);
+    //         }
+    //     }
+    // }, 5000);
 
     const exports = {
         processes: [],
         pids: {},
         atoms: {},
-        timer: timer,
+        timer: eventLoop,
         spawn: spawnProcess,
         jsToErlang: jsToErlang,
         erlangToJs: erlangToJs,
