@@ -142,8 +142,18 @@ parse_call(return,Params,{c_call, A, {B, C, Module}, {D, E, FunctionName}, Param
     estree:return_statement(parse_call(noreturn,Params,{c_call, A, {B, C, Module}, {D, E, FunctionName}, Parameters}));
 parse_call(noreturn,Params,{c_call, _, {_, _, Module}, {_, _, FunctionName}, Parameters})->
     estree:call_expression(
-         estree:member_expression(estree:identifier(atom_to_binary(Module,utf8)),estree:literal(atom_to_binary(FunctionName,utf8)),true),
-         lists:map(fun(T)->parse_node(noreturn,Parameters,T) end,Parameters)
+        estree:call_expression(
+            estree:member_expression(
+                estree:member_expression(
+                    estree:identifier(atom_to_binary(Module,utf8)),
+                    estree:literal(atom_to_binary(FunctionName,utf8)),
+                    true),
+                estree:identifier(<<"bind">>),
+                false
+            ),
+            [estree:this_expression()]
+        ),
+        lists:map(fun(T)->parse_node(noreturn,Parameters,T) end,Parameters)
      ).
 
 %% Parses a c_values node.

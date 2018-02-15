@@ -43,8 +43,10 @@ const jrts = (function (secondsPerTick) {
                     erlVar = new List(...variable);
                 } else if (variable.constructor.name === "Uint8Array") {
                     erlVar = new BitString(...variable);
-                } else {
+                } else if (variable.constructor.name === "Object") {
                     erlVar = new ErlMap(variable);
+                } else {
+                    erlVar = variable;
                 }
                 break;
             default: erlVar = variable;

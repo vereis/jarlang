@@ -10,7 +10,7 @@ const erlang = function () {
                     }
                     else {
                         return jrts.spawn(function () {
-                            return functions['+/2'](...args);
+                            return functions['+/2'].bind(this)(...args);
                         });
                     }
             }
@@ -25,7 +25,7 @@ const erlang = function () {
                     }
                     else {
                         return jrts.spawn(function () {
-                            return functions['-/2'](...args);
+                            return functions['-/2'].bind(this)(...args);
                         });
                     }
             }
@@ -40,7 +40,7 @@ const erlang = function () {
                     }
                     else {
                         return jrts.spawn(function () {
-                            return functions['*/2'](...args);
+                            return functions['*/2'].bind(this)(...args);
                         });
                     }
             }
@@ -55,7 +55,7 @@ const erlang = function () {
                     }
                     else {
                         return jrts.spawn(function () {
-                            return functions['//2'](...args);
+                            return functions['//2'].bind(this)(...args);
                         });
                     }
             }
@@ -70,7 +70,7 @@ const erlang = function () {
                     }
                     else {
                         return jrts.spawn(function () {
-                            return functions['rem/2'](...args);
+                            return functions['rem/2'].bind(this)(...args);
                         });
                     }
             }
@@ -85,7 +85,7 @@ const erlang = function () {
                     }
                     else {
                         return jrts.spawn(function () {
-                            return functions['div/2'](...args);
+                            return functions['div/2'].bind(this)(...args);
                         });
                     }
             }
@@ -100,7 +100,7 @@ const erlang = function () {
                     }
                     else {
                         return jrts.spawn(function () {
-                            return functions['==/2'](...args);
+                            return functions['==/2'].bind(this)(...args);
                         });
                     }
             }
@@ -115,7 +115,7 @@ const erlang = function () {
                     }
                     else {
                         return jrts.spawn(function () {
-                            return functions['/=/2'](...args);
+                            return functions['/=/2'].bind(this)(...args);
                         });
                     }
             }
@@ -130,7 +130,7 @@ const erlang = function () {
                     }
                     else {
                         return jrts.spawn(function () {
-                            return functions['</2'](...args);
+                            return functions['</2'].bind(this)(...args);
                         });
                     }
             }
@@ -145,7 +145,7 @@ const erlang = function () {
                     }
                     else {
                         return jrts.spawn(function () {
-                            return functions['=</2'](...args);
+                            return functions['=</2'].bind(this)(...args);
                         });
                     }
             }
@@ -160,7 +160,7 @@ const erlang = function () {
                     }
                     else {
                         return jrts.spawn(function () {
-                            return functions['>/2'](...args);
+                            return functions['>/2'].bind(this)(...args);
                         });
                     }
             }
@@ -175,7 +175,7 @@ const erlang = function () {
                     }
                     else {
                         return jrts.spawn(function () {
-                            return functions['>=/2'](...args);
+                            return functions['>=/2'].bind(this)(...args);
                         });
                     }
             }
@@ -190,7 +190,7 @@ const erlang = function () {
                     }
                     else {
                         return jrts.spawn(function () {
-                            return functions['=:=/2'](...args);
+                            return functions['=:=/2'].bind(this)(...args);
                         });
                     }
             }
@@ -205,7 +205,7 @@ const erlang = function () {
                     }
                     else {
                         return jrts.spawn(function () {
-                            return functions['=/=/2'](...args);
+                            return functions['=/=/2'].bind(this)(...args);
                         });
                     }
             }
@@ -220,7 +220,7 @@ const erlang = function () {
                     }
                     else {
                         return jrts.spawn(function () {
-                            return functions['compare/2'](...args);
+                            return functions['compare/2'].bind(this)(...args);
                         });
                     }
             }
@@ -235,7 +235,7 @@ const erlang = function () {
                     }
                     else {
                         return jrts.spawn(function () {
-                            return functions['match/2'](...args);
+                            return functions['match/2'].bind(this)(...args);
                         });
                     }
             }
@@ -250,7 +250,7 @@ const erlang = function () {
                     }
                     else {
                         return jrts.spawn(function () {
-                            return functions['or/2'](...args);
+                            return functions['or/2'].bind(this)(...args);
                         });
                     }
             }
@@ -265,7 +265,7 @@ const erlang = function () {
                     }
                     else {
                         return jrts.spawn(function () {
-                            return functions['and/2'](...args);
+                            return functions['and/2'].bind(this)(...args);
                         });
                     }
             }
@@ -280,7 +280,7 @@ const erlang = function () {
                     }
                     else {
                         return jrts.spawn(function () {
-                            return functions['not/1'](...args);
+                            return functions['not/1'].bind(this)(...args);
                         });
                     }
             }
@@ -295,7 +295,7 @@ const erlang = function () {
                     }
                     else {
                         return jrts.spawn(function () {
-                            return functions['xor/2'](...args);
+                            return functions['xor/2'].bind(this)(...args);
                         });
                     }
             }
@@ -310,7 +310,7 @@ const erlang = function () {
                     }
                     else {
                         return jrts.spawn(function () {
-                            return functions['band/2'](...args);
+                            return functions['band/2'].bind(this)(...args);
                         });
                     }
             }
@@ -325,7 +325,7 @@ const erlang = function () {
                     }
                     else {
                         return jrts.spawn(function () {
-                            return functions['bor/2'](...args);
+                            return functions['bor/2'].bind(this)(...args);
                         });
                     }
             }
@@ -340,7 +340,7 @@ const erlang = function () {
                     }
                     else {
                         return jrts.spawn(function () {
-                            return functions['bxor/2'](...args);
+                            return functions['bxor/2'].bind(this)(...args);
                         });
                     }
             }
@@ -355,7 +355,7 @@ const erlang = function () {
                     }
                     else {
                         return jrts.spawn(function () {
-                            return functions['bnot/1'](...args);
+                            return functions['bnot/1'].bind(this)(...args);
                         });
                     }
             }
@@ -370,7 +370,7 @@ const erlang = function () {
                     }
                     else {
                         return jrts.spawn(function () {
-                            return functions['module_info/0'](...args);
+                            return functions['module_info/0'].bind(this)(...args);
                         });
                     }
                     break;
@@ -380,7 +380,7 @@ const erlang = function () {
                     }
                     else {
                         return jrts.spawn(function () {
-                            return functions['module_info/1'](...args);
+                            return functions['module_info/1'].bind(this)(...args);
                         });
                     }
             }
@@ -395,7 +395,7 @@ const erlang = function () {
                     }
                     else {
                         return jrts.spawn(function () {
-                            return functions['atom_to_list/1'](...args);
+                            return functions['atom_to_list/1'].bind(this)(...args);
                         });
                     }
             }
@@ -410,7 +410,7 @@ const erlang = function () {
                     }
                     else {
                         return jrts.spawn(function () {
-                            return functions['list_to_atom/1'](...args);
+                            return functions['list_to_atom/1'].bind(this)(...args);
                         });
                     }
             }
@@ -425,7 +425,7 @@ const erlang = function () {
                     }
                     else {
                         return jrts.spawn(function () {
-                            return functions['list_to_existing_atom/1'](...args);
+                            return functions['list_to_existing_atom/1'].bind(this)(...args);
                         });
                     }
             }
@@ -440,7 +440,7 @@ const erlang = function () {
                     }
                     else {
                         return jrts.spawn(function () {
-                            return functions['is_atom/1'](...args);
+                            return functions['is_atom/1'].bind(this)(...args);
                         });
                     }
             }
@@ -455,7 +455,7 @@ const erlang = function () {
                     }
                     else {
                         return jrts.spawn(function () {
-                            return functions['is_binary/1'](...args);
+                            return functions['is_binary/1'].bind(this)(...args);
                         });
                     }
             }
@@ -470,7 +470,7 @@ const erlang = function () {
                     }
                     else {
                         return jrts.spawn(function () {
-                            return functions['is_bitstring/1'](...args);
+                            return functions['is_bitstring/1'].bind(this)(...args);
                         });
                     }
             }
@@ -485,7 +485,7 @@ const erlang = function () {
                     }
                     else {
                         return jrts.spawn(function () {
-                            return functions['is_boolean/1'](...args);
+                            return functions['is_boolean/1'].bind(this)(...args);
                         });
                     }
             }
@@ -500,7 +500,7 @@ const erlang = function () {
                     }
                     else {
                         return jrts.spawn(function () {
-                            return functions['is_float/1'](...args);
+                            return functions['is_float/1'].bind(this)(...args);
                         });
                     }
             }
@@ -515,7 +515,7 @@ const erlang = function () {
                     }
                     else {
                         return jrts.spawn(function () {
-                            return functions['is_function/1'](...args);
+                            return functions['is_function/1'].bind(this)(...args);
                         });
                     }
             }
@@ -530,7 +530,7 @@ const erlang = function () {
                     }
                     else {
                         return jrts.spawn(function () {
-                            return functions['is_integer/1'](...args);
+                            return functions['is_integer/1'].bind(this)(...args);
                         });
                     }
             }
@@ -545,7 +545,7 @@ const erlang = function () {
                     }
                     else {
                         return jrts.spawn(function () {
-                            return functions['is_list/1'](...args);
+                            return functions['is_list/1'].bind(this)(...args);
                         });
                     }
             }
@@ -560,7 +560,7 @@ const erlang = function () {
                     }
                     else {
                         return jrts.spawn(function () {
-                            return functions['is_map/1'](...args);
+                            return functions['is_map/1'].bind(this)(...args);
                         });
                     }
             }
@@ -575,7 +575,7 @@ const erlang = function () {
                     }
                     else {
                         return jrts.spawn(function () {
-                            return functions['is_number/1'](...args);
+                            return functions['is_number/1'].bind(this)(...args);
                         });
                     }
             }
@@ -590,7 +590,7 @@ const erlang = function () {
                     }
                     else {
                         return jrts.spawn(function () {
-                            return functions['is_pid/1'](...args);
+                            return functions['is_pid/1'].bind(this)(...args);
                         });
                     }
             }
@@ -605,7 +605,7 @@ const erlang = function () {
                     }
                     else {
                         return jrts.spawn(function () {
-                            return functions['is_port/1'](...args);
+                            return functions['is_port/1'].bind(this)(...args);
                         });
                     }
             }
@@ -620,7 +620,7 @@ const erlang = function () {
                     }
                     else {
                         return jrts.spawn(function () {
-                            return functions['is_reference/1'](...args);
+                            return functions['is_reference/1'].bind(this)(...args);
                         });
                     }
             }
@@ -635,7 +635,7 @@ const erlang = function () {
                     }
                     else {
                         return jrts.spawn(function () {
-                            return functions['is_tuple/1'](...args);
+                            return functions['is_tuple/1'].bind(this)(...args);
                         });
                     }
             }
@@ -650,7 +650,7 @@ const erlang = function () {
                     }
                     else {
                         return jrts.spawn(function () {
-                            return functions['abs/1'](...args);
+                            return functions['abs/1'].bind(this)(...args);
                         });
                     }
             }
@@ -665,7 +665,7 @@ const erlang = function () {
                     }
                     else {
                         return jrts.spawn(function () {
-                            return functions['ceil/1'](...args);
+                            return functions['ceil/1'].bind(this)(...args);
                         });
                     }
             }
@@ -680,7 +680,7 @@ const erlang = function () {
                     }
                     else {
                         return jrts.spawn(function () {
-                            return functions['floor/1'](...args);
+                            return functions['floor/1'].bind(this)(...args);
                         });
                     }
             }
@@ -695,7 +695,7 @@ const erlang = function () {
                     }
                     else {
                         return jrts.spawn(function () {
-                            return functions['trunc/1'](...args);
+                            return functions['trunc/1'].bind(this)(...args);
                         });
                     }
             }

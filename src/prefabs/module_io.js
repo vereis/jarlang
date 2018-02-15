@@ -10,7 +10,7 @@ const io = function () {
                         return functions['format/1'].bind(this)(...args);
                     } else {
                         return jrts.spawn(function() {
-                            return functions['format/1'](...args);
+                            return functions['format/1'].bind(this)(...args);
                         });
                     }
                     break;
@@ -19,7 +19,7 @@ const io = function () {
                         return functions['format/2'].bind(this)(...args);
                     } else {
                         return jrts.spawn(function() {
-                            return functions['format/2'](...args);
+                            return functions['format/2'].bind(this)(...args);
                         });
                     }
             }
@@ -34,7 +34,7 @@ const io = function () {
                         return functions['module_info/0'].bind(this)(...args);
                     } else {
                         return jrts.spawn(function() {
-                            return functions['module_info/0'](...args);
+                            return functions['module_info/0'].bind(this)(...args);
                         });
                     }
                     break;
@@ -43,7 +43,7 @@ const io = function () {
                         return functions['module_info/1'].bind(this)(...args);
                     } else {
                         return jrts.spawn(function() {
-                            return functions['module_info/1'](...args);
+                            return functions['module_info/1'].bind(this)(...args);
                         });
                     }
             }

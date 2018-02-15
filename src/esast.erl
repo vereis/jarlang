@@ -71,22 +71,68 @@ c_exports_mapfuncs([{FnName, FnArity} | Tails], Map) when is_list(FnName) , is_i
 %% name and arities belonging to said function name. Cases will be generated for all such arities
 c_exports_gencases({FuncName, Arities}) when is_list(FuncName) ->
     [
+        estree:const_declaration(
+            <<"args">>,
+            estree:call_expression(
+                estree:member_expression(
+                    estree:array_expression([
+                        estree:spread_element(
+                            estree:identifier(<<"arguments">>)
+                        )
+                    ]),
+                    estree:identifier(<<"map">>),
+                    false
+                ),
+                [estree:arrow_function_expression(
+                    [estree:identifier(<<"arg">>)],
+                    [],
+                    null,
+                    estree:call_expression(
+                        estree:member_expression(
+                            estree:identifier(<<"jrts">>),
+                            estree:identifier(<<"jsToErlang">>),
+                            false
+                        ),
+                        [estree:identifier(<<"arg">>)]
+                    ),
+                    false,
+                    true
+                )]
+            )
+        ),
         estree:switch_statement(
             estree:member_expression(estree:identifier(<<"arguments">>), estree:identifier(<<"length">>), false),
             lists:map(fun(Arity) ->
+                FunctionCall = estree:block_statement([estree:return_statement(
+                                estree:call_expression(
+                                    estree:call_expression(
+                                        estree:member_expression(
+                                            estree:member_expression(
+                                                estree:identifier(<<"functions">>),
+                                                estree:literal(iolist_to_binary([
+                                                    FuncName, "/", integer_to_binary(Arity)])),
+                                                true),
+                                            estree:identifier(<<"bind">>),
+                                            false),
+                                        [estree:this_expression()]),
+                                    [estree:spread_element(estree:identifier(<<"args">>))]))]),
                 estree:switch_case(
                     estree:literal(Arity),
-                    [estree:return_statement(
+                    [estree:if_statement(
                         estree:call_expression(
                             estree:member_expression(
-                                estree:identifier(<<"functions">>),
-                                estree:literal(iolist_to_binary([FuncName, "/", integer_to_binary(Arity)])),
-                                true
-                            ),
-                            [estree:spread_element(estree:identifier(<<"arguments">>))]
-                        )
-                    ), estree:break_statement(null)]
-                )
+                                estree:identifier(<<"Process">>),
+                                estree:identifier(<<"isProcess">>),
+                                false),
+                            [estree:this_expression()]),
+                            FunctionCall,
+                        estree:block_statement([estree:return_statement(
+                            estree:call_expression(
+                                estree:member_expression(
+                                    estree:identifier(<<"jrts">>),
+                                    estree:identifier(<<"spawn">>),
+                                    false),
+                                [estree:function_expression(null, [], FunctionCall, false)]))]))])
             end, Arities),
             false
         ),
