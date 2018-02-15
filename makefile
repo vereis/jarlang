@@ -200,6 +200,9 @@ define gulp
 	@ echo "$(COLOR)==> Writing JS runtime to location: './$(TARGET_DIR)'$(NORMAL)"
 	@ mv gulpbuild/* $(TARGET_DIR)/
 	@ rm -rf gulpbuild/
+	@ echo "    ok"
+	@ echo "$(COLOR)==> Writing HTML Template: './$(TARGET_DIR)'$(NORMAL)"
+	@ echo "<html><head><script src=\"jarlang.js\"></script></head></html>" > $(TARGET_DIR)/jarlang.html
 	@ echo "    Done\n"
 endef
 
