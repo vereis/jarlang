@@ -4,7 +4,7 @@ function Tuple (car, ...cdr) {
     this.next = car !== undefined ? new Tuple(...cdr) : undefined;
 
     this.iterator = this;
-};
+}
 
 
 // Static Methods
@@ -40,7 +40,7 @@ Tuple.prototype[Symbol.iterator] = function() {
                 this.iterator = this;
                 return {                    
                     done: true
-                }
+                };
             }
             else {
                 this.iterator = this.iterator.next;
@@ -50,7 +50,7 @@ Tuple.prototype[Symbol.iterator] = function() {
                 };
             }
         }
-    }
+    };
 };
 
 Tuple.prototype.__last = function() {
@@ -74,7 +74,7 @@ Tuple.prototype.value = function() {
 
 Tuple.prototype.toString = function() {
     return `{${[...this].join(",")}}`;
-}
+};
 
 
 if (typeof exports != "undefined") {

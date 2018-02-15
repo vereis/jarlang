@@ -8,7 +8,7 @@ function BitString () {
         }
 
         if (List.isString(arguments[i])) {
-            for (c in arguments[i].toString().split("")) {
+            for (let c in arguments[i].toString().split("")) {
                 tmp.push(c.charCodeAt(0));
             }
         }

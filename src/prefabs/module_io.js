@@ -6,23 +6,18 @@ const io = function () {
             switch (arguments.length) {
             case 1:
                 return functions['format/1'](...arguments);
-                break;
             case 2:
                 return functions['format/2'](...arguments);
-                break;
             }
             throw '** exception error: undefined function' + ('format' + ('/' + arguments.length));
         },
-        
         
         'module_info': function () {
             switch (arguments.length) {
             case 0:
                 return functions['module_info/0'](...arguments);
-                break;
             case 1:
                 return functions['module_info/1'](...arguments);
-                break;
             }
             throw '** exception error: undefined function' + ('module_info' + ('/' + arguments.length));
         }

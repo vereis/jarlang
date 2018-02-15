@@ -59,15 +59,15 @@ Pid.rng = (min, max) => {
 // Prototype Methods
 Pid.prototype.value = function() {
     return this.id_a;
-}
+};
 
 Pid.prototype.toString = function() {
     return `<${this.node}.${this.id_a}.${this.id_b}>`;
-}
+};
 
 Pid.prototype.isUnbound = function() {
     return false;
-}
+};
 
 Pid.prototype.match = function(X) {
     // Since 'false' is a legitimate atom in Erlang, we return undefined instead of false for a failure case
@@ -77,4 +77,4 @@ Pid.prototype.match = function(X) {
     else {
         return undefined;
     }
-}
+};

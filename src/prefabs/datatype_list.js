@@ -15,8 +15,7 @@ function List (car, ...cdr) {
 
     this.next = car !== undefined ? new List(...cdr) : undefined;
     this.iterator = this;
-};
-
+}
 
 // Static Methods
 List.isList = (list) => list instanceof List;
@@ -68,7 +67,7 @@ List.prototype[Symbol.iterator] = function() {
                 this.iterator = this;
                 return {                    
                     done: true
-                }
+                };
             }
             else {
                 this.iterator = isLastNode ? "done" : this.iterator.next;
@@ -78,7 +77,7 @@ List.prototype[Symbol.iterator] = function() {
                 };
             }
         }
-    }
+    };
 };
 
 List.prototype.__last = function() {
@@ -138,7 +137,7 @@ List.prototype.toString = function() {
     }
     
     return '[]';
-}
+};
 
 
 // Private Methods

@@ -5,7 +5,6 @@ const erlang = function () {
             switch (arguments.length) {
                 case 2:
                     return functions['+/2'](...arguments);
-                    break;
             }
             throw '** exception error: undefined function' + ('+' + ('/' + arguments.length));
         },
@@ -13,7 +12,6 @@ const erlang = function () {
             switch (arguments.length) {
                 case 2:
                     return functions['-/2'](...arguments);
-                    break;
             }
             throw '** exception error: undefined function' + ('-' + ('/' + arguments.length));
         },
@@ -21,7 +19,6 @@ const erlang = function () {
             switch (arguments.length) {
                 case 2:
                     return functions['*/2'](...arguments);
-                    break;
             }
             throw '** exception error: undefined function' + ('*' + ('/' + arguments.length));
         },
@@ -29,7 +26,6 @@ const erlang = function () {
             switch (arguments.length) {
                 case 2:
                     return functions['//2'](...arguments);
-                    break;
             }
             throw '** exception error: undefined function' + ('/' + ('/' + arguments.length));
         },
@@ -37,7 +33,6 @@ const erlang = function () {
             switch (arguments.length) {
                 case 2:
                     return functions['rem/2'](...arguments);
-                    break;
             }
             throw '** exception error: undefined function' + ('rem' + ('/' + arguments.length));
         },
@@ -45,7 +40,6 @@ const erlang = function () {
             switch (arguments.length) {
                 case 2:
                     return functions['div/2'](...arguments);
-                    break;
             }
             throw '** exception error: undefined function' + ('div' + ('/' + arguments.length));
         },
@@ -53,7 +47,6 @@ const erlang = function () {
             switch (arguments.length) {
                 case 2:
                     return functions['==/2'](...arguments);
-                    break;
             }
             throw '** exception error: undefined function' + ('==' + ('/' + arguments.length));
         },
@@ -61,7 +54,6 @@ const erlang = function () {
             switch (arguments.length) {
                 case 2:
                     return functions['/=/2'](...arguments);
-                    break;
             }
             throw '** exception error: undefined function' + ('/=' + ('/' + arguments.length));
         },
@@ -69,7 +61,6 @@ const erlang = function () {
             switch (arguments.length) {
                 case 2:
                     return functions['</2'](...arguments);
-                    break;
             }
             throw '** exception error: undefined function' + ('<' + ('/' + arguments.length));
         },
@@ -77,7 +68,6 @@ const erlang = function () {
             switch (arguments.length) {
                 case 2:
                     return functions['=</2'](...arguments);
-                    break;
             }
             throw '** exception error: undefined function' + ('=<' + ('/' + arguments.length));
         },
@@ -85,7 +75,6 @@ const erlang = function () {
             switch (arguments.length) {
                 case 2:
                     return functions['>/2'](...arguments);
-                    break;
             }
             throw '** exception error: undefined function' + ('>' + ('/' + arguments.length));
         },
@@ -93,7 +82,6 @@ const erlang = function () {
             switch (arguments.length) {
                 case 2:
                     return functions['>=/2'](...arguments);
-                    break;
             }
             throw '** exception error: undefined function' + ('>=' + ('/' + arguments.length));
         },
@@ -101,7 +89,6 @@ const erlang = function () {
             switch (arguments.length) {
                 case 2:
                     return functions['=:=/2'](...arguments);
-                    break;
             }
             throw '** exception error: undefined function' + ('=:=' + ('/' + arguments.length));
         },
@@ -109,7 +96,6 @@ const erlang = function () {
             switch (arguments.length) {
                 case 2:
                     return functions['=/=/2'](...arguments);
-                    break;
             }
             throw '** exception error: undefined function' + ('=/=' + ('/' + arguments.length));
         },
@@ -117,7 +103,6 @@ const erlang = function () {
             switch (arguments.length) {
                 case 2:
                     return functions['compare/2'](...arguments);
-                    break;
             }
             throw '** exception error: undefined function' + ('compare' + ('/' + arguments.length));
         },
@@ -125,7 +110,6 @@ const erlang = function () {
             switch (arguments.length) {
                 case 2:
                     return functions['match/2'](...arguments);
-                    break;
             }
             throw '** exception error: undefined function' + ('match' + ('/' + arguments.length));
         },
@@ -133,7 +117,6 @@ const erlang = function () {
             switch (arguments.length) {
                 case 2:
                     return functions['or/2'](...arguments);
-                    break;
             }
             throw '** exception error: undefined function' + ('or' + ('/' + arguments.length));
         },
@@ -141,7 +124,6 @@ const erlang = function () {
             switch (arguments.length) {
                 case 2:
                     return functions['and/2'](...arguments);
-                    break;
             }
             throw '** exception error: undefined function' + ('and' + ('/' + arguments.length));
         },
@@ -149,7 +131,6 @@ const erlang = function () {
             switch (arguments.length) {
                 case 1:
                     return functions['not/1'](...arguments);
-                    break;
             }
             throw '** exception error: undefined function' + ('not' + ('/' + arguments.length));
         },
@@ -157,7 +138,6 @@ const erlang = function () {
             switch (arguments.length) {
                 case 2:
                     return functions['xor/2'](...arguments);
-                    break;
             }
             throw '** exception error: undefined function' + ('xor' + ('/' + arguments.length));
         },
@@ -165,7 +145,6 @@ const erlang = function () {
             switch (arguments.length) {
                 case 2:
                     return functions['band/2'](...arguments);
-                    break;
             }
             throw '** exception error: undefined function' + ('band' + ('/' + arguments.length));
         },
@@ -173,7 +152,6 @@ const erlang = function () {
             switch (arguments.length) {
                 case 2:
                     return functions['bor/2'](...arguments);
-                    break;
             }
             throw '** exception error: undefined function' + ('bor' + ('/' + arguments.length));
         },
@@ -181,7 +159,6 @@ const erlang = function () {
             switch (arguments.length) {
                 case 2:
                     return functions['bxor/2'](...arguments);
-                    break;
             }
             throw '** exception error: undefined function' + ('bxor' + ('/' + arguments.length));
         },
@@ -189,7 +166,6 @@ const erlang = function () {
             switch (arguments.length) {
                 case 1:
                     return functions['bnot/1'](...arguments);
-                    break;
             }
             throw '** exception error: undefined function' + ('bnot' + ('/' + arguments.length));
         },
@@ -197,10 +173,8 @@ const erlang = function () {
             switch (arguments.length) {
                 case 0:
                     return functions['module_info/0'](...arguments);
-                    break;
                 case 1:
                     return functions['module_info/1'](...arguments);
-                    break;
             }
             throw '** exception error: undefined function' + ('module_info' + ('/' + arguments.length));
         },
@@ -208,7 +182,6 @@ const erlang = function () {
             switch (arguments.length) {
                 case 1:
                     return functions['atom_to_list/1'](...arguments);
-                    break;
             }
             throw '** exception error: undefined function' + ('atom_to_list' + ('/' + arguments.length));
         },
@@ -216,7 +189,6 @@ const erlang = function () {
             switch (arguments.length) {
                 case 1:
                     return functions['list_to_atom/1'](...arguments);
-                    break;
             }
             throw '** exception error: undefined function' + ('list_to_atom' + ('/' + arguments.length));
         },
@@ -224,7 +196,6 @@ const erlang = function () {
             switch (arguments.length) {
                 case 1:
                     return functions['list_to_existing_atom/1'](...arguments);
-                    break;
             }
             throw '** exception error: undefined function' + ('list_to_existing_atom' + ('/' + arguments.length));
         },
@@ -232,7 +203,6 @@ const erlang = function () {
             switch (arguments.length) {
                 case 1:
                     return functions['is_atom/1'](...arguments);
-                    break;
             }
             throw '** exception error: undefined function' + ('is_atom' + ('/' + arguments.length));
         },
@@ -240,7 +210,6 @@ const erlang = function () {
             switch (arguments.length) {
                 case 1:
                     return functions['is_binary/1'](...arguments);
-                    break;
             }
             throw '** exception error: undefined function' + ('is_binary' + ('/' + arguments.length));
         },
@@ -248,7 +217,6 @@ const erlang = function () {
             switch (arguments.length) {
                 case 1:
                     return functions['is_bitstring/1'](...arguments);
-                    break;
             }
             throw '** exception error: undefined function' + ('is_bitstring' + ('/' + arguments.length));
         },
@@ -256,7 +224,6 @@ const erlang = function () {
             switch (arguments.length) {
                 case 1:
                     return functions['is_boolean/1'](...arguments);
-                    break;
             }
             throw '** exception error: undefined function' + ('is_boolean' + ('/' + arguments.length));
         },
@@ -264,7 +231,6 @@ const erlang = function () {
             switch (arguments.length) {
                 case 1:
                     return functions['is_float/1'](...arguments);
-                    break;
             }
             throw '** exception error: undefined function' + ('is_float' + ('/' + arguments.length));
         },
@@ -272,7 +238,6 @@ const erlang = function () {
             switch (arguments.length) {
                 case 1:
                     return functions['is_function/1'](...arguments);
-                    break;
             }
             throw '** exception error: undefined function' + ('is_function' + ('/' + arguments.length));
         },
@@ -280,7 +245,6 @@ const erlang = function () {
             switch (arguments.length) {
                 case 1:
                     return functions['is_integer/1'](...arguments);
-                    break;
             }
             throw '** exception error: undefined function' + ('is_integer' + ('/' + arguments.length));
         },
@@ -288,7 +252,6 @@ const erlang = function () {
             switch (arguments.length) {
                 case 1:
                     return functions['is_list/1'](...arguments);
-                    break;
             }
             throw '** exception error: undefined function' + ('is_list' + ('/' + arguments.length));
         },
@@ -296,7 +259,6 @@ const erlang = function () {
             switch (arguments.length) {
                 case 1:
                     return functions['is_map/1'](...arguments);
-                    break;
             }
             throw '** exception error: undefined function' + ('is_map' + ('/' + arguments.length));
         },
@@ -304,7 +266,6 @@ const erlang = function () {
             switch (arguments.length) {
                 case 1:
                     return functions['is_number/1'](...arguments);
-                    break;
             }
             throw '** exception error: undefined function' + ('is_number' + ('/' + arguments.length));
         },
@@ -312,7 +273,6 @@ const erlang = function () {
             switch (arguments.length) {
                 case 1:
                     return functions['is_pid/1'](...arguments);
-                    break;
             }
             throw '** exception error: undefined function' + ('is_pid' + ('/' + arguments.length));
         },
@@ -320,7 +280,6 @@ const erlang = function () {
             switch (arguments.length) {
                 case 1:
                     return functions['is_port/1'](...arguments);
-                    break;
             }
             throw '** exception error: undefined function' + ('is_port' + ('/' + arguments.length));
         },
@@ -328,7 +287,6 @@ const erlang = function () {
             switch (arguments.length) {
                 case 1:
                     return functions['is_reference/1'](...arguments);
-                    break;
             }
             throw '** exception error: undefined function' + ('is_reference' + ('/' + arguments.length));
         },
@@ -336,7 +294,6 @@ const erlang = function () {
             switch (arguments.length) {
                 case 1:
                     return functions['is_tuple/1'](...arguments);
-                    break;
             }
             throw '** exception error: undefined function' + ('is_tuple' + ('/' + arguments.length));
         },
@@ -344,7 +301,6 @@ const erlang = function () {
             switch (arguments.length) {
                 case 1:
                     return functions['abs/1'](...arguments);
-                    break;
             }
             throw '** exception error: undefined function' + ('abs' + ('/' + arguments.length));
         },
@@ -352,7 +308,6 @@ const erlang = function () {
             switch (arguments.length) {
                 case 1:
                     return functions['ceil/1'](...arguments);
-                    break;
             }
             throw '** exception error: undefined function' + ('ceil' + ('/' + arguments.length));
         },
@@ -360,7 +315,6 @@ const erlang = function () {
             switch (arguments.length) {
                 case 1:
                     return functions['floor/1'](...arguments);
-                    break;
             }
             throw '** exception error: undefined function' + ('floor' + ('/' + arguments.length));
         },
@@ -368,7 +322,6 @@ const erlang = function () {
             switch (arguments.length) {
                 case 1:
                     return functions['trunc/1'](...arguments);
-                    break;
             }
             throw '** exception error: undefined function' + ('trunc' + ('/' + arguments.length));
         }
@@ -464,10 +417,8 @@ const erlang = function () {
             return _cor1 ^ _cor0;
         },
         'module_info/0': function () {
-            ;
         },
         'module_info/1': function () {
-            ;
         },
 
         'atom_to_binary/2': function (_cor1, _cor0) {

@@ -74,7 +74,7 @@ const jrts = (function (secondsPerTick) {
                 jsVar = variable.value;
                 break;
             case "ErlNumber":
-                jsVar = new Number(variable.getValue().valueOf());
+                jsVar = Number(variable.getValue().valueOf());
                 break;
             case "Pid":
                 jsVar = variable.value;
