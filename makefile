@@ -29,6 +29,7 @@ ERLPKG = $(UTILDIR)/erlpkg
 STDOUT = &1
 DEVNULL = /dev/null
 GULP = ./node_modules/.bin/gulp
+JSLINT = $(GULP) lint
 
 # Colors
 RED = \033[0;31m
@@ -79,8 +80,11 @@ js:
 
 .PHONY: lint
 lint:
-	@ echo "$(PURPLE)==> Linting Project with Elvis$(NORMAL)"
+	@ echo "$(PURPLE)==> Linting Erlang Project with Elvis$(NORMAL)"
 	@ $(ELVIS) || true
+	@ echo "    ok"
+	@ echo "$(PURPLE)==> Linting JS Project with JSHint$(NORMAL)"
+	@ $(JSLINT) || true
 	@ echo "    Done\n"
 
 .PHONY: dialyze

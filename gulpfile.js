@@ -1,8 +1,9 @@
 var gulp   = require("gulp"),
     concat = require("gulp-concat"),
     rename = require("gulp-rename"),
-    uglify = require("gulp-uglify");
-    babel  = require("gulp-babel");
+    uglify = require("gulp-uglify"),
+    babel  = require("gulp-babel"),
+    lint   = require("gulp-jshint");
 
 var js_files = ["src/prefabs/jarlang_rts.js",
                 "src/prefabs/module_erlang.js",
@@ -40,4 +41,10 @@ gulp.task("default", function() {
 gulp.task("debug", function() {
     return build_rts()
            .pipe(gulp.dest("gulpbuild/"));
+});
+
+gulp.task("lint", function() {
+    return gulp.src(js_files)
+               .pipe(lint())
+               .pipe(lint.reporter('default'));
 });
