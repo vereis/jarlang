@@ -33,28 +33,28 @@ Int.prototype.isUnbound = function() {
 
 Int.prototype.add = function(val) {
     if (val instanceof Float) {
-        return new Float(this.value.plus(val.getValue());
+        return new Float(this.value.plus(val.getValue()));
     }
     return new Int(this.value.plus(val instanceof Int ? val.getValue() : val));
 };
 
 Int.prototype.subtract = function(val) {
     if (val instanceof Float) {
-        return new Float(this.value.minus(val.getValue());
+        return new Float(this.value.minus(val.getValue()));
     }
     return new Int(this.value.minus(val instanceof Int ? val.getValue() : val));
 };
 
 Int.prototype.multiply = function(val) {
     if (val instanceof Float) {
-        return new Float(this.value.times(val.getValue());
+        return new Float(this.value.times(val.getValue()));
     }
     return new Int(this.value.times(val instanceof Int ? val.getValue() : val));
 };
 
 Int.prototype.divide = function(val) {
     if (val instanceof Float) {
-        return new Float(this.value.div(val.getValue());
+        return new Float(this.value.div(val.getValue()));
     }
     return new Int(this.value.div(val instanceof Int ? val.getValue() : val));
 };
