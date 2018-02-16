@@ -18,22 +18,14 @@ c_module(ModuleName, ExportList, FunctionList) ->
                 estree:function_expression(
                     null,
                     [],
-                    estree:block_statement(
-                        [
-                            estree:use_strict(),
-                            c_exports(ExportList),
-                            c_functions(FunctionList),
-                            estree:return_statement(
-                                estree:identifier(<<"exports">>)
-                            )
-                        ]
-                    ),
-                    false
-                ),
-                []
-            )
-        )
-    ]).
+                    estree:block_statement([
+                        estree:use_strict(),
+                        c_exports(ExportList),
+                        c_functions(FunctionList),
+                        estree:return_statement(
+                            estree:identifier(<<"exports">>))]),
+                    false),
+                []))]).
 
 %% Eventually creates an export list which is intended to be returned in a c_module call.
 %% Function arity is handled with switch/case statements and as we don't know how many different
@@ -47,12 +39,14 @@ c_exports(ExportList) ->
             lists:map(fun({FuncName, Arities}) ->
                 estree:property(
                     estree:literal(list_to_binary(FuncName)),
-                    estree:function_expression(null,
-                                              [],
-                                              estree:block_statement(c_exports_gencases({FuncName, Arities})), false))
-            end, maps:to_list(MappedByFuncName))
-        )
-    ).
+                    estree:function_expression(
+                        null,
+                        [],
+                        estree:block_statement(
+                            c_exports_gencases({FuncName, Arities})
+                        ), 
+                        false))
+            end, maps:to_list(MappedByFuncName)))).
 
 %% Function which takes a list of tuples in the form {Key, Value} and generates a map in the
 %% form #{Key => ListOfAllValuesBelongingToKey}
@@ -77,12 +71,9 @@ c_exports_gencases({FuncName, Arities}) when is_list(FuncName) ->
                 estree:member_expression(
                     estree:array_expression([
                         estree:spread_element(
-                            estree:identifier(<<"arguments">>)
-                        )
-                    ]),
+                            estree:identifier(<<"arguments">>))]),
                     estree:identifier(<<"map">>),
-                    false
-                ),
+                    false),
                 [estree:arrow_function_expression(
                     [estree:identifier(<<"arg">>)],
                     [],
@@ -91,17 +82,15 @@ c_exports_gencases({FuncName, Arities}) when is_list(FuncName) ->
                         estree:member_expression(
                             estree:identifier(<<"jrts">>),
                             estree:identifier(<<"jsToErlang">>),
-                            false
-                        ),
-                        [estree:identifier(<<"arg">>)]
-                    ),
+                            false),
+                        [estree:identifier(<<"arg">>)]),
                     false,
-                    true
-                )]
-            )
-        ),
+                    true)])),
         estree:switch_statement(
-            estree:member_expression(estree:identifier(<<"arguments">>), estree:identifier(<<"length">>), false),
+            estree:member_expression(
+                estree:identifier(<<"arguments">>), 
+                estree:identifier(<<"length">>), 
+                false),
             lists:map(fun(Arity) ->
                 FunctionCall = estree:block_statement([estree:return_statement(
                                 estree:call_expression(
@@ -134,18 +123,16 @@ c_exports_gencases({FuncName, Arities}) when is_list(FuncName) ->
                                     false),
                                 [estree:function_expression(null, [], FunctionCall, false)]))]))])
             end, Arities),
-            false
-        ),
+            false),
         estree:error("exception error", "undefined function",
             estree:binary_expression(<<"+">>,
                 estree:literal(list_to_binary(FuncName)),
                 estree:binary_expression(<<"+">>,
                     estree:literal(<<"/">>),
-                    estree:member_expression(estree:identifier(<<"arguments">>), estree:identifier(<<"length">>), false)
-                )
-            )
-        )
-    ].
+                    estree:member_expression(
+                        estree:identifier(<<"arguments">>), 
+                        estree:identifier(<<"length">>), 
+                        false))))].
 
 %% Generates function datastructure which takes a list in the form of [{"SomeFun/2", FUNCTION}] where function
 %% is an ESTree functionExpression / functionDeclaration and produces the following:
@@ -158,8 +145,5 @@ c_functions([{FuncNameWithArity, Function} | Rest]) ->
             lists:map(fun({FuncName, FuncBody}) ->
                 estree:property(
                     estree:literal(list_to_binary(FuncName)),
-                    FuncBody
-                )
-            end , FunctionList)
-        )
-    ).
+                    FuncBody)
+            end , FunctionList))).
