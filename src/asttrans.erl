@@ -1,7 +1,7 @@
 %%% Module Description:
 %%% Recursively descends into a core erlang AST and generates an ESTREE equivalent
 -module(asttrans).
--author(["Andrew Johnson", "Chris Bailey"]).
+-author(["Andrew Johnson", "Chris Bailey", "Nick Laine"]).
 
 -define(VERSION, "2.1.0").
 
@@ -94,7 +94,7 @@ is_statement(_) ->
     false.
 
 %% Helper function to ensure that any given expression is a statement. If a statement
-%% is given to this function, it is simply returned; otherwise we wrap it in an 
+%% is given to this function, it is simply returned; otherwise we wrap it in an
 %% expression_statement.
 encapsulate_expressions(L) ->
     lists:map(
@@ -153,7 +153,7 @@ parse_call(noreturn, Params, {c_call, _, {_, _, Module}, {_, _, FunctionName}, P
             ),
             [estree:this_expression()]
         ),
-        lists:map(fun(T) ->parse_node(noreturn, Parameters, T) end, Parameters)
+        lists:map(fun(T) -> parse_node(noreturn, Parameters, T) end, Parameters)
      ).
 
 %% Parses a c_values node.
@@ -191,8 +191,8 @@ parse_let(ReturnAtom, Params, {c_let, _, [{_, _, Variable}], Value, UsedBy}) ->
 
 
 %% Parses a c_apply node.
-%% TODO: Is apply a local function call? 
-%%       Assignment from function? 
+%% TODO: Is apply a local function call?
+%%       Assignment from function?
 %%       Assignment with pattern matching?
 parse_apply(ReturnAtom, Params, {c_apply, _, {_, _, {FunctionName, Arity}}, Parameters}) ->
     % parse_node(ReturnAtom, Params, {c_call, [], {a, a, functions}, {a, a, FunctionName}, Parameters});
@@ -203,7 +203,7 @@ parse_apply(ReturnAtom, Params, {c_apply, _, {_, _, {FunctionName, Arity}}, Para
     %         estree:identifier(atom_to_binary(functions, utf8)),
     %         estree:literal(identify_normalise(atom_to_list(FunctionName) ++ "/" ++ integer_to_list(Arity))),
     %         true),
-    %      lists:map(fun(T) ->parse_node(noreturn, Parameters, T) end, Parameters)
+    %      lists:map(fun(T) -> parse_node(noreturn, Parameters, T) end, Parameters)
     %  );
 parse_apply(ReturnAtom, Params, {c_apply, _, {_, _, FunctionName}, Parameters}) ->
     parse_call(ReturnAtom, Params, {c_call, [], {a, a, functions}, {a, a, FunctionName}, Parameters}).
@@ -328,7 +328,7 @@ parse_case(ReturnAtom, Params, {c_case, _, {c_apply, _, {c_var, _, Fun}, Args}, 
     parse_function_case(ReturnAtom, Params,
         estree:call_expression(
             estree:identifier(atom_to_binary(Fun_Actual, utf8)),
-            lists:map(fun(T) ->parse_node(noreturn, Params, T) end, Args)
+            lists:map(fun(T) -> parse_node(noreturn, Params, T) end, Args)
         ),
         Clauses
     );
@@ -336,7 +336,7 @@ parse_case(ReturnAtom, Params, {c_case, _, {c_call, _, {c_literal, _, Module}, {
     parse_function_case(ReturnAtom, Params,
         estree:call_expression(
             estree:member_expression(estree:identifier(atom_to_binary(Module, utf8)), estree:identifier(atom_to_binary(FunctionName, utf8)), false),
-            lists:map(fun(T) ->parse_node(noreturn, Params, T) end, Args)
+            lists:map(fun(T) -> parse_node(noreturn, Params, T) end, Args)
         ),
         Clauses
     ).
@@ -605,7 +605,7 @@ assemble_sequence(L, R) ->
     [L, R].
 
 tuple_list_to_identifier_list(List, Params) ->
-    lists:map(fun({c_var, [], A}) ->parse_var(noreturn, Params, {c_var, [], A}) end, List).
+    lists:map(fun({c_var, [], A}) -> parse_var(noreturn, Params, {c_var, [], A}) end, List).
 
 tuple_list_get_vars_3([]) ->
     [];
@@ -621,13 +621,13 @@ tuple_list_get_vars_2([{_, Val} | Body]) ->
 tuple_list_get_vars_2([{_, Val, _} | Body]) ->
     [Val | tuple_list_get_vars_2(Body)].
 
-tuple_getVar_1({V}) ->V;
-tuple_getVar_1({V, _}) ->V;
-tuple_getVar_1({V, _, _}) ->V;
-tuple_getVar_1({V, _, _, _}) ->V;
-tuple_getVar_1({V, _, _, _, _}) ->V;
-tuple_getVar_1({V, _, _, _, _, _}) ->V;
-tuple_getVar_1({V, _, _, _, _, _, _}) ->V.
+tuple_getVar_1({V}) -> V;
+tuple_getVar_1({V, _}) -> V;
+tuple_getVar_1({V, _, _}) -> V;
+tuple_getVar_1({V, _, _, _}) -> V;
+tuple_getVar_1({V, _, _, _, _}) -> V;
+tuple_getVar_1({V, _, _, _, _, _}) -> V;
+tuple_getVar_1({V, _, _, _, _, _, _}) -> V.
 
 declarators_from_list(List) ->
     lists:filtermap(fun(Elem) ->
@@ -651,7 +651,7 @@ identify_normalise(N) ->
 
 tup_to_list(Tuple) -> tup_to_list(Tuple, 1, tuple_size(Tuple)).
 
-tup_to_list(Tuple, Pos, Size) when Pos =< Size ->  
+tup_to_list(Tuple, Pos, Size) when Pos =< Size ->
     [element(Pos, Tuple) | tup_to_list(Tuple, Pos+1, Size)];
 tup_to_list(_Tuple, _Pos, _Size) -> [].
 
