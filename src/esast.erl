@@ -44,7 +44,7 @@ c_exports(ExportList) ->
                         [],
                         estree:block_statement(
                             c_exports_gencases({FuncName, Arities})
-                        ), 
+                        ),
                         false))
             end, maps:to_list(MappedByFuncName)))).
 
@@ -88,8 +88,8 @@ c_exports_gencases({FuncName, Arities}) when is_list(FuncName) ->
                     true)])),
         estree:switch_statement(
             estree:member_expression(
-                estree:identifier(<<"arguments">>), 
-                estree:identifier(<<"length">>), 
+                estree:identifier(<<"arguments">>),
+                estree:identifier(<<"length">>),
                 false),
             lists:map(fun(Arity) ->
                 FunctionCall = estree:block_statement([estree:return_statement(
@@ -130,8 +130,8 @@ c_exports_gencases({FuncName, Arities}) when is_list(FuncName) ->
                 estree:binary_expression(<<"+">>,
                     estree:literal(<<"/">>),
                     estree:member_expression(
-                        estree:identifier(<<"arguments">>), 
-                        estree:identifier(<<"length">>), 
+                        estree:identifier(<<"arguments">>),
+                        estree:identifier(<<"length">>),
                         false))))].
 
 %% Generates function datastructure which takes a list in the form of [{"SomeFun/2", FUNCTION}] where function

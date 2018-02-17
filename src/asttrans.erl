@@ -484,19 +484,17 @@ assemble_case_condition(Params, Vars, Match, Evaluate) ->
                         )
     end,
     estree:call_expression(
-        estree:function_expression(
-            null,
-            [],
-            estree:block_statement(
-                encapsulate_expressions(
-                    list_check(
-                        InternalActual
-                    )
-                )
-            ),
-            false
-        ),
-    []).
+        estree:call_expression(
+            estree:member_expression(
+                estree:function_expression(
+                   null,
+                   [],
+                   estree:block_statement(encapsulate_expressions(list_check(InternalActual))),
+                   false),
+                estree:identifier(<<"bind">>),
+                false),
+            [estree:this_expression()]),
+        []).
 
 recurse_var_declaration({c_var, _, Name}) ->
     [estree:variable_declarator(estree:identifier(atom_to_binary(Name, utf8)), estree:identifier(<<"undefined">>))];
