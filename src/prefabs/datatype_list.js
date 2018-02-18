@@ -17,6 +17,7 @@ function List (car, ...cdr) {
     this.iterator = this;
 }
 
+
 // Static Methods
 List.isList = (list) => list instanceof List;
 
@@ -27,7 +28,7 @@ List.isString = (list) => {
         return false;
     }
 
-    for (var i = 1; i <= list.size; i++) {
+    for (var i = 0; i < list.size(); i++) {
         if (!isLatin1Char(list.nth(i))) {
             return false;
         }
@@ -102,7 +103,7 @@ List.prototype.cons = function(appendage) {
     return clone;
 };
 
-List.prototype.value = function() {
+List.prototype.getValue = function() {
     return [...this];  
 };
 
@@ -111,29 +112,27 @@ List.prototype.toString = function() {
 
     if (buffer.length) {
         let textBuffer = "";
+        let isString = List.isString(this);
         let isImproperList = !List.isList(this.__nthNode(Math.max(0, buffer.length - 1)));
         
         for (let i = 0; i < buffer.length; i++) {
-            let isCharCode = Number.isInteger(buffer[i]) && isLatin1Char(buffer[i]);
-
-            if (i > 0 && !(isCharCode && Number.isInteger(buffer[i - 1]) && isLatin1Char(buffer[i - 1]))) {
-                if (i === buffer.length - 1 && isImproperList) {
-                    textBuffer += "|";
+            if (!isString) {
+                if (i > 0) {
+                    if (i === buffer.length - 1 && isImproperList) {
+                        textBuffer += "|";
+                    }
+                    else {
+                        textBuffer += ",";
+                    }
                 }
-                else {
-                    textBuffer += ",";
-                }
-            }
 
-            if (isCharCode) {
-                textBuffer += String.fromCharCode(buffer[i]);
-            }
-            else {
                 textBuffer += buffer[i];
+            } else {
+                textBuffer += String.fromCharCode(buffer[i]);
             }
         }
 
-        return `[${textBuffer}]`;
+        return isString ? textBuffer : `[${textBuffer}]`;
     }
     
     return '[]';
@@ -142,8 +141,8 @@ List.prototype.toString = function() {
 
 // Private Methods
 function isLatin1Char(c) {
-    if (typeof c == "string") {
-        c = c.charCodeAt(0);
+    if (!Number.isInteger(c)) {
+        return false;
     }
     return (c >= 32 && c <= 126) || (c >= 160 && c <= 255);
 }
