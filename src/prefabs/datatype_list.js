@@ -144,9 +144,6 @@ function isLatin1Char(c) {
     if (!Number.isInteger(c)) {
         return false;
     }
-    if (typeof c == "string") {
-        c = c.charCodeAt(0);
-    }
     return (c >= 32 && c <= 126) || (c >= 160 && c <= 255);
 }
 
