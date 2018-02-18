@@ -15,10 +15,10 @@ const Unbound = (() => {
 
         match(x) {
             return x;
-        };
+        }
 
         static isUnbound(x) {
             return x instanceof Unbound;
         }
-    }
+    };
 })();

@@ -5,22 +5,28 @@ var gulp   = require("gulp"),
     babel  = require("gulp-babel"),
     lint   = require("gulp-jshint");
 
-var js_files = ["src/prefabs/jarlang_rts.js",
-                "src/prefabs/module_erlang.js",
-                "src/prefabs/module_io.js",
-                "src/prefabs/datatype_atom.js",
-                "src/prefabs/datatype_bitstring.js",
-                "src/prefabs/datatype_float.js",
-                "src/prefabs/datatype_fun.js",
-                "src/prefabs/datatype_int.js",
-                "src/prefabs/datatype_list.js",
-                "src/prefabs/datatype_map.js",
-                "src/prefabs/datatype_pid.js",
-                "src/prefabs/datatype_port.js",
-                "src/prefabs/datatype_process.js",
-                "src/prefabs/datatype_reference.js",
-                "src/prefabs/datatype_tuple.js",
-                "src/prefabs/datatype_unbound.js",
+var js_files = [// Jarlang Runtime
+                "src/prefabs/runtime.js",
+
+                // Jarlang Class Definitions
+                "src/prefabs/classes/datatype_erlangDatatype.js",
+                "src/prefabs/classes/datatype_atom.js",
+                "src/prefabs/classes/datatype_bitstring.js",
+                "src/prefabs/classes/datatype_float.js",
+                "src/prefabs/classes/datatype_fun.js",
+                "src/prefabs/classes/datatype_int.js",
+                "src/prefabs/classes/datatype_list.js",
+                "src/prefabs/classes/datatype_map.js",
+                "src/prefabs/classes/datatype_pid.js",
+                "src/prefabs/classes/datatype_port.js",
+                "src/prefabs/classes/datatype_process.js",
+                "src/prefabs/classes/datatype_reference.js",
+                "src/prefabs/classes/datatype_tuple.js",
+                "src/prefabs/classes/datatype_unbound.js",
+
+                // Jarlang Prefab Modules
+                "src/prefabs/modules/module_erlang.js",
+                "src/prefabs/modules/module_io.js",
             ];
 
 var js_dependencies = [

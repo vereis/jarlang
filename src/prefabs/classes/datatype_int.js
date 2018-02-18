@@ -65,5 +65,5 @@ const Int = (() => {
         static cloneInt(n) {
             return new Int(this.getValue());
         }
-    }
+    };
 })();

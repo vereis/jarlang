@@ -53,5 +53,5 @@ const Atom = (() => {
                 return false;
             }
         }
-    }
+    };
 })();

@@ -21,19 +21,19 @@ const Tuple = (() => {
         nth(n) {
             let nth = this[nthNode](n);
             return Tuple.isTuple(nth) ? nth.val : nth;
-        };
+        }
         
         size() {
             return [...this].length;
-        };
+        }
         
         value() {
             return [...this];  
-        };
+        }
         
         toString() {
             return `{${[...this].join(",")}}`;
-        };
+        }
 
         [nthNode](n) {
             if (n < 0 || n >= this.size()) {
@@ -88,5 +88,5 @@ const Tuple = (() => {
         static cloneTuple(tuple) {
             return new Tuple(...tuple);
         }
-    }
+    };
 })();

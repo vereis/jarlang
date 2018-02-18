@@ -48,5 +48,5 @@ const BitString = (() => {
         static isBinary(a) {
             return a instanceof Bitstring;
         }
-    }
+    };
 })();

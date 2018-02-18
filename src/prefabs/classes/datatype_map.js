@@ -85,5 +85,5 @@ const Map = (() => {
         static isMap(m) {
             return m instanceof Map;
         }
-    }
+    };
 })();

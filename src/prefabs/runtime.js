@@ -48,7 +48,7 @@ const jrts = (function (secondsPerTick) {
                 } else if (variable.constructor.name === "Uint8Array") {
                     erlVar = new BitString(...variable);
                 } else if (variable.constructor.name === "Object") {
-                    erlVar = new ErlMap(variable);
+                    erlVar = new Map(variable);
                 } else {
                     erlVar = variable;
                 }
@@ -76,7 +76,7 @@ const jrts = (function (secondsPerTick) {
                     [...variable].map(charCode => String.fromCharCode(charCode)).join("") : 
                     [...variable];
                 break;
-            case "ErlMap":
+            case "Map":
                 jsVar = variable.value;
                 break;
             case "Int":

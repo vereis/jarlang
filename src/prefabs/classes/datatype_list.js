@@ -75,7 +75,7 @@ const List = (() => {
                     }
                 }
             };
-        };
+        }
 
         nth(n) {
             let nth = this[nthNode](n);
@@ -178,5 +178,5 @@ const List = (() => {
         static cloneList(a) {
             return new List(...a);
         }
-    }
+    };
 })();

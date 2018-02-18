@@ -44,5 +44,5 @@ const Process = (() => {
         static spawn(lambda, pidGenerator) {
             return jrts.spawn(lambda, pidGenerator);
         }
-    }
+    };
 })();

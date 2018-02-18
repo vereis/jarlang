@@ -23,10 +23,10 @@ const Reference = (() => {
             else {
                 return undefined;
             }
-        };
+        }
 
         static isReference(r) {
             return r instanceof Reference;
         }
-    }
+    };
 })();

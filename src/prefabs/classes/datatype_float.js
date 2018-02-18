@@ -65,5 +65,5 @@ const Float = (() => {
         static cloneFloat(n) {
             return new Float(this.getValue());
         }
-    }
+    };
 })();

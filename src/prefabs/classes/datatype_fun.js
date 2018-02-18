@@ -23,5 +23,5 @@ const Fun = (() => {
         static isFun(a) {
             return a instanceof Fun;
         }
-    }
+    };
 })();

@@ -23,5 +23,5 @@ const Port = (() => {
         static isPort(a) {
             return a instanceof Port;
         }
-    }
+    };
 })();

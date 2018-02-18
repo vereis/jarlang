@@ -92,5 +92,5 @@ const Pid = (() => {
         static isPid(m) {
             return m instanceof Pid;
         }
-    }
+    };
 })();

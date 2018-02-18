@@ -34,5 +34,5 @@ const ErlangDatatype = (() => {
         static isErlangDatatype(a) {
             return a instanceof ErlangDatatype;
         }
-    }
+    };
 })();
