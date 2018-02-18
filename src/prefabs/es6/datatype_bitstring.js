@@ -1,6 +1,7 @@
 /**
  * Class constructor for representing BitStrings in Jarlang's runtime
  */
+
 const BitString = (() => {
     return class BitString extends ErlangDatatype {
         constructor() {

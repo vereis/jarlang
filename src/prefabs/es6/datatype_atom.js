@@ -2,6 +2,7 @@
  *  Class constructor for representing atoms
  *  Defining atoms also adds the atom to a global atoms table in JRTS
  */
+
 const Atom = (() => {
     // Private registerAtom token
     const registerAtom = Symbol("registerAtom");
