@@ -51,7 +51,7 @@
         new_expression/2,
         call_expression/2,
         member_expression/3,
-        arrow_expression/6,
+        arrow_function_expression/6,
         yield_expression/1,
         generator_expression/3,
         comprehension_expression/3,
@@ -162,7 +162,7 @@
                               | generator_expression_node()
                               | comprehension_expression_node()
                               | yield_expression_node()
-                              | arrow_expression_node()
+                              | arrow_function_expression_node()
                               | spread_element_node().
 
 -type statement_node()       :: {'__estree_node', 'Statement', PropertyFields::es_node_fields()}
@@ -193,47 +193,47 @@
 -type function_declaration_node() :: {'__estree_node', 'FunctionDeclaration', PropertyFields::es_node_fields()}.
 
 %% Expressions
--type this_expression_node()          :: {'__estree_node', 'ThisExpression', PropertyFields::es_node_fields()}.
+-type this_expression_node()           :: {'__estree_node', 'ThisExpression', PropertyFields::es_node_fields()}.
 
--type array_expression_node()         :: {'__estree_node', 'ArrayExpression', PropertyFields::es_node_fields()}.
+-type array_expression_node()          :: {'__estree_node', 'ArrayExpression', PropertyFields::es_node_fields()}.
 
--type object_expression_node()        :: {'__estree_node', 'ObjectExpression', PropertyFields::es_node_fields()}.
+-type object_expression_node()         :: {'__estree_node', 'ObjectExpression', PropertyFields::es_node_fields()}.
 
--type object_property_node()          :: {'__estree_node', 'Property', PropertyFields::es_node_fields()}.
+-type object_property_node()           :: {'__estree_node', 'Property', PropertyFields::es_node_fields()}.
 
--type function_expression_node()      :: {'__estree_node', 'FunctionExpression', PropertyFields::es_node_fields()}.
+-type function_expression_node()       :: {'__estree_node', 'FunctionExpression', PropertyFields::es_node_fields()}.
 
--type sequence_expression_node()      :: {'__estree_node', 'SequenceExpression', PropertyFields::es_node_fields()}.
+-type sequence_expression_node()       :: {'__estree_node', 'SequenceExpression', PropertyFields::es_node_fields()}.
 
--type unary_expression_node()         :: {'__estree_node', 'UnaryExpression', PropertyFields::es_node_fields()}.
+-type unary_expression_node()          :: {'__estree_node', 'UnaryExpression', PropertyFields::es_node_fields()}.
 
--type assignment_expression_node()    :: {'__estree_node', 'AssignmentExpression', PropertyFields::es_node_fields()}.
+-type assignment_expression_node()     :: {'__estree_node', 'AssignmentExpression', PropertyFields::es_node_fields()}.
 
--type binary_expression_node()        :: {'__estree_node', 'BinaryExpression', PropertyFields::es_node_fields()}.
+-type binary_expression_node()         :: {'__estree_node', 'BinaryExpression', PropertyFields::es_node_fields()}.
 
--type update_expression_node()        :: {'__estree_node', 'UpdateExpression', PropertyFields::es_node_fields()}.
+-type update_expression_node()         :: {'__estree_node', 'UpdateExpression', PropertyFields::es_node_fields()}.
 
--type logical_expression_node()       :: {'__estree_node', 'LogicalExpression', PropertyFields::es_node_fields()}.
+-type logical_expression_node()        :: {'__estree_node', 'LogicalExpression', PropertyFields::es_node_fields()}.
 
--type conditional_expression_node()   :: {'__estree_node', 'ConditionalExpression', PropertyFields::es_node_fields()}.
+-type conditional_expression_node()    :: {'__estree_node', 'ConditionalExpression', PropertyFields::es_node_fields()}.
 
--type new_expression_node()           :: {'__estree_node', 'NewExpression', PropertyFields::es_node_fields()}.
+-type new_expression_node()            :: {'__estree_node', 'NewExpression', PropertyFields::es_node_fields()}.
 
--type call_expression_node()          :: {'__estree_node', 'CallExpression', PropertyFields::es_node_fields()}.
+-type call_expression_node()           :: {'__estree_node', 'CallExpression', PropertyFields::es_node_fields()}.
 
--type member_expression_node()        :: {'__estree_node', 'MemberExpression', PropertyFields::es_node_fields()}.
+-type member_expression_node()         :: {'__estree_node', 'MemberExpression', PropertyFields::es_node_fields()}.
 
--type generator_expression_node()     :: {'__estree_node', 'GeneratorExpression', PropertyFields::es_node_fields()}.
+-type generator_expression_node()      :: {'__estree_node', 'GeneratorExpression', PropertyFields::es_node_fields()}.
 
--type comprehension_expression_node() :: {'__estree_node', 'ComprehensionExpression', es_node_fields()}.
+-type comprehension_expression_node()  :: {'__estree_node', 'ComprehensionExpression', es_node_fields()}.
 
--type comprehension_if_node()         :: {'__estree_node', 'ComprehensionIf', PropertyFields::es_node_fields()}.
+-type comprehension_if_node()          :: {'__estree_node', 'ComprehensionIf', PropertyFields::es_node_fields()}.
 
--type comprehension_block_node()      :: {'__estree_node', 'ComprehensionBlock', PropertyFields::es_node_fields()}.
+-type comprehension_block_node()       :: {'__estree_node', 'ComprehensionBlock', PropertyFields::es_node_fields()}.
 
--type yield_expression_node()         :: {'__estree_node', 'YieldExpression', PropertyFields::es_node_fields()}.
+-type yield_expression_node()          :: {'__estree_node', 'YieldExpression', PropertyFields::es_node_fields()}.
 
--type arrow_expression_node()         :: {'__estree_node', 'ArrowExpression', PropertyFields::es_node_fields()}.
+-type arrow_function_expression_node() :: {'__estree_node', 'ArrowExpression', PropertyFields::es_node_fields()}.
 
 %% Statements
 -type empty_statement_node()       :: {'__estree_node', 'EmptyStatement', PropertyFields::es_node_fields()}.
@@ -318,7 +318,7 @@
     comprehension_if_node/0,
     comprehension_block_node/0,
     yield_expression_node/0,
-    arrow_expression_node/0,
+    arrow_function_expression_node/0,
     empty_statement_node/0,
     expression_statement_node/0,
     block_statement_node/0,
@@ -599,14 +599,14 @@ function_expression(Identifier, Params, Body, Expression) ->
                                  {"expression", Expression}]).
 
 %% Generates an arrow expression
--spec arrow_expression([identifier_node()],
+-spec arrow_function_expression([identifier_node()],
                        [expression_node()],
                        identifier_node() | 'null',
                        block_statement_node() | expression_node(),
                        boolean(),
-                       boolean()) -> arrow_expression_node().
-arrow_expression(Params, Defaults, Rest, Body, IsGenerator, IsExpression) ->
-    update_record(expression(), [{"type", <<"ArrowExpression">>},
+                       boolean()) -> arrow_function_expression_node().
+arrow_function_expression(Params, Defaults, Rest, Body, IsGenerator, IsExpression) ->
+    update_record(expression(), [{"type", <<"ArrowFunctionExpression">>},
                                  {"params", Params},
                                  {"defaults", Defaults},
                                  {"rest", Rest},

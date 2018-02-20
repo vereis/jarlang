@@ -16,3 +16,4 @@ etesting/*
 .log
 ### END - Erlang Stuff ###
 node_modules
+jsbin/*

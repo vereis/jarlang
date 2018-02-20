@@ -1,28 +1,51 @@
 const io = function () {
     'use_strict';
     const exports = {
-        
+
         'format': function () {
+            let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
-            case 1:
-                return functions['format/1'](...arguments);
-                break;
-            case 2:
-                return functions['format/2'](...arguments);
-                break;
+                case 1:
+                    if (Process.isProcess(this)) {
+                        return functions['format/1'].bind(this)(...args);
+                    } else {
+                        return jrts.spawn(function() {
+                            return functions['format/1'].bind(this)(...args);
+                        });
+                    }
+                    break;
+                case 2:
+                    if (Process.isProcess(this)) {
+                        return functions['format/2'].bind(this)(...args);
+                    } else {
+                        return jrts.spawn(function() {
+                            return functions['format/2'].bind(this)(...args);
+                        });
+                    }
             }
             throw '** exception error: undefined function' + ('format' + ('/' + arguments.length));
         },
-        
-        
+
         'module_info': function () {
+            let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
-            case 0:
-                return functions['module_info/0'](...arguments);
-                break;
-            case 1:
-                return functions['module_info/1'](...arguments);
-                break;
+                case 0:
+                    if (Process.isProcess(this)) {
+                        return functions['module_info/0'].bind(this)(...args);
+                    } else {
+                        return jrts.spawn(function() {
+                            return functions['module_info/0'].bind(this)(...args);
+                        });
+                    }
+                    break;
+                case 1:
+                    if (Process.isProcess(this)) {
+                        return functions['module_info/1'].bind(this)(...args);
+                    } else {
+                        return jrts.spawn(function() {
+                            return functions['module_info/1'].bind(this)(...args);
+                        });
+                    }
             }
             throw '** exception error: undefined function' + ('module_info' + ('/' + arguments.length));
         }
@@ -36,12 +59,12 @@ const io = function () {
                 cols = process.stdout.columns;
             }
 
-            return new Tuple(new Atom("ok"), new ErlNumber(cols));
+            return new Tuple(new Atom("ok"), new Int(cols));
         },
         'columns/1': function (_cor0) {
             return this['columns/0']();
         },
-        
+
         'format/1': function (_cor0) {
             console.log(_cor0.toString());
             return new Atom("ok");
@@ -144,7 +167,7 @@ const io = function () {
                 rows = process.stdout.rows;
             }
 
-            return new Tuple(new Atom("ok"), new ErlNumber(rows));
+            return new Tuple(new Atom("ok"), new Int(rows));
         },
         'rows/1': function (_cor0) {
             return this['rows/0']();

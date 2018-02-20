@@ -23,6 +23,7 @@ Jarlang is still in development and can't at this time can only transpile trivia
 3) Get required NodeJS packages with the command ```npm install```
 4) Run the ```make``` or ```make debug``` commands which will build either the release build of Jarlang or the debug build of Jarlang respectively. 
 5) Run ```jarlang``` with the command ```ebin/jarlang``` or ```edebug/jarlang``` followed by paths to erlang files to compile into JavaScript. Additional info is available if you run the command ```jarlang -h```.
+6) Add jarlang.js to your webpage and whatever erlang code you've transpiled and hope it all works out :)
 
 ### Automatic Testing
 Run the command ```make test``` which will compile the project into the ```etesting``` directory and run the following tests:

@@ -20,6 +20,7 @@ OUTDIR = ebin
 DEBUGDIR = edebug
 TESTDIR = etesting
 UTILDIR = util
+JSDIR = jsbin
 
 # Utility Variables
 DIALYZER = $(shell which dialyzer)
@@ -27,6 +28,8 @@ ELVIS = $(UTILDIR)/elvis rock --config $(UTILDIR)/elvis.config
 ERLPKG = $(UTILDIR)/erlpkg
 STDOUT = &1
 DEVNULL = /dev/null
+GULP = ./node_modules/.bin/gulp
+JSLINT = $(GULP) lint
 
 # Colors
 RED = \033[0;31m
@@ -46,12 +49,14 @@ release:
 	@ echo "    Any warnings or errors will stop the build."
 	$(call compile, $(ERLFLAGS), $(OUTDIR), $(GREEN), $(DEVNULL))
 	$(call package, $(OUTDIR), $(GREEN))
+	$(call gulp, $(GREEN), $(OUTDIR), default)
 
 nonstrict:
 	@ echo "$(GREEN)==> Building RELEASE NONSTRICT$(NORMAL)"
 	@ echo "    Any warnings or errors will be ignored during build, if they can be."
 	$(call compile, $(ERLFLAGS_NONSTRICT), $(OUTDIR), $(GREEN), $(STDOUT))
 	$(call package, $(OUTDIR), $(GREEN))
+	$(call gulp, $(GREEN), $(OUTDIR), default)
 
 debug:
 	@ echo "$(BLUE)==> Building DEBUG$(NORMAL)"
@@ -59,6 +64,7 @@ debug:
 	@ echo "    Debug macro enabled."
 	$(call compile, $(ERLFLAGS_DEBUG), $(DEBUGDIR), $(BLUE), $(STDOUT))
 	$(call package, $(DEBUGDIR), $(BLUE))
+	$(call gulp, $(BLUE), $(DEBUGDIR), es6)
 
 test:
 	@ echo "$(CYAN)==> Building TEST$(NORMAL)"
@@ -66,11 +72,27 @@ test:
 	@ echo "    Debug macro enabled."
 	@ echo "    Test macro enabled."
 	$(call compile, $(ERLFLAGS_TEST), $(TESTDIR), $(CYAN), $(STDOUT))
+	$(call gulp, $(CYAN), $(TESTDIR), es6)
+
+es6:
+	@ echo "$(GREEN)==> Building Jarlang Browser Runtime (ES6+)$(NORMAL)"
+	$(call gulp, $(GREEN), $(JSDIR), es6)
+
+es5:
+	@ echo "$(BLUE)==> Building Jarlang Browser Runtime (ES5)$(NORMAL)"
+	$(call gulp, $(BLUE), $(JSDIR), es5)
+
+min:
+	@ echo "$(CYAN)==> Building Jarlang Browser Runtime (MINIFIED)$(NORMAL)"
+	$(call gulp, $(CYAN), $(JSDIR), min)
 
 .PHONY: lint
 lint:
-	@ echo "$(PURPLE)==> Linting Project with Elvis$(NORMAL)"
+	@ echo "$(PURPLE)==> Linting Erlang Project with Elvis$(NORMAL)"
 	@ $(ELVIS) || true
+	@ echo "    ok"
+	@ echo "$(PURPLE)==> Linting JS Project with JSHint$(NORMAL)"
+	@ $(JSLINT) || true
 	@ echo "    Done\n"
 
 .PHONY: dialyze
@@ -104,6 +126,9 @@ clean:
 	@ rm -rf $(TESTDIR)
 	@ echo "==> Removing $(TESTDIR)/"
 	@ echo "    Done"
+	@ rm -rf $(JSDIR)
+	@ echo "==> Removing $(JSDIR)/"
+	@ echo "    Done"
 	@ echo "==> Cleaned\n$(NORMAL)"
 
 # ========================= #
@@ -117,7 +142,7 @@ define compile
 	@ $(eval PIPE_TO = $(4))
 
 	@ mkdir -p $(OUTPUT_DIR)
-	@ rm -f $(OUTPUT_DIR)/*
+	@ rm -rf $(OUTPUT_DIR)/*
 
 	@ echo "$(COLOR)==> Compiling Library Files$(RED)"
 	@ $(ERLC) $(COMPILE_MODE) $(OUTPUT_DIR) $(LIBDIR)/*.erl >$(PIPE_TO)
@@ -132,6 +157,8 @@ define compile
 	@ $(JSMINIFY) $(JSMINIFYFLAGS) $(LIBDIR)/*.js $(OUTPUT_DIR) 2>$(DEVNULL) || true
 	@ echo "$(NORMAL)    Done"
 
+	@ $(call escodegen, $(COLOR), $(OUTPUT_DIR))
+
 	@ echo "$(COLOR)==> Compiling complete in: './$(OUTPUT_DIR)/'$(NORMAL)"
 	@ echo "    Done\n"
 endef
@@ -140,12 +167,13 @@ define package
 	@ $(eval OUTPUT_DIR = $(1))
 	@ $(eval COLOR = $(2))
 	@ echo "$(COLOR)==> Creating erlpkg package in './$(OUTPUT_DIR)/'$(NORMAL)"
-	@ $(ERLPKG) $(OUTPUT_DIR)/*.beam $(OUTPUT_DIR)/*.js node_modules/ -e jarlang -o $(OUTPUT_DIR)/jarlang
+	@ cd $(OUTPUT_DIR); ../$(ERLPKG) *.beam *.js node_modules -e jarlang -o jarlang
 	@ chmod +x $(OUTPUT_DIR)/jarlang
 
 	@ echo "$(COLOR)==> Cleaning directory './$(OUTPUT_DIR)/'$(NORMAL)"
 	@ rm $(OUTPUT_DIR)/*.beam
 	@ rm $(OUTPUT_DIR)/*.js
+	@ rm -rf $(OUTPUT_DIR)/node_modules
 	@ echo "    Done\n"
 
 	@ echo "$(COLOR)==> Packaging complete in: './$(OUTPUT_DIR)/'$(NORMAL)"
@@ -160,4 +188,45 @@ define dialyze
 
 	@ echo "$(COLOR)==> Dialyzing complete in: './$(TARGET_DIR)/'$(NORMAL)"
 	@ echo "    Done\n"
+endef
+
+define gulp
+	@ $(eval COLOR = $(1))
+	@ $(eval TARGET_DIR = $(2))
+	@ $(eval GULPTASK = $(3))
+	@ mkdir -p $(TARGET_DIR)
+	@ echo "$(COLOR)==> Running GULP tasks$(NORMAL)"
+	@ $(GULP) $(GULPTASK)
+	@ echo "$(COLOR)==> Writing JS runtime to location: './$(TARGET_DIR)'$(NORMAL)"
+	@ mv gulpbuild/* $(TARGET_DIR)/
+	@ rm -rf gulpbuild/
+	@ echo "    ok"
+	@ echo "$(COLOR)==> Writing HTML Template: './$(TARGET_DIR)'$(NORMAL)"
+	@ echo "<html><head><script src=\"jarlang.js\"></script></head></html>" > $(TARGET_DIR)/jarlang.html
+	@ echo "    Done\n"
+endef
+
+define escodegen
+	@ $(eval COLOR = $(1))
+	@ $(eval TARGET_DIR = $(2))
+	@ echo "$(COLOR)==> Building ESCODEGEN node modules for packaging$(NORMAL)"
+	@ mkdir -p $(TARGET_DIR)/node_modules
+	@ echo "$(COLOR)==> Processing ESPRIMA$(NORMAL)"
+	@ cp -r node_modules/esprima $(TARGET_DIR)/node_modules/esprima
+	@ echo "    ok"	
+	@ echo "$(COLOR)==> Processing ESTRAVERSE$(NORMAL)"
+	@ cp -r node_modules/estraverse $(TARGET_DIR)/node_modules/estraverse
+	@ echo "    ok"	
+	@ echo "$(COLOR)==> Processing ESUTILS$(NORMAL)"
+	@ cp -r node_modules/esutils $(TARGET_DIR)/node_modules/esutils
+	@ echo "    ok"	
+	@ echo "$(COLOR)==> Processing OPTIONATOR$(NORMAL)"
+	@ cp -r node_modules/optionator $(TARGET_DIR)/node_modules/optionator
+	@ echo "    ok"	
+	@ echo "$(COLOR)==> Processing SOURCE-MAP$(NORMAL)"
+	@ cp -r node_modules/source-map $(TARGET_DIR)/node_modules/source-map
+	@ echo "    ok"	
+	@ echo "$(COLOR)==> Processing ESCODEGEN$(NORMAL)"
+	@ cp -r node_modules/escodegen $(TARGET_DIR)/node_modules/escodegen
+	@ echo "    ok"	
 endef
