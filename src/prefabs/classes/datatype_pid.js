@@ -54,6 +54,8 @@ const Pid = (() => {
                 this.id_a = Pid[rng](0, 32767); // Max is 15 bits
                 this.id_b = Pid[rng](0, 7);     // Max is 3 bits
             }
+
+            this.precedence = 5;
         }
 
         getValue() {

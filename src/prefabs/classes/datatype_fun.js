@@ -6,6 +6,7 @@ const Fun = (() => {
     return class Fun extends ErlangDatatype {
         constructor() {
             super();
+            this.precedence = 3;
         }
 
         getValue() {

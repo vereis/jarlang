@@ -7,6 +7,7 @@ const Float = (() => {
         constructor(val) {
             super();
             this.value = val instanceof BigNumber ? val : new BigNumber(val);
+            this.precedence = 0;
         }
 
         toString() {

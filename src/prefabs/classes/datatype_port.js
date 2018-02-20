@@ -6,6 +6,7 @@ const Port = (() => {
     return class Port extends ErlangDatatype {
         constructor() {
             super();
+            this.precedence = 4;
         }
 
         getValue() {

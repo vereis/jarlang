@@ -7,6 +7,7 @@ const Map = (() => {
         constructor(val) {
             super();
             this.value = (val.constructor.name === "Object") ? val : {};
+            this.precedence = 7;
         }
 
         get(key) {

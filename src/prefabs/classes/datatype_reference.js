@@ -10,6 +10,7 @@ const Reference = (() => {
         constructor() {
             super();
             this.value = ++refCount;
+            this.precedence = 2;
         }
 
         toString() {

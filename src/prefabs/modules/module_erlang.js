@@ -1054,217 +1054,23 @@ const erlang = function () {
 
     //returns negative if _cor1 evaluates to less than _cor0, returns 0 if they evaluate equal. Magnitude is not representative of anything
     function compare(_cor1, _cor0) {
-        if (_cor1 instanceof Int || _cor1 instanceof Float) {
-            if (_cor0 instanceof Int || _cor0 instanceof Float) {
-                return _cor1.subtract(_cor0);
+        if (ErlangDatatype.isErlangDatatype(_cor1) && ErlangDatatype.isErlangDatatype(_cor0)) {
+            const isNumber_cor1 = Int.isInt(_cor1) || Float.isFloat(_cor1);
+            const isNumber_cor0 = Int.isInt(_cor0) || Float.isFloat(_cor0);
+            if (isNumber_cor1 && isNumber_cor0) {
+                return _cor1.greaterThan(_cor0) ?  1 :
+                       _cor1.lessThan(_cor0)    ? -1 :
+                                                   0;
             }
-
-            return -1;
-        }
-        else if (_cor1 instanceof Atom) {
-            if (_cor0 instanceof Int || _cor0 instanceof Float) {
-                return 1;
+            else {
+                // TODO: More complex list, tuple and map comparisons
+                //       http://erlang.org/doc/reference_manual/expressions.html#id80929
+                const _comparator1 = _cor1.getComparator();
+                const _comparator0 = _cor0.getComparator();
+                return _comparator1 > _comparator0 ?  1 :
+                       _comparator1 < _comparator0 ? -1 :
+                                                      0;
             }
-            else if (_cor0 instanceof Atom) {
-                if (_cor1.value < _cor0.value) {
-                    return -1;
-                }
-                else if (_cor1.value > _cor0.value) {
-                    return 1;
-                }
-                else {
-                    return 0;
-                }
-            }
-
-            return -1;
-        }
-        else if (_cor1 instanceof Reference) {
-            if (_cor0 instanceof Int || _cor0 instanceof Float || _cor0 instanceof Atom) {
-                return 1;
-            }
-            else if (_cor0 instanceof Reference) {
-                if (_cor1.value < _cor0.value) {
-                    return -1;
-                }
-                else if (_cor1.value > _cor0.value) {
-                    return 1;
-                }
-                else {
-                    return 0;
-                }
-            }
-
-            return -1;
-        }
-        else if (_cor1 instanceof Fun) {
-            if (_cor0 instanceof Int ||
-                _cor0 instanceof Float ||
-                _cor0 instanceof Atom ||
-                _cor0 instanceof Reference) {
-                return 1;
-            }
-            else if (_cor0 instanceof Fun) {
-                throw "Fun is not implemented yet";
-            }
-
-            return -1;
-        }
-        else if (_cor1 instanceof Port) {
-            if (_cor0 instanceof Int ||
-                _cor0 instanceof Float ||
-                _cor0 instanceof Atom ||
-                _cor0 instanceof Reference ||
-                _cor0 instanceof Fun) {
-                return 1;
-            }
-            else if (_cor0 instanceof Port) {
-                throw "Port is not implemented yet";
-            }
-
-            return -1;
-        }
-        else if (_cor1 instanceof Pid) {
-            if (_cor0 instanceof Int ||
-                _cor0 instanceof Float ||
-                _cor0 instanceof Atom ||
-                _cor0 instanceof Reference ||
-                _cor0 instanceof Fun ||
-                _cor0 instanceof Port) {
-                return 1;
-            }
-            else if (_cor0 instanceof Pid) {
-                throw "Pid is not implemented yet";
-            }
-
-            return -1;
-        }
-        else if (_cor1 instanceof Tuple) {
-            if (_cor0 instanceof Int ||
-                _cor0 instanceof Float ||
-                _cor0 instanceof Atom ||
-                _cor0 instanceof Reference ||
-                _cor0 instanceof Fun ||
-                _cor0 instanceof Port ||
-                _cor0 instanceof Pid) {
-                return 1;
-            }
-            else if (_cor0 instanceof Tuple) {
-                if (_cor1.size() < _cor0.size()) {
-                    return -1;
-                }
-                else if (_cor1.size() > _cor0.size()) {
-                    return 1;
-                }
-                else {
-                    let len = Math.min(_cor1.size(), _cor0.size());
-                    for (let i = 0; i < len; i++) {
-                        let c = compare(_cor1.nth(i), _cor0.nth(i));
-                        if (c == 0) {
-                            continue;
-                        }
-                        else {
-                            return c;
-                        }
-                    }
-
-                    return 0;
-                }
-            }
-
-            return -1;
-        }
-        else if (_cor1 instanceof Map) {
-            if (_cor0 instanceof Int ||
-                _cor0 instanceof Float ||
-                _cor0 instanceof Atom ||
-                _cor0 instanceof Reference ||
-                _cor0 instanceof Fun ||
-                _cor0 instanceof Port ||
-                _cor0 instanceof Pid ||
-                _cor0 instanceof Tuple) {
-                return 1;
-            }
-            else if (_cor0 instanceof Map) {
-                throw "Map is not implemented yet";
-            }
-
-            return -1;
-        }
-        else if (_cor1 instanceof List) {
-            if (_cor0 instanceof Int ||
-                _cor0 instanceof Float ||
-                _cor0 instanceof Atom ||
-                _cor0 instanceof Reference ||
-                _cor0 instanceof Fun ||
-                _cor0 instanceof Port ||
-                _cor0 instanceof Pid ||
-                _cor0 instanceof Tuple ||
-                _cor0 instanceof Map) {
-                return 1;
-            }
-            else if (_cor0 instanceof List) {
-                if (List.isEmptyList(_cor1)) {
-                    if (!List.isEmptyList(_cor0)) {
-                        return -1;
-                    }
-
-                    return 0;
-                }
-                else {
-                    if (List.isEmptyList(_cor0)) {
-                        return 1;
-                    }
-                    else {
-                        let len = Math.min(_cor1.size(), _cor0.size());
-                        for (let i = 0; i < len; i++) {
-                            let c = compare(_cor1.nth(i), _cor0.nth(i));
-                            if (c == 0) {
-                                continue;
-                            }
-                            else {
-                                return c;
-                            }
-                        }
-                        //if one list is the sublist of the other then the shortest list goes first
-                        if (_cor1.size() < _cor0.size()) {
-                            return -1;
-                        }
-                        else if (_cor1.size() > _cor0.size()) {
-                            return 1;
-                        }
-
-                        return 0;
-                    }
-                }
-            }
-            return -1;
-        }
-        else if (_cor1 instanceof BitString) {
-            if (_cor0 instanceof Int ||
-                _cor0 instanceof Float ||
-                _cor0 instanceof Atom ||
-                _cor0 instanceof Reference ||
-                _cor0 instanceof Fun ||
-                _cor0 instanceof Port ||
-                _cor0 instanceof Pid ||
-                _cor0 instanceof Tuple ||
-                _cor0 instanceof Map ||
-                _cor0 instanceof List) {
-                return 1;
-            }
-            else if (_cor0 instanceof BitString) {
-                throw "BitString is not implemented yet";
-            }
-
-            return -1;
-        }
-
-        //If _cor1 is not an Erlang datatype wrapper then fail over to js comparisons and hope for the best
-        else {
-            if (_cor1 < _cor0) return -1;
-            else if (_cor1 > _cor0) return 1;
-            else return 0;
         }
     }
 

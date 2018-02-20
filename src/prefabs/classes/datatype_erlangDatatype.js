@@ -31,6 +31,10 @@ const ErlangDatatype = (() => {
             return false;
         }
 
+        getComparator() {
+            return this.precedence;
+        }
+
         static isErlangDatatype(a) {
             return a instanceof ErlangDatatype;
         }

@@ -11,6 +11,8 @@ const Atom = (() => {
         constructor(name) {
             super();
             this.value = name;
+            this.precedence = 1;
+
             this[registerAtom]();
         }
 

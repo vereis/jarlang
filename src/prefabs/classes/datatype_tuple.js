@@ -16,6 +16,7 @@ const Tuple = (() => {
             this.next = car !== undefined ? new Tuple(...cdr) : undefined;
         
             this.iterator = this;
+            this.precedence = 6;
         }
 
         nth(n) {

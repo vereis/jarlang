@@ -25,6 +25,7 @@ const BitString = (() => {
             });
 
             this.value = Uint8Array.of(...tmp);
+            this.precedence = 10;
         }
 
         toString() {

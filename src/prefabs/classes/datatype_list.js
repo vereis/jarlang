@@ -30,6 +30,7 @@ const List = (() => {
         
             this.next = car !== undefined ? new List(...cdr) : undefined;
             this.iterator = this;
+            this.precedence = 9;
         }
 
         [nthNode](n) {
