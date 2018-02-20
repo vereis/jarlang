@@ -1065,11 +1065,38 @@ const erlang = function () {
             else {
                 // TODO: More complex list, tuple and map comparisons
                 //       http://erlang.org/doc/reference_manual/expressions.html#id80929
-                const _comparator1 = _cor1.getComparator();
-                const _comparator0 = _cor0.getComparator();
-                return _comparator1 > _comparator0 ?  1 :
-                       _comparator1 < _comparator0 ? -1 :
-                                                      0;
+                if (List.isList(_cor1) && List.isList(_cor0)) {
+                    const _size1 = _cor1.size();
+                    const _size0 = _cor0.size();
+                    return _size1 > _size0 ?  1 :
+                           _size1 < _size0 ? -1 :
+                           (() => {
+                               const _arr1 = [..._cor1];
+                               const _arr0 = [..._cor0];
+                               let res = 0;
+                               for (let i = 0; i < _size1; i++) {
+                                   res = compare(_arr1[i], _arr0[i]);
+                                   if (res !== 0) {
+                                       break;
+                                   }
+                               }
+
+                               return res;
+                           })();
+                }
+                else if (Tuple.isTuple(_cor1) && Tuple.isTuple(_cor0)) {
+
+                }
+                else if (Map.isMap(_cor1) && Map.isMap(_cor0)) {
+
+                }
+                else {
+                    const _comparator1 = _cor1.getComparator();
+                    const _comparator0 = _cor0.getComparator();
+                    return _comparator1 > _comparator0 ?  1 :
+                           _comparator1 < _comparator0 ? -1 :
+                                                          0;
+                }
             }
         }
     }

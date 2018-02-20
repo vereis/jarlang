@@ -40,11 +40,11 @@ const jrts = (function (secondsPerTick) {
                 }
                 break;
             case "string":
-                erlVar = new List(...(variable.split("").map(char => char.charCodeAt(0))));
+                erlVar = new List(...(variable.split("").map(char => new Int(char.charCodeAt(0)))));
                 break;
             case "object":
                 if (Array.isArray(variable)) {
-                    erlVar = new List(...variable);
+                    erlVar = new List(...(variable.map(jsToErlang)));
                 } else if (variable.constructor.name === "Uint8Array") {
                     erlVar = new BitString(...variable);
                 } else if (variable.constructor.name === "Object") {
@@ -61,7 +61,7 @@ const jrts = (function (secondsPerTick) {
 
     function erlangToJs(variable) {
         let jsVar = null;
-        switch (variable.constructor.name) {
+        switch (variable !== undefined ? variable.constructor.name : undefined) {
             case "Atom":
                 jsVar = variable.value;
                 break;
