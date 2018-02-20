@@ -1063,9 +1063,25 @@ const erlang = function () {
                                                    0;
             }
             else {
-                // TODO: More complex list, tuple and map comparisons
-                //       http://erlang.org/doc/reference_manual/expressions.html#id80929
+                // Lists are compared element by element regardless of size
                 if (List.isList(_cor1) && List.isList(_cor0)) {
+                    return (() => {
+                                const _arr1 = [..._cor1];
+                                const _arr0 = [..._cor0];
+                                const bound = Math.max(_arr1.length, _arr0.length);
+                                let res = 0;
+                                for (let i = 0; i < bound; i++) {
+                                    res = compare(_arr1[i] || 0, _arr0[i] || 0);
+                                    if (res !== 0) {
+                                        break;
+                                    }
+                                }
+ 
+                                return res;
+                           })();
+                }
+                // Tuples are first compared by length, before element by element comparison is used
+                else if (Tuple.isTuple(_cor1) && Tuple.isTuple(_cor0)) {
                     const _size1 = _cor1.size();
                     const _size0 = _cor0.size();
                     return _size1 > _size0 ?  1 :
@@ -1084,11 +1100,30 @@ const erlang = function () {
                                return res;
                            })();
                 }
-                else if (Tuple.isTuple(_cor1) && Tuple.isTuple(_cor0)) {
-
-                }
+                // Maps need to be compared by size, then compared by keys (ascending) then by value
                 else if (Map.isMap(_cor1) && Map.isMap(_cor0)) {
-
+                    const _keys1 = Object.keys(_cor1.getValue());
+                    const _keys0 = Object.keys(_cor0.getValue());
+                    const _size1 = _keys1.length;
+                    const _size0 = _keys0.length;
+                    return _size1 > _size0 ?  1 :
+                           _size1 < _size0 ? -1 :
+                           (() => {
+                               let res = 0;
+                               for (let i = 0; i < _size1; i++) {
+                                   res = compare(_keys1[i], _keys0[i]);
+                                   if (res !== 0) {
+                                       return res;
+                                   }
+                               }
+                               for (i = 0; i < _size1; i++) {
+                                   res = compare(_cor1[_keys1[i]], _cor0[_keys0[i]]);
+                                   if (res !== 0) {
+                                       break;
+                                   }
+                               }
+                               return res;
+                           })();
                 }
                 else {
                     const _comparator1 = _cor1.getComparator();
