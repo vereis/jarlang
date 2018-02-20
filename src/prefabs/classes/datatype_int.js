@@ -27,36 +27,36 @@ const Int = (() => {
             if (val instanceof Float) {
                 return new Float(this.value.plus(val.getValue()));
             }
-            return new Int(this.value.plus(val instanceof Int ? val.getValue() : val);
+            return new Int(this.value.plus(val instanceof Int ? val.getValue() : val));
         }
 
         subtract(val) {
             if (val instanceof Float) {
                 return new Float(this.value.minus(val.getValue()));
             }
-            return new Int(this.value.minus(val instanceof Int ? val.getValue() : val);
+            return new Int(this.value.minus(val instanceof Int ? val.getValue() : val));
         }
 
         multiply(val) {
             if (val instanceof Float) {
                 return new Float(this.value.times(val.getValue()));
             }
-            return new Int(this.value.times(val instanceof Int ? val.getValue() : val);
+            return new Int(this.value.times(val instanceof Int ? val.getValue() : val));
         }
 
         divide(val) {
-            if (val instanceof Float) {
-                return new Float(this.value.div(val.getValue()));
+            if (val instanceof Float || !this.remainder(val).equals(0)) {
+                return new Float(this.value.div((val instanceof Int || val instanceof Float) ? val.getValue() : val));
             }
-            return new Int(this.value.div(val instanceof Int ? val.getValue() : val);
+            return new Int(this.value.div(val instanceof Int ? val.getValue() : val));
         }
 
         intDivide(val) {
-            return new Int(this.value.divToInt(val instanceof Int ? val.getValue() : val);
+            return new Int(this.value.divToInt(val instanceof Int ? val.getValue() : val));
         }
 
-        remainder() {
-            return new Int(this.value.mod(val instanceof Int ? val.getValue() : val);
+        remainder(val) {
+            return new Int(this.value.mod(val instanceof Int ? val.getValue() : val));
         }
 
         equals(val) {
