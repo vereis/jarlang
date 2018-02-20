@@ -235,7 +235,7 @@ parse_cons(noreturn,Params,{c_cons,_,A,B})->
 
 %% Parses a c_cons chain.
 parse_cons_chain(noreturn,Params,{c_cons,[],A,B={c_cons,_,C,D}})->
-    {Values,End} = parse_cons_chain(noreturn,Params,B),
+    {Values,End} = parse_cons_chain(noreturn,[],B),
     {[parse_node(noreturn,Params,A)|Values],End};
 parse_cons_chain(noreturn,Params,{c_cons,[],A,B})->
     {[parse_node(noreturn,Params,A)],parse_node(noreturn,Params,B)}.
@@ -408,7 +408,10 @@ assemble_case_condition(Params,Vars,Match,Evaluate)->
                 {V={c_var,_,ParamName},M={c_literal,_,Literal}}->
                     {DefL1,
                     lists:append(MatchL,[
-                        parse_call(noreturn,Params,{c_call, a, {a, a, erlang}, {a, a, 'match'}, [M,V]})
+                        estree:call_expression(
+                            estree:member_expression(parse_node(noreturn,Params,V),estree:identifier(<<"match">>),false),
+                            [parse_node(noreturn,Params,M)]
+                        )
                     ]),DefL2};
 
                 {V={c_var,_,ParamName},M={c_cons,_,H,T}}->
@@ -416,7 +419,10 @@ assemble_case_condition(Params,Vars,Match,Evaluate)->
                         recurse_var_declaration(M)
                     ),
                     lists:append(MatchL,[
-                        parse_call(noreturn,Params,{c_call, a, {a, a, erlang}, {a, a, 'match'}, [M,V]})
+                        estree:call_expression(
+                            estree:member_expression(parse_node(noreturn,Params,V),estree:identifier(<<"match">>),false),
+                            [parse_node(noreturn,Params,M)]
+                        )
                     ]),
                     lists:append(DefL2,recurse_var_assignments(M,estree:identifier(atom_to_binary(ParamName,utf8))))};
 
@@ -425,7 +431,10 @@ assemble_case_condition(Params,Vars,Match,Evaluate)->
                         recurse_var_declaration(M)
                     ),
                     lists:append(MatchL,[
-                        parse_call(noreturn,Params,{c_call, a, {a, a, erlang}, {a, a, 'match'}, [M,V]})
+                        estree:call_expression(
+                            estree:member_expression(parse_node(noreturn,Params,V),estree:identifier(<<"match">>),false),
+                            [parse_node(noreturn,Params,M)]
+                        )
                     ]),
                     lists:append(DefL2,recurse_var_assignments(M,estree:identifier(atom_to_binary(ParamName,utf8))))};
 
@@ -434,7 +443,10 @@ assemble_case_condition(Params,Vars,Match,Evaluate)->
                         recurse_var_declaration(M)
                     ),
                     lists:append(MatchL,[
-                        parse_call(noreturn,Params,{c_call, a, {a, a, erlang}, {a, a, 'match'}, [M,V]})
+                        estree:call_expression(
+                            estree:member_expression(parse_node(noreturn,Params,V),estree:identifier(<<"match">>),false),
+                            [parse_node(noreturn,Params,M)]
+                        )
                     ]),
                     lists:append(DefL2,lists:append(
                         recurse_var_assignments(M,estree:identifier(atom_to_binary(ParamName,utf8))),
