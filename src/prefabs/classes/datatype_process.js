@@ -24,6 +24,26 @@ const Process = (() => {
             return this.pid.toString();
         }
 
+        sendMessage(msg) {
+            return this.messages.push(msg);
+        }
+
+        getMessages() {
+            return this.messages;
+        }
+
+        popMessages() {
+            return this.messages.pop();
+        }
+
+        shiftMessages() {
+            return this.messages.shift();
+        }
+
+        filterMessages(lambda) {
+            return this.messages.filter(lambda);
+        }
+
         [registerProcess]() {
             jrts.pids[this.pid.toString()] = jrts.processes.length;
             jrts.processes.push(this);
@@ -34,7 +54,7 @@ const Process = (() => {
         }
 
         static sendMessage(pid, msg) {
-            return Process.getProcess(pid).messages.push(msg);
+            return Process.getProcess(pid).sendMessage(msg);
         }
 
         static getProcess(pid) {
