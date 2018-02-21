@@ -28,20 +28,27 @@ const Process = (() => {
             return this.messages.push(msg);
         }
 
-        getMessages() {
-            return this.messages;
+        matchMessages(lambda) {
+            const unmatchedMessages = [];
+            const matchedMessages = this.messages.filter((message) => {
+                let predicatePasses = lambda(message);
+                if (predicatePasses) {
+                    return true;
+                }
+                else {
+                    unmatchedMessages.push(message);
+                }
+            });
+            this.messages = unmatchedMessages;
+            return matchedMessages;
         }
 
-        popMessages() {
-            return this.messages.pop();
+        setBehaviour(fn) {
+            this.lambdas.push(fn);
         }
 
-        shiftMessages() {
-            return this.messages.shift();
-        }
-
-        filterMessages(lambda) {
-            return this.messages.filter(lambda);
+        restartBehaviour() {
+            this.lambdas.push(this.currentLambda);
         }
 
         [registerProcess]() {

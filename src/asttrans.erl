@@ -485,7 +485,7 @@ assemble_case_condition(Params, Vars, Match, Evaluate) ->
                         encapsulate_expressions(
                             list_check(
                                 assemble_sequence(
-                                    estree:sequence_expression(DefL2),
+                                    estree:declaration_expression(DefL2, <<"let">>),
                                     parse_node(return, Params, Evaluate)
                                 )
                             )
