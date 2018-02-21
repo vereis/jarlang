@@ -134,6 +134,7 @@ parse_node(ReturnAtom, Params, N) ->
         c_try     -> parse_try(ReturnAtom, Params, N);
         c_primop  -> parse_primop(ReturnAtom, Params, N);
         c_letrec  -> parse_letrec(ReturnAtom, Params, N);
+        c_receive -> parse_receive(ReturnAtom, Params, N);
         c_case    -> parse_case(ReturnAtom, Params, N)
     end.
 
@@ -312,6 +313,10 @@ parse_letrec(ReturnAtom, Params, {c_letrec, _, [Func], Apply}) ->
         % ),
         parse_node(ReturnAtom, Params, Apply)
     ).
+
+
+parse_receive(ReturnAtom, Params, {c_receive,_,Clauses,Timeout,Unknown})->
+    parse_case_clauses(ReturnAtom, Params, [{c_var, [], message}], Clauses).
 
 %% Parses a c_case node.
 %% converts single var case to multi-var case format
