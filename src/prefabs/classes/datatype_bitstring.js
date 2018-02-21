@@ -12,17 +12,23 @@ const BitString = (() => {
 
             // Process arguments
             const args = [...arguments];
+            const segmentSizeLimit = 1 << 8;
 
             args.forEach((arg) => {
-                if (!Int.isInt(arg) && !List.isString(arg)) {
-                    throw `BitString: Bad argument ${arg}`;
+                if (Number.isInteger(arg)) {
+                    this.value.push(new Int(arg % segmentSizeLimit));
                 }
-
-                if (List.isString(arg)) {
-                    arg.toString().split("").forEach((c) => this.value.push(c.charCodeAt(0)));
+                else if (Int.isInt(arg)) {
+                    this.value.push(arg.remainder(segmentSizeLimit));
+                }
+                else if (typeof arg == "string") {
+                    arg.split("").forEach((c) => this.value.push(new Int(c.charCodeAt(0))));
+                }
+                else if (List.isString(arg)) {
+                    arg.toString().split("").forEach((c) => this.value.push(new Int(c.charCodeAt(0))));
                 }
                 else {
-                    this.value.push(arg.remainder(1 << 8));
+                    throw `BitString: Bad argument ${arg}`;
                 }
             });
 
@@ -32,7 +38,7 @@ const BitString = (() => {
             var l = new List(...this.getValue());
 
             if (List.isString(l)) {
-                return `<<"${l.toString()}">>`;
+                return `<<"${l}">>`;
             }
             return `<<${this.getValue().join(",")}>>`;
         }

@@ -157,10 +157,14 @@ const List = (() => {
         }
 
         static [isLatin1Char](c) {
-            if (!Number.isInteger(c)) {
-                return false;
+            if (Number.isInteger(c)) {
+                return (c >= 32 && c <= 126) || (c >= 160 && c <= 255);
             }
-            return (c >= 32 && c <= 126) || (c >= 160 && c <= 255);
+
+            if (Int.isInt(c)) {
+                return (c.greaterThanOrEq(32) && c.lessThanOrEq(126)) || (c.greaterThanOrEq(160) && c.lessThanOrEq(255));
+            }
+            return false;
         }
 
         static isString(a) {
