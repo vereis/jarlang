@@ -85,6 +85,10 @@ const Pid = (() => {
             }
         }
 
+        sendMessage(msg) {
+            return Process.getProcess(this).sendMessage(msg);
+        }
+
         static [rng](min, max) {
             min = Math.ceil(min);
             max = Math.floor(max);
