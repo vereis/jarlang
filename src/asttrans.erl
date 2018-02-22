@@ -69,18 +69,13 @@ parse_functions(Functions) ->
 parse_function({{_, _, {FunctionName, Arity}}, {_c_fun, [compiler_generated], _, _}}) ->
     {atom_to_list(FunctionName) ++ "/" ++ integer_to_list(Arity), estree:function_expression(null, [], estree:block_statement([estree:empty_statement()]), false)};
 parse_function({{_, _, {FunctionName, Arity}}, {_c_fun, _, ParamNames, Body}}) ->
-    {atom_to_list(FunctionName) ++ "/" ++ integer_to_list(Arity), estree:function_expression(
-        null,
-        tuple_list_to_identifier_list(ParamNames, tuple_list_get_vars_3(ParamNames)),
-        estree:block_statement(
-            encapsulate_expressions(
-                list_check(
-                    parse_node(return, tuple_list_get_vars_3(ParamNames), Body)
-                )
-            )
-        ),
-        false
-    )}.
+    {
+        atom_to_list(FunctionName) ++ "/" ++ integer_to_list(Arity), 
+        function_wrap(
+            tuple_list_to_identifier_list(ParamNames, tuple_list_get_vars_3(ParamNames)),
+            parse_node(return, tuple_list_get_vars_3(ParamNames), Body)
+        )
+    }.
 
 %% Helper function to determine whether a given ESTree node is a statement
 is_statement({_, Type, _}) ->
@@ -260,17 +255,10 @@ parse_try(return, Params, {c_try, _, Elem, _, _, _, _}) ->
     estree:return_statement(parse_try(noreturn, Params, {c_try, [], Elem, a, a, a, a}));
 parse_try(noreturn, Params, {c_try, _, Elem, _, _, _, _}) ->
     estree:call_expression(
-        estree:function_expression(
-            null,
+        function_wrap(
             [],
-            estree:block_statement(
-                encapsulate_expressions(
-                    list_check(
-                        parse_node(return, Params, Elem)
-                    )
-                )
-            ),
-        false),
+            parse_node(return, Params, Elem)
+        ),
     []).
     % parse_node(ReturnAtom, Params, Elem);
 
@@ -401,18 +389,11 @@ parse_case_clauses(ReturnAtom, Params, Vars, [{c_clause, _, Match, Evaluate, Con
 %% Puts together a case condition
 assemble_case_condition(Params, _, [], Evaluate) ->
     estree:call_expression(
-         estree:function_expression(
-              null,
-              [],
-              estree:block_statement(
-                encapsulate_expressions(
-                    list_check(
-                        parse_node(return, Params, Evaluate)
-                    )
-                )
-              ),
-              false),
-         []);
+        function_wrap(
+            [],
+            parse_node(return, Params, Evaluate)
+        ),
+    []);
 assemble_case_condition(Params, Vars, Match, Evaluate) ->
     {DefL1, MatchL, DefL2} = lists:foldl(
         fun(Elem, {DefL1, MatchL, DefL2}) ->
@@ -479,13 +460,17 @@ assemble_case_condition(Params, Vars, Match, Evaluate) ->
         end,
         {[], [], []},
         lists:zip(Vars, Match)),
+    case DefL2 of
+        [] -> Declaration2Actual = [];
+        _  -> Declaration2Actual = estree:variable_declaration(list_check(DefL2), <<"let">>)
+    end,
     Internal =  estree:if_statement(
                     assemble_match_calls(MatchL),
                     estree:block_statement(%consequent
                         encapsulate_expressions(
                             list_check(
                                 assemble_sequence(
-                                    estree:declaration_expression(DefL2, <<"let">>),
+                                    Declaration2Actual,
                                     parse_node(return, Params, Evaluate)
                                 )
                             )
@@ -503,11 +488,10 @@ assemble_case_condition(Params, Vars, Match, Evaluate) ->
     estree:call_expression(
         estree:call_expression(
             estree:member_expression(
-                estree:function_expression(
-                   null,
+                function_wrap(
                    [],
-                   estree:block_statement(encapsulate_expressions(list_check(InternalActual))),
-                   false),
+                   InternalActual
+                ),
                 estree:identifier(<<"bind">>),
                 false),
             [estree:this_expression()]),
@@ -671,6 +655,36 @@ tup_to_list(Tuple) -> tup_to_list(Tuple, 1, tuple_size(Tuple)).
 tup_to_list(Tuple, Pos, Size) when Pos =< Size ->
     [element(Pos, Tuple) | tup_to_list(Tuple, Pos+1, Size)];
 tup_to_list(_Tuple, _Pos, _Size) -> [].
+
+
+
+
+
+
+
+function_wrap(Identifier_list,Body_nodes) ->
+estree:function_expression(
+        null,
+        Identifier_list,
+        estree:block_statement(
+            encapsulate_expressions(
+                list_check(
+                    Body_nodes
+                )
+            )
+        ),
+        false
+    ).
+
+
+
+
+
+
+
+
+
+
 
 %rAtomToList([A|Rest]) ->
 %    [rAtomToList(A)|rAtomToList(Rest)];
