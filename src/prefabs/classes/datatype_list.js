@@ -60,7 +60,7 @@ const List = (() => {
                     // we have reached the end of the linked list
                     let isLastNode = this.iterator.next === undefined || List.isEmptyList(this.iterator.next);
                     let v = List.isList(this.iterator) ? this.iterator.value : this.iterator;
-                    
+
                     if (this.iterator === "done" || List.isEmptyList(this)) {
                         this.iterator = this;
                         return {                    

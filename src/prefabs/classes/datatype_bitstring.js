@@ -15,17 +15,14 @@ const BitString = (() => {
             const segmentSizeLimit = 1 << 8;
 
             args.forEach((arg) => {
-                if (Number.isInteger(arg)) {
+                if (typeof arg == "string" || List.isString(arg)) {
+                    arg.toString().split("").forEach((c) => this.value.push(new Int(c.charCodeAt(0))));
+                }
+                else if (Number.isInteger(arg)) {
                     this.value.push(new Int(arg % segmentSizeLimit));
                 }
                 else if (Int.isInt(arg)) {
                     this.value.push(arg.remainder(segmentSizeLimit));
-                }
-                else if (typeof arg == "string") {
-                    arg.split("").forEach((c) => this.value.push(new Int(c.charCodeAt(0))));
-                }
-                else if (List.isString(arg)) {
-                    arg.toString().split("").forEach((c) => this.value.push(new Int(c.charCodeAt(0))));
                 }
                 else {
                     throw `BitString: Bad argument ${arg}`;
