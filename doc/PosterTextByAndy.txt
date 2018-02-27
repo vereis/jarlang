@@ -1,0 +1,5 @@
+Case statements & Receive blocks
+When the Erlang compiler converts Erlang source code to Erlang AST all conditional logic is converted into a list of mutually exclusive, sequential clauses, either as case conditions or in a similar format as message receive conditions.<br>
+For the transpilation of case statements we parse the list of clauses in the Erlang AST into a list of if-else conditions. This closely matches the Erlang functionallity as each condition is evaluated in sequence, ending with a catch-all clause that the Erlang compiler will generate if necisary.<br>
+Each case clause is composed of a pattern matching condition and an evaluated condition, when parsed these are encapsulated in a function to allow for variables to be declared before use in a call to the match funciton and assigned after to be used in the evaluated portion of the clause.
+
