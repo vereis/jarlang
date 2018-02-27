@@ -4,74 +4,86 @@
 
 const Map = (() => {
     return class Map extends ErlangDatatype {
-        constructor(val) {
+        constructor(keys, values) {
             super();
-            this.value = (val.constructor.name === "Object") ? val : {};
+
+            if (Array.isArray(keys)) {
+                keys = new List(...keys);
+            }
+            if (Array.isArray(values)) {
+                values = new List(...values);
+            }
+
+            this.value = {
+                keys: keys,
+                values: values
+            };
             this.precedence = 7;
         }
 
         get(key) {
-            if (typeof key !== "string") {
-                key = JSON.stringify(key);
+            if (key instanceof ErlangDatatype) {
+                for (let i = 0; i < this.getValue().keys.size(); i++) {
+                    if (key.match(this.getValue().keys.nth(i))) {
+                        return this.getValue().values.nth(i);
+                    }
+                }
             }
-        
-            return this.getValue()[key];
+            throw "bad key"; //todo
         }
-        
+
         put(key, value) {
-            if (typeof key !== "string") {
-                key = JSON.stringify(key);
-            }
-        
-            this.value[key] = value;
+            this.value.keys = new List(...this.getValue().keys, key);
+            this.value.values = new List(...this.getValue().values, value);
         }
-        
+
         update(key, value) {
-            if (typeof key !== "string") {
-                key = JSON.stringify(key);
+            if (key instanceof ErlangDatatype) {
+                for (let i = 0; i < this.getValue().keys.size(); i++) {
+                    if (key.match(this.getValue().keys.nth(i))) {
+                        let tmp = [...this.getValue().values];
+                        tmp.splice(i, 1, value);
+                        this.value.values = new List(...tmp);
+                        return;
+                    }
+                }
             }
-        
-            if (this.value[key]) {
-                this.value[key] = value;
-            }
+            throw "bad key"; //todo
         }
-        
+
         remove(key) {
-            if (typeof key !== "string") {
-                key = JSON.stringify(key);
+            if (key instanceof ErlangDatatype) {
+                for (let i = 0; i < this.getValue().keys.size(); i++) {
+                    if (key.match(this.getValue().keys.nth(i))) {
+                        let tmp1 = [...this.getValue().keys];
+                        tmp1.splice(i, 1);
+
+                        let tmp2 = [...this.getValue().values];
+                        tmp2.splice(i, 1);
+
+                        this.value.keys = new List(...tmp1);
+                        this.value.values = new List(...tmp2);
+                        return;
+                    }
+                }
             }
-        
-            delete this.value[key];
         }
         
         size() {
-            var size = 0, 
-                k;
-        
-            for (k in this.value) {
-                if (this.value.hasOwnProperty(k)) {
-                    size++;
-                }
-            }
-        
-            return size;
+            return this.getValue().keys.size();
         }
         
         // todo: Ensure keys are ordered as they are in erlang
         toString() {
-            var pairs = [], k;
-        
-            for (let k in this.value) {
-                if (this.value.hasOwnProperty(k)) {
-                    if (Map.isMap(this.value[k])) {
-                        pairs.push(k + "=>" + this.value[k].toString());
-                    } else {
-                        pairs.push(k + "=>" + JSON.stringify(this.value[k]));
-                    }
-                }
+            let k;
+            let pairs = [];
+            let tmp1 = [...this.getValue().keys];
+            let tmp2 = [...this.getValue().values];
+
+            while (k = tmp1.shift()) {
+                pairs.push(`${k}=>${tmp2.shift()}`);
             }
-        
-            return "#{" + pairs.join(",") + "}";
+            return `#{${pairs.sort().join(", ")}}`;
         }
         
         // TODO: actually implement mapping properly

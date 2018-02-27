@@ -33,9 +33,6 @@ Run the command ```make test``` which will compile the project into the ```etest
 
 Eventually, we will need to add some rudimentary testing on the JavaScript side, as well as testing to ensure the results of running Erlang code and transpiled JavaScript code are functionally the same.
 
-## Contribution Guidelines
-Please ensure automatic testing passes, when implemented, before pushing commits. Otherwise, try to ensure you can successfully run ```make``` to build ```Jarlang``` successfully before pushing commits. Please DON'T BREAK THE BUILD.
-
 ## Acknowledgements
 - The escodegen guys for making generating JavaScript code so painless.
 - The people who documented the EStree specification. Thank you. So much.

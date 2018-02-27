@@ -60,7 +60,7 @@ const List = (() => {
                     // we have reached the end of the linked list
                     let isLastNode = this.iterator.next === undefined || List.isEmptyList(this.iterator.next);
                     let v = List.isList(this.iterator) ? this.iterator.value : this.iterator;
-                    
+
                     if (this.iterator === "done" || List.isEmptyList(this)) {
                         this.iterator = this;
                         return {                    
@@ -157,10 +157,14 @@ const List = (() => {
         }
 
         static [isLatin1Char](c) {
-            if (!Number.isInteger(c)) {
-                return false;
+            if (Number.isInteger(c)) {
+                return (c >= 32 && c <= 126) || (c >= 160 && c <= 255);
             }
-            return (c >= 32 && c <= 126) || (c >= 160 && c <= 255);
+
+            if (Int.isInt(c)) {
+                return (c.greaterThanOrEq(32) && c.lessThanOrEq(126)) || (c.greaterThanOrEq(160) && c.lessThanOrEq(255));
+            }
+            return false;
         }
 
         static isString(a) {
