@@ -21,6 +21,26 @@ const Map = (() => {
             this.precedence = 7;
         }
 
+        [Symbol.iterator]() {
+            let k,
+            tmp1 = [...this.getValue().keys],
+            tmp2 = [...this.getValue().values];
+
+            return {
+                next: () => {
+                    if (k = tmp1.shift()) {
+                        return {
+                            value: new Tuple(k, tmp2.shift()),
+                            done: false
+                        };
+                    }
+                    return {
+                        done: true
+                    };
+                }
+            };
+        }
+
         get(key) {
             if (key instanceof ErlangDatatype) {
                 for (let i = 0; i < this.getValue().keys.size(); i++) {
@@ -55,10 +75,10 @@ const Map = (() => {
             if (key instanceof ErlangDatatype) {
                 for (let i = 0; i < this.getValue().keys.size(); i++) {
                     if (key.match(this.getValue().keys.nth(i))) {
-                        let tmp1 = [...this.getValue().keys];
-                        tmp1.splice(i, 1);
+                        let tmp1 = [...this.getValue().keys],
+                        tmp2 = [...this.getValue().values];
 
-                        let tmp2 = [...this.getValue().values];
+                        tmp1.splice(i, 1);
                         tmp2.splice(i, 1);
 
                         this.value.keys = new List(...tmp1);
@@ -68,24 +88,23 @@ const Map = (() => {
                 }
             }
         }
-        
+
         size() {
             return this.getValue().keys.size();
         }
-        
+
         // todo: Ensure keys are ordered as they are in erlang
         toString() {
-            let k;
-            let pairs = [];
-            let tmp1 = [...this.getValue().keys];
-            let tmp2 = [...this.getValue().values];
+            let k, pairs = [],
+            tmp1 = [...this.getValue().keys],
+            tmp2 = [...this.getValue().values];
 
             while (k = tmp1.shift()) {
                 pairs.push(`${k}=>${tmp2.shift()}`);
             }
             return `#{${pairs.sort().join(", ")}}`;
         }
-        
+
         // TODO: actually implement mapping properly
         match(map) {
             if (Map.isMap(map) && this.equals(map.getValue())) {
