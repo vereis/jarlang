@@ -75,7 +75,7 @@ parse_function({{_, _, {FunctionName, Arity}}, {_c_fun, _, ParamNames, Body}}) -
     {
         atom_to_list(FunctionName) ++ "/" ++ integer_to_list(Arity), 
         function_wrap(
-            lists:map(fun(N) -> parse_var(noreturn, [], N) end, tuple_list_get_vars_3(ParamNames)),
+            lists:map(fun(N) -> parse_var(noreturn, [], N) end, ParamNames),
             parse_node(return, tuple_list_get_vars_3(ParamNames), Body)
         )
     }.
