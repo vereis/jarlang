@@ -154,7 +154,6 @@ parse_call(noreturn, Params, {c_call, _, {_, _, Module}, {_, _, FunctionName}, P
 
 %% Parses a c_values node.
 parse_values(return, Params, {c_values, _, _Values}) ->
-    %io:format("~p~n", [tuple_list_get_vars_3(Values)]);
     io:format("", []).
 
 %% Parses a c_var node.
@@ -165,7 +164,6 @@ parse_var(noreturn, Params, {c_var, _, {Name, Arity}}) ->
     estree:identifier(atom_to_list(Name) ++ "/" ++ integer_to_list(Arity));
 parse_var(noreturn, Params, {c_var, _, Var}) ->
     estree:identifier(atom_to_binary(Var, utf8)).
-    %io:format("", []);
 
 %% Parses a c_seq node.
 parse_seq(return, Params, {c_seq, _, A, B}) ->
@@ -191,16 +189,7 @@ parse_let(ReturnAtom, Params, {c_let, _, [{_, _, Variable}], Value, UsedBy}) ->
 %%       Assignment from function?
 %%       Assignment with pattern matching?
 parse_apply(ReturnAtom, Params, {c_apply, _, {_, _, {FunctionName, Arity}}, Parameters}) ->
-    % parse_node(ReturnAtom, Params, {c_call, [], {a, a, functions}, {a, a, FunctionName}, Parameters});
     parse_call(ReturnAtom, Params, {c_call, [], {a, a, functions}, {a, a, list_to_atom(atom_to_list(FunctionName) ++ "/" ++ integer_to_list(Arity))}, Parameters});
-    % estree:call_expression(
-    %      % estree:identifier(list_to_binary(atom_to_list(FunctionName) ++ "/" ++ integer_to_list(Arity))),
-    %      estree:member_expression(
-    %         estree:identifier(atom_to_binary(functions, utf8)),
-    %         estree:literal(identify_normalise(atom_to_list(FunctionName) ++ "/" ++ integer_to_list(Arity))),
-    %         true),
-    %      lists:map(fun(T) -> parse_node(noreturn, Parameters, T) end, Parameters)
-    %  );
 parse_apply(ReturnAtom, Params, {c_apply, _, {_, _, FunctionName}, Parameters}) ->
     parse_call(ReturnAtom, Params, {c_call, [], {a, a, functions}, {a, a, FunctionName}, Parameters}).
 
@@ -260,45 +249,25 @@ parse_try(noreturn, Params, {c_try, _, Elem, _, _, _, _}) ->
             parse_node(return, Params, Elem)
         ),
     []).
-    % parse_node(ReturnAtom, Params, Elem);
 
 %% Parses a c_primop node.
 parse_primop(return, Params, {c_primop, _, {_, _, Type}, _Details}) ->
-    % io:format("        Error? ~p~n~p~n", [Type, Details]),
     estree:error(atom_to_list(Type), "TODO Errors dont parse nicely\\n", estree:literal(<<"Message">>)).
-    % io:format("", []);
 
 %% Parses a c_letrec node.
 %% Note: c_letrec appears to represent list comprehension.
 parse_letrec(ReturnAtom, Params, {c_letrec, _, [Func], Apply}) ->
-% parse_node(ReturnAtom, Params, {c_letrec, _, [{{_, _, {FunctionName, Arity}}, {_c_fun, _, ParamNames, Body}}], Apply}) ->
-%     {Id, F} = parse_function({{a, [], {'listComp', Arity}}, {c_fun, [], ParamNames, Body}}),
     {Id, F} = parse_function(Func),
     assemble_sequence(
-        %estree:variable_declaration(estree:variable_declarator(estree:identifier(list_to_binary(Id)), F), <<"let">>),
-        % estree:let_declaration(list_to_binary(Id), F),
         estree:assignment_expression(
             <<"=">>,
             estree:member_expression(
                 estree:identifier(<<"functions">>),
                 estree:literal(identify_normalise(Id)),
-                % estree:identifier(<<"listComp">>),
                 true
             ),
             F
         ),
-        % estree:function_expression(
-        %     estree:identifier(identify_normalise(atom_to_list(FunctionName) ++ "/" ++ integer_to_list(Arity))),
-        %     tuple_list_to_identifier_list(ParamNames, tuple_list_get_vars_3(ParamNames)),
-        %     estree:block_statement(
-        %         encapsulate_expressions(
-        %             list_check(
-        %                 parse_node(return, tuple_list_get_vars_3(ParamNames), Body)
-        %             )
-        %         )
-        %     ),
-        %     true
-        % ),
         parse_node(ReturnAtom, Params, Apply)
     ).
 
@@ -312,15 +281,6 @@ parse_case(ReturnAtom, Params, {c_case, _, {c_var, _, Var}, Clauses}) ->
     parse_case(ReturnAtom, Params, {c_case, a, {c_values, a, [{c_var, a, Var}]}, Clauses});
 parse_case(ReturnAtom, Params, {c_case, _, {c_values, _, Vars}, Clauses}) ->
     parse_case_clauses(ReturnAtom, Params, Vars, Clauses);
-    % {UnboundVars, CaseClauses} = parse_case_clauses(ReturnAtom, Params, Vars, Clauses),
-    % case UnboundVars of
-    %     [] -> CaseClauses;
-    %     _  -> assemble_sequence(
-    %             estree:variable_declaration(
-    %                 tuple_list_get_vars_2(maps:to_list(maps:from_list(UnboundVars))),
-    %                 <<"let">>),
-    %             CaseClauses)
-    % end;
 parse_case(ReturnAtom, Params, {c_case, _, {c_apply, _, {c_var, _, Fun}, Args}, Clauses}) ->
     case Fun of
         {Name, _} -> Fun_Actual = Name;
@@ -356,13 +316,11 @@ parse_function_case(ReturnAtom, Params, FuncCall, Clauses) ->
 parse_case_clauses(ReturnAtom, Params, Vars, []) ->
     [];
 parse_case_clauses(ReturnAtom, Params, Vars, [{c_clause, _, Match, Evaluate, Consequent}|Clauses]) ->
-    % {UnboundVars, ElseClauses} = parse_case_clauses(ReturnAtom, Params, Vars, Clauses), %alternate
     ElseClauses = parse_case_clauses(ReturnAtom, Params, Vars, Clauses), %alternate
     case ElseClauses of
         [] -> ElseClausesActual = null;
         _  -> ElseClausesActual = ElseClauses
     end,
-    % {lists:append(declarators_from_list(Match), UnboundVars),
      estree:if_statement(
         assemble_case_condition(Params, Vars, Match, Evaluate), %test
         estree:block_statement(%consequent
@@ -559,12 +517,10 @@ recurse_var_assignments(_ConsCount, _, _V, _) ->
     [].
 
 assemble_match_calls(MatchL) ->
-    % io:format("~p~n", [MatchL]),
     case MatchL of
         []    -> estree:literal(true);
         [M]   -> M;
         [M|T] -> estree:logical_expression(<<"&&">>, M, assemble_match_calls(T))
-        % [M|T] -> estree:expression_statement(estree:logical_expression(<<"&&">>, M, assemble_match_calls(T)))
     end.
 
 assign_matched_vars(Params, [V], [M]) ->
@@ -591,7 +547,6 @@ assign_matched_vars(Params, {c_var, _, Variable}, {c_alias, _, {c_var, [], Name}
         )
     )];
 %assign_matched_vars(Params, A, B) ->
-%    erlang:error(io_lib:format("assignMatchedVars error:~p~n~p", [A, B])),
 assign_matched_vars(Params, _, _) ->
     [ok].
 
@@ -646,8 +601,6 @@ declarators_from_list(List) ->
     end, List).
 
 identify_normalise(N) ->
-    % {ok, Regex}=re:compile("[^A-Za-z0-9_$]"),
-    % iolist_to_binary(re:replace(N, Regex, "_$_", [global])).
     list_to_binary(N).
 
 tup_to_list(Tuple) -> tup_to_list(Tuple, 1, tuple_size(Tuple)).
@@ -675,40 +628,3 @@ estree:function_expression(
         ),
         false
     ).
-
-
-
-
-
-
-
-
-
-
-
-%rAtomToList([A|Rest]) ->
-%    [rAtomToList(A)|rAtomToList(Rest)];
-%rAtomToList({A}) ->
-%    {rAtomToList(A)};
-%rAtomToList({A, B}) ->
-%    {rAtomToList(A), rAtomToList(B)};
-%rAtomToList({A, B, C}) ->
-%    {rAtomToList(A), rAtomToList(B), rAtomToList(C)};
-%rAtomToList({A, B, C, D}) ->
-%    {rAtomToList(A), rAtomToList(B), rAtomToList(C), rAtomToList(D)};
-%rAtomToList(A) when is_atom(A) ->
-%    atom_to_list(A);
-%rAtomToList(A) when not is_atom(A) ->
-%    A.
-
-
-
-
-
-
-
-
-
-% Currently unused so commenting out for compilation
-%tuple_to_string(T) ->
-%   lists:flatten(io:format("~p", [T])).
