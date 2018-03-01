@@ -40,20 +40,17 @@ parse_module(T) ->
 
 
 
-
-
 %%% ---------------------------------------------------------------------------------------------%%%
-%%% - AST TO AST TRANSLATION --------------------------------------------------------------------%%%
+%%% - Concurrently parse all functions in the module --------------------------------------------%%%
 %%% ---------------------------------------------------------------------------------------------%%%
-
-%% Spawns new parse_function processes for each function in a given function list,
-%% concurrently transpiling all functions given.
+%% Spawns new parse_function processes for each function in a given function list.
 parse_functions(Functions) ->
     Self = self(),
-    Pids = lists:map(fun(X) ->
-        spawn_link(fun() -> Self ! {self(), parse_function(X)} end)
-    end, Functions),
-
+    Pids = lists:map(
+        fun(X) ->
+            spawn_link(fun() -> Self ! {self(), parse_function(X)} end)
+        end, Functions
+    ),
     [
         receive
             {Pid, TranspiledFunction} ->
@@ -63,62 +60,32 @@ parse_functions(Functions) ->
         Pid <- Pids
     ].
 
-%% Parse a function node, and recursively descend into the function to translate all
-%% AST nodes into an JavaScript equivalent.
-%% Compiler generated functions are currently generated as containing only an empty statement.
+
+
+%%% ---------------------------------------------------------------------------------------------%%%
+%%% - Parse a funcion node ----------------------------------------------------------------------%%%
+%%% ---------------------------------------------------------------------------------------------%%%
+%% Compiler generated functions are currently generated as an empty function.
 parse_function({{_, _, {FunctionName, Arity}}, {_c_fun, [compiler_generated], _, _}}) ->
     {atom_to_list(FunctionName) ++ "/" ++ integer_to_list(Arity), function_wrap([], [])};
 parse_function({{_, _, {FunctionName, Arity}}, {_c_fun, _, ParamNames, Body}}) ->
     {
         atom_to_list(FunctionName) ++ "/" ++ integer_to_list(Arity), 
         function_wrap(
-            tuple_list_to_identifier_list(ParamNames, tuple_list_get_vars_3(ParamNames)),
+            lists:map(fun(N) -> parse_var(noreturn, [], N) end, tuple_list_get_vars_3(ParamNames)),
             parse_node(return, tuple_list_get_vars_3(ParamNames), Body)
         )
     }.
 
-%% Helper function to determine whether a given ESTree node is a statement
-is_statement({_, Type, _}) ->
-    case re:run(atom_to_list(Type), "Statement|Declaration") of
-        {match, _} ->
-            true;
-        _ ->
-            false
-    end;
-is_statement(_) ->
-    false.
 
-%% Helper function to ensure that any given expression is a statement. If a statement
-%% is given to this function, it is simply returned; otherwise we wrap it in an
-%% expression_statement.
-encapsulate_expressions(L) ->
-    lists:map(
-        fun(X) ->
-            IsStmt = is_statement(X),
-            if
-                IsStmt->X;
-                true->estree:expression_statement(X)
-            end
-        end,
-        L
-    ).
 
-%% I have no idea what this is meant to do
-list_check([L]) when is_list(L) ->
-    list_check(L);
-list_check(L) ->
-    IsStmt = is_statement(L),
-    if
-        IsStmt->[L];
-        true->L
-    end.
-
-%% Determines what type of node we're currently parsing and calls a function
-%% to translate that specific node.
+%%% ---------------------------------------------------------------------------------------------%%%
+%%% - Select the appropriate node parsing funciton ----------------------------------------------%%%
+%%% ---------------------------------------------------------------------------------------------%%%
+%% Dividing the pattern matching in this way makes the stack traces easier to read
 parse_node(ReturnAtom, Params, N) ->
     case tuple_getVar_1(N) of
         c_call    -> parse_call(ReturnAtom, Params, N);
-        c_values  -> parse_values(ReturnAtom, Params, N);
         c_var     -> parse_var(ReturnAtom, Params, N);
         c_seq     -> parse_seq(ReturnAtom, Params, N);
         c_let     -> parse_let(ReturnAtom, Params, N);
@@ -133,7 +100,11 @@ parse_node(ReturnAtom, Params, N) ->
         c_case    -> parse_case(ReturnAtom, Params, N)
     end.
 
-%% Parses a c_call node.
+
+
+%%% ---------------------------------------------------------------------------------------------%%%
+%%% - Parse a function call node ----------------------------------------------------------------%%%
+%%% ---------------------------------------------------------------------------------------------%%%
 parse_call(return, Params, {c_call, A, {B, C, Module}, {D, E, FunctionName}, Parameters}) ->
     estree:return_statement(parse_call(noreturn, Params, {c_call, A, {B, C, Module}, {D, E, FunctionName}, Parameters}));
 parse_call(noreturn, Params, {c_call, _, {_, _, Module}, {_, _, FunctionName}, Parameters}) ->
@@ -152,11 +123,11 @@ parse_call(noreturn, Params, {c_call, _, {_, _, Module}, {_, _, FunctionName}, P
         lists:map(fun(T) -> parse_node(noreturn, Parameters, T) end, Parameters)
      ).
 
-%% Parses a c_values node.
-parse_values(return, Params, {c_values, _, _Values}) ->
-    io:format("", []).
 
-%% Parses a c_var node.
+
+%%% ---------------------------------------------------------------------------------------------%%%
+%%% - Parse the use of a variable ---------------------------------------------------------------%%%
+%%% ---------------------------------------------------------------------------------------------%%%
 parse_var(return, Params, {c_var, A, Var}) ->
     estree:return_statement(parse_var(noreturn, Params, {c_var, A, Var}));
 %added for support of functions by name
@@ -165,7 +136,11 @@ parse_var(noreturn, Params, {c_var, _, {Name, Arity}}) ->
 parse_var(noreturn, Params, {c_var, _, Var}) ->
     estree:identifier(atom_to_binary(Var, utf8)).
 
-%% Parses a c_seq node.
+
+
+%%% ---------------------------------------------------------------------------------------------%%%
+%%% - Parse a sequence of nodes -----------------------------------------------------------------%%%
+%%% ---------------------------------------------------------------------------------------------%%%
 parse_seq(return, Params, {c_seq, _, A, B}) ->
     assemble_sequence(
         parse_node(noreturn, Params, A),
@@ -175,7 +150,11 @@ parse_seq(noreturn, Params, {c_seq, _, A, B}) ->
         parse_node(noreturn, Params, A),
         parse_node(noreturn, Params, B)).
 
-%% Parses a c_let node.
+
+
+%%% ---------------------------------------------------------------------------------------------%%%
+%%% - Parse the assinment of a variable for immediate use ---------------------------------------%%%
+%%% ---------------------------------------------------------------------------------------------%%%
 %% A let statement is the core erlang representation of implicit variable declaration
 %% Often the result of some function as an argument of another function.
 parse_let(ReturnAtom, Params, {c_let, _, [{_, _, Variable}], Value, UsedBy}) ->
@@ -184,16 +163,22 @@ parse_let(ReturnAtom, Params, {c_let, _, [{_, _, Variable}], Value, UsedBy}) ->
         parse_node(ReturnAtom, Params, UsedBy)).
 
 
-%% Parses a c_apply node.
-%% TODO: Is apply a local function call?
-%%       Assignment from function?
-%%       Assignment with pattern matching?
+
+%%% ---------------------------------------------------------------------------------------------%%%
+%%% - Parse the call of a local function --------------------------------------------------------%%%
+%%% ---------------------------------------------------------------------------------------------%%%
 parse_apply(ReturnAtom, Params, {c_apply, _, {_, _, {FunctionName, Arity}}, Parameters}) ->
     parse_call(ReturnAtom, Params, {c_call, [], {a, a, functions}, {a, a, list_to_atom(atom_to_list(FunctionName) ++ "/" ++ integer_to_list(Arity))}, Parameters});
 parse_apply(ReturnAtom, Params, {c_apply, _, {_, _, FunctionName}, Parameters}) ->
     parse_call(ReturnAtom, Params, {c_call, [], {a, a, functions}, {a, a, FunctionName}, Parameters}).
 
-%% Parses a c_literal node.
+
+
+%%% ---------------------------------------------------------------------------------------------%%%
+%%% - Parse the use of a literal ----------------------------------------------------------------%%%
+%%% ---------------------------------------------------------------------------------------------%%%
+%% Note that a list of literals is also a literal,
+%% but that the internal values are represented as actual literals, not literal nodes.
 parse_literal(return, Params, {c_literal, _, Value}) ->
     estree:return_statement(parse_literal(noreturn, Params, {c_literal, [], Value}));
 parse_literal(noreturn, Params, {c_literal, _, Value}) when is_integer(Value) ->
@@ -215,14 +200,22 @@ parse_literal(noreturn, Params, {c_literal, _, Value}) when is_tuple(Value) ->
         end
     ).
 
-%% Parses a c_tuple node.
+
+
+%%% ---------------------------------------------------------------------------------------------%%%
+%%% - Parse the definition of a tuple that doesn't contain only literals ------------------------%%%
+%%% ---------------------------------------------------------------------------------------------%%%
 parse_tuple(return, Params, A={c_tuple, _, Values}) ->
     estree:return_statement(parse_tuple(noreturn, Params, A));
 parse_tuple(noreturn, Params, {c_tuple, _, Values}) ->
     estree:new_expression(estree:identifier(<<"Tuple">>), [parse_node(noreturn, Params, Value) || Value <- Values]).
 
-%% Parses a c_cons node.
-%% This is essentially a list constructor.
+
+
+%%% ---------------------------------------------------------------------------------------------%%%
+%%% - Parse the definition of a list that doesn't contain only literals -------------------------%%%
+%%% ---------------------------------------------------------------------------------------------%%%
+%% This function parses the start of the list
 parse_cons(return,Params,{c_cons,_,A,B})->
     estree:return_statement(parse_cons(noreturn,Params,{c_cons,[],A,B}));
 parse_cons(noreturn,Params,{c_cons,_,A,B})->
@@ -230,7 +223,7 @@ parse_cons(noreturn,Params,{c_cons,_,A,B})->
     NewList = estree:new_expression(estree:identifier(<<"List">>),Values),
     estree:call_expression(estree:member_expression(NewList,estree:identifier(<<"cons">>),false),[End]).
 
-%% Parses a c_cons chain.
+%% This function parses the rest of the list
 parse_cons_chain(noreturn,Params,{c_cons,[],A,B={c_cons,_,C,D}})->
     {Values,End} = parse_cons_chain(noreturn,[],B),
     {[parse_node(noreturn,Params,A)|Values],End};
@@ -238,8 +231,12 @@ parse_cons_chain(noreturn,Params,{c_cons,[],A,B})->
     {[parse_node(noreturn,Params,A)],parse_node(noreturn,Params,B)}.
 
 
-%% Parses a c_try node.
-%% For lack of a more apparent reason for the c_try token I'm treating it a superfluous encapsulation
+
+%%% ---------------------------------------------------------------------------------------------%%%
+%%% - Naively parse a try wrapper, assuming it has no actual purpose ----------------------------%%%
+%%% ---------------------------------------------------------------------------------------------%%%
+%% c_try nodes are not associated with actual try blocks in erlang, but instead generated by the 
+%% compiler around some functions when used in a guard.
 parse_try(return, Params, {c_try, _, Elem, _, _, _, _}) ->
     estree:return_statement(parse_try(noreturn, Params, {c_try, [], Elem, a, a, a, a}));
 parse_try(noreturn, Params, {c_try, _, Elem, _, _, _, _}) ->
@@ -250,12 +247,22 @@ parse_try(noreturn, Params, {c_try, _, Elem, _, _, _, _}) ->
         ),
     []).
 
-%% Parses a c_primop node.
+
+
+%%% ---------------------------------------------------------------------------------------------%%%
+%%% - Naively parse the creation of an error message --------------------------------------------%%%
+%%% ---------------------------------------------------------------------------------------------%%%
+%% c_primop has so far only been observed as an error message
 parse_primop(return, Params, {c_primop, _, {_, _, Type}, _Details}) ->
     estree:error(atom_to_list(Type), "TODO Errors dont parse nicely\\n", estree:literal(<<"Message">>)).
 
-%% Parses a c_letrec node.
-%% Note: c_letrec appears to represent list comprehension.
+
+
+%%% ---------------------------------------------------------------------------------------------%%%
+%%% - Parse a list comprehension ----------------------------------------------------------------%%%
+%%% ---------------------------------------------------------------------------------------------%%%
+%% TODO: List comprehensions are always created with the same ID, multiple concurrent list
+%% comprehensions will behave incorrectly until they are defined in an appropriate scope
 parse_letrec(ReturnAtom, Params, {c_letrec, _, [Func], Apply}) ->
     {Id, F} = parse_function(Func),
     assemble_sequence(
@@ -263,7 +270,7 @@ parse_letrec(ReturnAtom, Params, {c_letrec, _, [Func], Apply}) ->
             <<"=">>,
             estree:member_expression(
                 estree:identifier(<<"functions">>),
-                estree:literal(identify_normalise(Id)),
+                estree:literal(list_to_binary(Id)),
                 true
             ),
             F
@@ -272,15 +279,27 @@ parse_letrec(ReturnAtom, Params, {c_letrec, _, [Func], Apply}) ->
     ).
 
 
+
+%%% ---------------------------------------------------------------------------------------------%%%
+%%% - Parse a message receive block -------------------------------------------------------------%%%
+%%% ---------------------------------------------------------------------------------------------%%%
+%% TODO: This is still a work in progress, it will not produce viable JS.
 parse_receive(ReturnAtom, Params, {c_receive,_,Clauses,Timeout,Unknown})->
     parse_case_clauses(ReturnAtom, Params, [{c_var, [], message}], Clauses).
 
-%% Parses a c_case node.
-%% converts single var case to multi-var case format
+
+
+%%% ---------------------------------------------------------------------------------------------%%%
+%%% - Parse a case block's opening nodes --------------------------------------------------------%%%
+%%% ---------------------------------------------------------------------------------------------%%%
+%% For simplicity cases of a single var are converted to multi-var case format
 parse_case(ReturnAtom, Params, {c_case, _, {c_var, _, Var}, Clauses}) ->
     parse_case(ReturnAtom, Params, {c_case, a, {c_values, a, [{c_var, a, Var}]}, Clauses});
 parse_case(ReturnAtom, Params, {c_case, _, {c_values, _, Vars}, Clauses}) ->
     parse_case_clauses(ReturnAtom, Params, Vars, Clauses);
+
+%% Cases that take a function call as an input are parsed here.
+%% This one parses local functions.
 parse_case(ReturnAtom, Params, {c_case, _, {c_apply, _, {c_var, _, Fun}, Args}, Clauses}) ->
     case Fun of
         {Name, _} -> Fun_Actual = Name;
@@ -293,6 +312,7 @@ parse_case(ReturnAtom, Params, {c_case, _, {c_apply, _, {c_var, _, Fun}, Args}, 
         ),
         Clauses
     );
+%% And this one parses external functions.
 parse_case(ReturnAtom, Params, {c_case, _, {c_call, _, {c_literal, _, Module}, {c_literal, _, FunctionName}, Args}, Clauses}) ->
     parse_function_case(ReturnAtom, Params,
         estree:call_expression(
@@ -301,6 +321,16 @@ parse_case(ReturnAtom, Params, {c_case, _, {c_call, _, {c_literal, _, Module}, {
         ),
         Clauses
     ).
+
+
+
+%%% ---------------------------------------------------------------------------------------------%%%
+%%% - Parse a case block that takes a function --------------------------------------------------%%%
+%%% ---------------------------------------------------------------------------------------------%%%
+%% In a break from the standard through the rest of the parsing functions, this function takes a
+%% pre-parsed function call.
+%% The result of the function is assigned to a temp variable ant that is used in a regular case
+%% block.
 parse_function_case(ReturnAtom, Params, FuncCall, Clauses) ->
     assemble_sequence(
         %Define temp variable & call function
@@ -312,19 +342,30 @@ parse_function_case(ReturnAtom, Params, FuncCall, Clauses) ->
         parse_case(ReturnAtom, Params, {c_case, [], {c_var, [], '_tempVar'}, Clauses})
     ).
 
-%% Parses c_clause nodes.
+
+
+%%% ---------------------------------------------------------------------------------------------%%%
+%%% - Parse case clauses ------------------------------------------------------------------------%%%
+%%% ---------------------------------------------------------------------------------------------%%%
 parse_case_clauses(ReturnAtom, Params, Vars, []) ->
     [];
 parse_case_clauses(ReturnAtom, Params, Vars, [{c_clause, _, Match, Evaluate, Consequent}|Clauses]) ->
-    ElseClauses = parse_case_clauses(ReturnAtom, Params, Vars, Clauses), %alternate
+    % Parse the remaining clauses first.
+    ElseClauses = parse_case_clauses(ReturnAtom, Params, Vars, Clauses),
+    % If there are no remaining clauses then use null
     case ElseClauses of
         [] -> ElseClausesActual = null;
         _  -> ElseClausesActual = ElseClauses
     end,
+    % Assemble the if statement
      estree:if_statement(
-        assemble_case_condition(Params, Vars, Match, Evaluate), %test
-        estree:block_statement(%consequent
+        % The function that serves as pattern patching and guards
+        assemble_case_condition(Params, Vars, Match, Evaluate),
+        estree:block_statement(
             assemble_sequence(
+                % Assign the variables that are used in the match
+                % At this point in development it should be un-nessisary to filter for un-parsed
+                % variables, but I'll leave it here until I next review the case clauses.
                 lists:filter(fun(Elem) ->
                         case Elem of
                             ok -> false;
@@ -344,7 +385,13 @@ parse_case_clauses(ReturnAtom, Params, Vars, [{c_clause, _, Match, Evaluate, Con
     ).
      % }.
 
-%% Puts together a case condition
+
+
+%%% ---------------------------------------------------------------------------------------------%%%
+%%% - Make the clause condition self contained --------------------------------------------------%%%
+%%% ---------------------------------------------------------------------------------------------%%%
+%% This allows the involved variables to be correctly scoped, and later defined.
+%% This one shortcuts guard only matching
 assemble_case_condition(Params, _, [], Evaluate) ->
     estree:call_expression(
         function_wrap(
@@ -353,6 +400,7 @@ assemble_case_condition(Params, _, [], Evaluate) ->
         ),
     []);
 assemble_case_condition(Params, Vars, Match, Evaluate) ->
+    % This extracts the relevant variables for declaration, matching and assignment
     {DefL1, MatchL, DefL2} = lists:foldl(
         fun(Elem, {DefL1, MatchL, DefL2}) ->
             case Elem of
@@ -418,10 +466,13 @@ assemble_case_condition(Params, Vars, Match, Evaluate) ->
         end,
         {[], [], []},
         lists:zip(Vars, Match)),
+    % Check if any declarations are actually needed after matching
     case DefL2 of
         [] -> Declaration2Actual = [];
         _  -> Declaration2Actual = estree:variable_declaration(list_check(DefL2), <<"let">>)
     end,
+    % Create the internal logic of the clause condition function. Including actual match calls and
+    % the evaluation of the guard.
     Internal =  estree:if_statement(
                     assemble_match_calls(MatchL),
                     estree:block_statement(%consequent
@@ -436,6 +487,7 @@ assemble_case_condition(Params, Vars, Match, Evaluate) ->
                     ),
                     null
                 ),
+    % Check that variables actually need to be defined before matching is done
     case DefL1 of
         [] -> InternalActual = Internal;
         _  -> InternalActual = assemble_sequence(
@@ -443,6 +495,7 @@ assemble_case_condition(Params, Vars, Match, Evaluate) ->
                             Internal
                         )
     end,
+    % Finally return the call of the clause condition
     estree:call_expression(
         estree:call_expression(
             estree:member_expression(
@@ -455,6 +508,11 @@ assemble_case_condition(Params, Vars, Match, Evaluate) ->
             [estree:this_expression()]),
         []).
 
+
+
+%%% ---------------------------------------------------------------------------------------------%%%
+%%% - Recursively generate a list of variable declarations --------------------------------------%%%
+%%% ---------------------------------------------------------------------------------------------%%%
 recurse_var_declaration({c_var, _, Name}) ->
     [estree:variable_declarator(estree:identifier(atom_to_binary(Name, utf8)), estree:identifier(<<"null">>))];
 recurse_var_declaration({c_literal, _, Name}) ->
@@ -467,6 +525,11 @@ recurse_var_declaration({c_cons, _, A, B}) ->
     lists:append(recurse_var_declaration(A),
     recurse_var_declaration(B)).
 
+
+
+%%% ---------------------------------------------------------------------------------------------%%%
+%%% - Recursively generate a list of variable assignments ---------------------------------------%%%
+%%% ---------------------------------------------------------------------------------------------%%%
 recurse_var_assignments(M, V) ->
     recurse_var_assignments(0, M, V, false).
 recurse_var_assignments(_, {c_var, _, Name}, V, false) ->
@@ -477,6 +540,7 @@ recurse_var_assignments(_, {c_var, _, Name}, V, false) ->
             V
         )
     ];
+% Assign the remainder of a list
 recurse_var_assignments(ConsCount, {c_var, _, Name}, V, isTail) ->
     [
         estree:assignment_expression(
@@ -503,6 +567,8 @@ recurse_var_assignments(_, {c_tuple, _, Elements}, V, _) ->
             )
         end,
         [], Elements);
+% These two detect a list and begin counting the position in the list
+% This one detects that a list constructor ends with a tail binding
 recurse_var_assignments(ConsCount, {c_cons, _, A, B={c_var, _, Name}}, V, _) ->
     lists:append(
         recurse_var_assignments(0, A, estree:member_expression(V, estree:literal(ConsCount), true), false),
@@ -516,6 +582,11 @@ recurse_var_assignments(ConsCount, {c_cons, _, A, B}, V, _) ->
 recurse_var_assignments(_ConsCount, _, _V, _) ->
     [].
 
+
+
+%%% ---------------------------------------------------------------------------------------------%%%
+%%% - Chain together all calls to match patterns ------------------------------------------------%%%
+%%% ---------------------------------------------------------------------------------------------%%%
 assemble_match_calls(MatchL) ->
     case MatchL of
         []    -> estree:literal(true);
@@ -523,6 +594,12 @@ assemble_match_calls(MatchL) ->
         [M|T] -> estree:logical_expression(<<"&&">>, M, assemble_match_calls(T))
     end.
 
+
+
+%%% ---------------------------------------------------------------------------------------------%%%
+%%% - Assign variables after matching -----------------------------------------------------------%%%
+%%% ---------------------------------------------------------------------------------------------%%%
+% TODO: Review this when cases are next reviewed.
 assign_matched_vars(Params, [V], [M]) ->
         assign_matched_vars(Params, V, M);
 assign_matched_vars(Params, [V|Vars], [M|Match]) ->
@@ -550,7 +627,11 @@ assign_matched_vars(Params, {c_var, _, Variable}, {c_alias, _, {c_var, [], Name}
 assign_matched_vars(Params, _, _) ->
     [ok].
 
-%###########################
+
+
+%%% ---------------------------------------------------------------------------------------------%%%
+%%% - Append two lists, even if they weren't lists to start with --------------------------------%%%
+%%% ---------------------------------------------------------------------------------------------%%%
 assemble_sequence(L, R) when is_list(L) and is_list(R) ->
     lists:append(L, R);
 assemble_sequence(L, R) when is_list(R) ->
@@ -560,9 +641,11 @@ assemble_sequence(L, R) when is_list(L) ->
 assemble_sequence(L, R) ->
     [L, R].
 
-tuple_list_to_identifier_list(List, Params) ->
-    lists:map(fun({c_var, [], A}) -> parse_var(noreturn, Params, {c_var, [], A}) end, List).
 
+
+%%% ---------------------------------------------------------------------------------------------%%%
+%%% - Get the third value from each tuple for a list of tuples ----------------------------------%%%
+%%% ---------------------------------------------------------------------------------------------%%%
 tuple_list_get_vars_3([]) ->
     [];
 tuple_list_get_vars_3([{_, _, Val} | Body]) ->
@@ -570,6 +653,11 @@ tuple_list_get_vars_3([{_, _, Val} | Body]) ->
 tuple_list_get_vars_3([{_, _, Val, _} | Body]) ->
     [Val | tuple_list_get_vars_3(Body)].
 
+
+
+%%% ---------------------------------------------------------------------------------------------%%%
+%%% - Get the second value from each tuple for a list of tuples ---------------------------------%%%
+%%% ---------------------------------------------------------------------------------------------%%%
 tuple_list_get_vars_2([]) ->
     [];
 tuple_list_get_vars_2([{_, Val} | Body]) ->
@@ -577,6 +665,11 @@ tuple_list_get_vars_2([{_, Val} | Body]) ->
 tuple_list_get_vars_2([{_, Val, _} | Body]) ->
     [Val | tuple_list_get_vars_2(Body)].
 
+
+
+%%% ---------------------------------------------------------------------------------------------%%%
+%%% - Get the first value from each tuple for a list of tuples ----------------------------------%%%
+%%% ---------------------------------------------------------------------------------------------%%%
 tuple_getVar_1({V}) -> V;
 tuple_getVar_1({V, _}) -> V;
 tuple_getVar_1({V, _, _}) -> V;
@@ -585,6 +678,11 @@ tuple_getVar_1({V, _, _, _, _}) -> V;
 tuple_getVar_1({V, _, _, _, _, _}) -> V;
 tuple_getVar_1({V, _, _, _, _, _, _}) -> V.
 
+
+
+%%% ---------------------------------------------------------------------------------------------%%%
+%%% - Create a list of variable declarators from a variable list --------------------------------%%%
+%%% ---------------------------------------------------------------------------------------------%%%
 declarators_from_list(List) ->
     lists:filtermap(fun(Elem) ->
         case Elem of
@@ -600,9 +698,11 @@ declarators_from_list(List) ->
         end
     end, List).
 
-identify_normalise(N) ->
-    list_to_binary(N).
 
+
+%%% ---------------------------------------------------------------------------------------------%%%
+%%% - Convert a tuple to a list -----------------------------------------------------------------%%%
+%%% ---------------------------------------------------------------------------------------------%%%
 tup_to_list(Tuple) -> tup_to_list(Tuple, 1, tuple_size(Tuple)).
 
 tup_to_list(Tuple, Pos, Size) when Pos =< Size ->
@@ -611,10 +711,9 @@ tup_to_list(_Tuple, _Pos, _Size) -> [].
 
 
 
-
-
-
-
+%%% ---------------------------------------------------------------------------------------------%%%
+%%% - Wrap one or more nodes in a function, with an optional list of parameters -----------------%%%
+%%% ---------------------------------------------------------------------------------------------%%%
 function_wrap(Identifier_list,Body_nodes) ->
 estree:function_expression(
         null,
@@ -628,3 +727,49 @@ estree:function_expression(
         ),
         false
     ).
+
+
+%%% ---------------------------------------------------------------------------------------------%%%
+%%% - Check the parsed input is a Statement or Declaration --------------------------------------%%%
+%%% ---------------------------------------------------------------------------------------------%%%
+%% Helper function to determine whether a given ESTree node is a statement
+is_statement({_, Type, _}) ->
+    case re:run(atom_to_list(Type), "Statement|Declaration") of
+        {match, _} ->
+            true;
+        _ ->
+            false
+    end;
+is_statement(_) ->
+    false.
+
+
+
+%%% ---------------------------------------------------------------------------------------------%%%
+%%% - Encapsulate any non-Expression in a list --------------------------------------------------%%%
+%%% ---------------------------------------------------------------------------------------------%%%
+encapsulate_expressions(L) ->
+    lists:map(
+        fun(X) ->
+            IsStmt = is_statement(X),
+            if
+                IsStmt->X;
+                true->estree:expression_statement(X)
+            end
+        end,
+        L
+    ).
+
+
+
+%%% ---------------------------------------------------------------------------------------------%%%
+%%% - Check that the input is a list, but also not a list within a list -------------------------%%%
+%%% ---------------------------------------------------------------------------------------------%%%
+list_check([L]) when is_list(L) ->
+    list_check(L);
+list_check(L) ->
+    IsStmt = is_statement(L),
+    if
+        IsStmt->[L];
+        true->L
+    end.
