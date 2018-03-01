@@ -67,7 +67,7 @@ parse_functions(Functions) ->
 %% AST nodes into an JavaScript equivalent.
 %% Compiler generated functions are currently generated as containing only an empty statement.
 parse_function({{_, _, {FunctionName, Arity}}, {_c_fun, [compiler_generated], _, _}}) ->
-    {atom_to_list(FunctionName) ++ "/" ++ integer_to_list(Arity), estree:function_expression(null, [], estree:block_statement([estree:empty_statement()]), false)};
+    {atom_to_list(FunctionName) ++ "/" ++ integer_to_list(Arity), function_wrap([], [])};
 parse_function({{_, _, {FunctionName, Arity}}, {_c_fun, _, ParamNames, Body}}) ->
     {
         atom_to_list(FunctionName) ++ "/" ++ integer_to_list(Arity), 
