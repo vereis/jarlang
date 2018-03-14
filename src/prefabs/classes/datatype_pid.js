@@ -56,6 +56,7 @@ const Pid = (() => {
             }
 
             this.precedence = 5;
+            this.value = this;
         }
 
         getValue() {
