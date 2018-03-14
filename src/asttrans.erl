@@ -456,7 +456,6 @@ parse_receive_clauses(ReturnAtom, Params, Vars,
         % The function that serves as pattern patching and guards
         assemble_case_condition(Params, Vars, Match, Evaluate),
         estree:block_statement(
-            [estree:empty_statement(),
             assemble_sequence(
                 % Assign the variables that are used in the match
                 % At this point in development it should be un-nessisary to filter for un-parsed
@@ -470,16 +469,12 @@ parse_receive_clauses(ReturnAtom, Params, Vars,
                     assign_matched_vars(Params, Vars, Match)
                 ),
                 encapsulate_expressions(
-
-                    % I FIXED THIS BY MAKING THIS A LIST: 
-                    % pls look over it... I'm not sure why I need to do this,
-                    % theres probably a deeper issue?
-                    [list_check(
+                    list_check(
                         parse_node(ReturnAtom, Params, Consequent)
-                    )]
+                    )
 
                 )
-            )]
+            )
         ),
         ElseClausesActual %alternate
     ).
@@ -1005,11 +1000,11 @@ encapsulate_expressions(L) ->
 %%% ---------------------------------------------------------------------------------------------%%%
 %%% - Check that the input is a list, but also not a list within a list -------------------------%%%
 %%% ---------------------------------------------------------------------------------------------%%%
-list_check([L]) when is_list(L) ->
+list_check([L]) when is_list(L) ->%un-nest lists
     list_check(L);
 list_check(L) ->
-    IsStmt = is_statement(L),
+    IsList = is_list(L),
     if
-        IsStmt->[L];
-        true->L
+        IsList->L;
+        true->[L]
     end.
