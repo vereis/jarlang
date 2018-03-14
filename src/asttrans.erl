@@ -325,8 +325,10 @@ parse_receive(ReturnAtom, Params, {c_receive,_,Clauses,Timeout,TimeoutConsequent
                     ),
                     [function_wrap([],parse_node(A,B,C))]
                 ),null
-            )];
-        _ -> Next = []
+            )],
+            RealParams = B;
+        _ -> Next = [],
+            RealParams = Params
     end,
     [
         estree:variable_declaration([estree:variable_declarator(
@@ -341,7 +343,7 @@ parse_receive(ReturnAtom, Params, {c_receive,_,Clauses,Timeout,TimeoutConsequent
             ),
             [
                 function_wrap([],
-                    assemble_sequence(
+                    [
                         estree:variable_declaration([
                             estree:variable_declarator(
                                 estree:identifier(<<"__doNext">>),estree:literal(true)),
@@ -350,29 +352,131 @@ parse_receive(ReturnAtom, Params, {c_receive,_,Clauses,Timeout,TimeoutConsequent
                             <<"let">>
                         ),
 
-                        assemble_sequence(
-                            estree:do_while_statement(
-                                estree:identifier(<<"__doLoop">>),
-                                [
-                                    estree:expression_statement(
-                                        estree:call_expression(
-                                            estree:member_expression(
-                                                estree:identifier(<<"TODO">>),
-                                                estree:identifier(<<"receive_placeholder">>),
-                                                false
-                                            ),[]
-                                        )
+                        estree:do_while_statement(
+                            estree:identifier(<<"__doLoop">>),
+                            estree:block_statement([
+                                estree:expression_statement(
+                                    estree:assignment_expression(
+                                        <<"=">>,
+                                        estree:identifier(<<"__doLoop">>),
+                                        estree:literal(false)
                                     )
-                                ]
                             ),
-                            % [],% Swap comment block with this line
-                            Next
+                                estree:if_statement(
+                                    estree:binary_expression(<<">=">>,
+                                        estree:identifier(<<"__mIndex">>),
+                                        estree:member_expression(
+                                            estree:member_expression(
+                                                estree:this_expression(),
+                                                estree:identifier(<<"messages">>),
+                                                false
+                                            ),
+                                            estree:identifier(<<"length">>),
+                                            false
+                                        )
+                                    ),
+                                    estree:block_statement([
+                                        estree:expression_statement(
+                                            estree:call_expression(
+                                                estree:member_expression(
+                                                    estree:this_expression(),
+                                                    estree:identifier(<<"restartBehaviour">>),
+                                                    false
+                                                ),[]
+                                            )
+                                        ),
+                                        estree:expression_statement(
+                                            estree:assignment_expression(
+                                                <<"=">>,
+                                                estree:identifier(<<"__doNext">>),
+                                                estree:literal(false)
+                                            )
+                                        )
+                                    ]),
+                                    estree:block_statement([
+                                        estree:variable_declaration([
+                                            estree:variable_declarator(
+                                                estree:identifier(<<"__message">>),
+                                                estree:member_expression(
+                                                    estree:member_expression(
+                                                        estree:this_expression(),
+                                                        estree:identifier(<<"messages">>),
+                                                        false
+                                                    ),
+                                                    estree:identifier(<<"__mIndex">>),
+                                                    true
+                                                )
+                                            )],
+                                            <<"let">>
+                                        )
+                                        |parse_receive_clauses(
+                                            ReturnAtom,
+                                            RealParams,
+                                            [{c_var, a, '__message'}],
+                                            Clauses)
+                                    ])
+                                )
+                                
+                            ])
                         )
-                    )
+                    |Next]
                 )
             ]
         )
     ].
+
+% estree:call_expression(
+%     estree:member_expression(
+%         estree:identifier(<<"TODO">>),
+%         estree:identifier(<<"receive_placeholder">>),
+%         false
+%     ),[]
+% )
+
+
+
+
+
+%%% ---------------------------------------------------------------------------------------------%%%
+%%% - Parse receive clauses ---------------------------------------------------------------------%%%
+%%% ---------------------------------------------------------------------------------------------%%%
+parse_receive_clauses(ReturnAtom, Params, Vars, []) ->
+    [];
+parse_receive_clauses(ReturnAtom, Params, Vars,
+    [{c_clause, _, Match, Evaluate, Consequent}|Clauses]) ->
+    % Parse the remaining clauses first.
+    ElseClauses = parse_receive_clauses(ReturnAtom, Params, Vars, Clauses),
+    % If there are no remaining clauses then use null
+    case ElseClauses of
+        [] -> ElseClausesActual = null;
+        _  -> ElseClausesActual = ElseClauses
+    end,
+    % Assemble the if statement
+     estree:if_statement(
+        % The function that serves as pattern patching and guards
+        assemble_case_condition(Params, Vars, Match, Evaluate),
+        estree:block_statement(
+            assemble_sequence(
+                % Assign the variables that are used in the match
+                % At this point in development it should be un-nessisary to filter for un-parsed
+                % variables, but I'll leave it here until I next review the case clauses.
+                lists:filter(fun(Elem) ->
+                        case Elem of
+                            ok -> false;
+                            _  -> true
+                        end
+                    end,
+                    assign_matched_vars(Params, Vars, Match)
+                ),
+                encapsulate_expressions(
+                    list_check(
+                        parse_node(ReturnAtom, Params, Consequent)
+                    )
+                )
+            )
+        ),
+        ElseClausesActual %alternate
+    ).
 
 
 
