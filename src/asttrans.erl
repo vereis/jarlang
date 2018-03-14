@@ -320,7 +320,7 @@ parse_receive(ReturnAtom, Params, {c_receive,_,Clauses,Timeout,TimeoutConsequent
                 estree:call_expression(
                     estree:member_expression(
                         estree:identifier(<<"this">>),
-                        estree:identifier(<<"setBehavior">>),
+                        estree:identifier(<<"setBehaviour">>),
                         false
                     ),
                     [function_wrap([],parse_node(A,B,C))]
@@ -338,7 +338,7 @@ parse_receive(ReturnAtom, Params, {c_receive,_,Clauses,Timeout,TimeoutConsequent
         estree:call_expression(
             estree:member_expression(
                 estree:identifier(<<"this">>),
-                estree:identifier(<<"setBehavior">>),
+                estree:identifier(<<"setBehaviour">>),
                 false
             ),
             [
