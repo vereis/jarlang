@@ -47,22 +47,23 @@ parse_module(T) ->
 %%% - Concurrently parse all functions in the module --------------------------------------------%%%
 %%% ---------------------------------------------------------------------------------------------%%%
 %% Spawns new parse_function processes for each function in a given function list.
+% parse_functions(Functions) ->
+%     Self = self(),
+%     Pids = lists:map(
+%         fun(X) ->
+%             spawn_link(fun() -> Self ! {self(), parse_function(X)} end)
+%         end, Functions
+%     ),
+%     [
+%         receive
+%             {Pid, TranspiledFunction} ->
+%                 TranspiledFunction
+%         end
+%         ||
+%         Pid <- Pids
+%     ].
 parse_functions(Functions) ->
-    Self = self(),
-    Pids = lists:map(
-        fun(X) ->
-            spawn_link(fun() -> Self ! {self(), parse_function(X)} end)
-        end, Functions
-    ),
-    [
-        receive
-            {Pid, TranspiledFunction} ->
-                TranspiledFunction
-        end
-        ||
-        Pid <- Pids
-    ].
-
+    [parse_function(Function) || Function <- Functions].
 
 
 %%% ---------------------------------------------------------------------------------------------%%%
@@ -361,7 +362,7 @@ parse_receive(ReturnAtom, Params, {c_receive,_,Clauses,Timeout,TimeoutConsequent
                                         estree:identifier(<<"__doLoop">>),
                                         estree:literal(false)
                                     )
-                            ),
+                                ),
                                 estree:if_statement(
                                     estree:binary_expression(<<">=">>,
                                         estree:identifier(<<"__mIndex">>),
@@ -408,8 +409,8 @@ parse_receive(ReturnAtom, Params, {c_receive,_,Clauses,Timeout,TimeoutConsequent
                                                 )
                                             )],
                                             <<"let">>
-                                        )
-                                        |parse_receive_clauses(
+                                        ),
+                                        parse_receive_clauses(
                                             ReturnAtom,
                                             RealParams,
                                             [{c_var, a, '__message'}],
@@ -452,10 +453,11 @@ parse_receive_clauses(ReturnAtom, Params, Vars,
         _  -> ElseClausesActual = ElseClauses
     end,
     % Assemble the if statement
-     estree:if_statement(
+    estree:if_statement(
         % The function that serves as pattern patching and guards
         assemble_case_condition(Params, Vars, Match, Evaluate),
         estree:block_statement(
+            [estree:empty_statement(),
             assemble_sequence(
                 % Assign the variables that are used in the match
                 % At this point in development it should be un-nessisary to filter for un-parsed
@@ -469,11 +471,16 @@ parse_receive_clauses(ReturnAtom, Params, Vars,
                     assign_matched_vars(Params, Vars, Match)
                 ),
                 encapsulate_expressions(
-                    list_check(
+
+                    % I FIXED THIS BY MAKING THIS A LIST: 
+                    % pls look over it... I'm not sure why I need to do this,
+                    % theres probably a deeper issue?
+                    [list_check(
                         parse_node(ReturnAtom, Params, Consequent)
-                    )
+                    )]
+                    
                 )
-            )
+            )]
         ),
         ElseClausesActual %alternate
     ).

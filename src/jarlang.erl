@@ -130,15 +130,16 @@ branch(_Help, _Vsn, _OutDir, _Type, _Files) ->
 transpile(Files, Outdir, js) ->
     Codegen = pkgutils:pkg_extract_file("codegen.js"),
               pkgutils:pkg_extract_dir("node_modules.zip"),
-    Pids = [spawn_transpilation_process(File, js_ast, self()) || File <- Files],
+    % Pids = [spawn_transpilation_process(File, js_ast, self()) || File <- Files],
 
-    %% Pass transpilated results into codegen.js to get JavaScript which we can write to a file
-    [
-        receive {Pid, {Module, Ast}} ->
-            gen_js(Ast, Module, Codegen, Outdir)
-        end
-        || Pid <- Pids
-    ],
+    % %% Pass transpilated results into codegen.js to get JavaScript which we can write to a file
+    % [
+    %     receive {Pid, {Module, Ast}} ->
+    %         gen_js(Ast, Module, Codegen, Outdir)
+    %     end
+    %     || Pid <- Pids
+    % ],
+    [gen_js(Data, Module, Codegen, Outdir) || {Module, Data} <- [pipeline(js_ast, File) || File <- Files]],
     pkgutils:pkg_clean_tmp_dir(),
     ok;
 
@@ -146,15 +147,16 @@ transpile(Files, Outdir, js) ->
 %% returning after all processes finish.
 transpile(Files, Outdir, Type) ->
     ok = is_valid_type(Type),
-    Pids = [spawn_transpilation_process(File, Type, self()) || File <- Files],
+    % Pids = [spawn_transpilation_process(File, Type, self()) || File <- Files],
 
-    % Write results to file
-    [
-        receive {Pid, {Module, Data}} ->
-            write_other(io_lib:format("~p", [Data]), Module, Type, Outdir)
-        end
-        || Pid <- Pids
-    ],
+    % % Write results to file
+    % [
+    %     receive {Pid, {Module, Data}} ->
+    %         write_other(io_lib:format("~p", [Data]), Module, Type, Outdir)
+    %     end
+    %     || Pid <- Pids
+    % ],
+    [write_other(io_lib:format("~p", [Data]), Module, Type, Outdir) || {Module, Data} <- [pipeline(Type, File) || File <- Files]],
     ok.
 
 %% Spawns a process which performs transpilation for any given file.
