@@ -448,7 +448,22 @@ parse_receive_clauses(ReturnAtom, Params, Vars,
     ElseClauses = parse_receive_clauses(ReturnAtom, Params, Vars, Clauses),
     % If there are no remaining clauses then use null
     case ElseClauses of
-        [] -> ElseClausesActual = null;
+        [] -> ElseClausesActual = estree:block_statement([
+                estree:expression_statement(
+                    estree:update_expression(
+                        <<"++">>,
+                        estree:identifier(<<"__mIndex">>),
+                        false
+                    )
+                ),
+                estree:expression_statement(
+                    estree:assignment_expression(
+                        <<"=">>,
+                        estree:identifier(<<"__doLoop">>),
+                        estree:literal(true)
+                    )
+                )
+            ]);
         _  -> ElseClausesActual = ElseClauses
     end,
     % Assemble the if statement
@@ -457,22 +472,38 @@ parse_receive_clauses(ReturnAtom, Params, Vars,
         assemble_case_condition(Params, Vars, Match, Evaluate),
         estree:block_statement(
             assemble_sequence(
-                % Assign the variables that are used in the match
-                % At this point in development it should be un-nessisary to filter for un-parsed
-                % variables, but I'll leave it here until I next review the case clauses.
-                lists:filter(fun(Elem) ->
-                        case Elem of
-                            ok -> false;
-                            _  -> true
-                        end
-                    end,
-                    assign_matched_vars(Params, Vars, Match)
-                ),
-                encapsulate_expressions(
-                    list_check(
-                        parse_node(ReturnAtom, Params, Consequent)
+                estree:expression_statement(
+                    estree:call_expression(
+                        estree:member_expression(
+                            estree:member_expression(
+                                estree:this_expression(),
+                                estree:identifier(<<"messages">>),
+                                false
+                            ),
+                            estree:identifier(<<"splice">>),
+                            false
+                        ),
+                        [estree:identifier(<<"__mIndex">>),
+                        estree:literal(1)]
                     )
-
+                ),
+                assemble_sequence(
+                    % Assign the variables that are used in the match
+                    % At this point in development it should be un-nessisary to filter for un-parsed
+                    % variables, but I'll leave it here until I next review the case clauses.
+                    lists:filter(fun(Elem) ->
+                            case Elem of
+                                ok -> false;
+                                _  -> true
+                            end
+                        end,
+                        assign_matched_vars(Params, Vars, Match)
+                    ),
+                    encapsulate_expressions(
+                        list_check(
+                            parse_node(ReturnAtom, Params, Consequent)
+                        )
+                    )
                 )
             )
         ),
