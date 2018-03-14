@@ -146,14 +146,13 @@ parse_var(noreturn, Params, {c_var, _, Var}) ->
 %%% ---------------------------------------------------------------------------------------------%%%
 %%% - Parse a sequence of nodes -----------------------------------------------------------------%%%
 %%% ---------------------------------------------------------------------------------------------%%%
-parse_seq(return, Params, {c_seq, _, A, B}) ->
+parse_seq(ReturnAtom, Params, {c_seq, _, A={c_receive,_,_,_,_}, B}) ->
+        parse_node(noreturn,
+            {next,{ReturnAtom, Params, B}}, A);
+parse_seq(ReturnAtom, Params, {c_seq, _, A, B}) ->
     assemble_sequence(
         parse_node(noreturn, Params, A),
-        parse_node(return, Params, B));
-parse_seq(noreturn, Params, {c_seq, _, A, B}) ->
-    assemble_sequence(
-        parse_node(noreturn, Params, A),
-        parse_node(noreturn, Params, B)).
+        parse_node(ReturnAtom, Params, B)).
 
 
 
@@ -311,14 +310,39 @@ parse_letrec(ReturnAtom, Params, {c_letrec, _, [Func], Apply}) ->
 %%% ---------------------------------------------------------------------------------------------%%%
 %% TODO: This is still a work in progress, it will not produce viable JS.
 parse_receive(ReturnAtom, Params, {c_receive,_,Clauses,Timeout,Unknown})->
+    case Params of
+        {next,{A,B,C}} -> Next = 
+            estree:call_expression(
+                estree:member_expression(
+                    estree:identifier(<<"this">>),
+                    estree:identifier(<<"setBehavior">>),
+                    false
+                ),
+                [function_wrap([],parse_node(A,B,C))]
+            );
+        _              -> Next = []
+    end,
     estree:call_expression(
-            estree:member_expression(
-                estree:identifier(<<"TODO">>),
-                estree:identifier(<<"matchMessage_Placeholder">>),
-                false
-            ),
-            []
-        ).
+        estree:member_expression(
+            estree:identifier(<<"this">>),
+            estree:identifier(<<"setBehavior">>),
+            false
+        ),
+        [
+            function_wrap([],
+                assemble_sequence(
+                    estree:call_expression(
+                        estree:member_expression(
+                            estree:identifier(<<"TODO">>),
+                            estree:identifier(<<"receive_placeholder">>),
+                            false
+                        ),[]
+                    ),
+                    Next
+                )
+            )
+        ]
+    ).
 
 
 
