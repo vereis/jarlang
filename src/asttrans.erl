@@ -146,6 +146,8 @@ parse_var(noreturn, Params, {c_var, _, Var}) ->
 %%% ---------------------------------------------------------------------------------------------%%%
 %%% - Parse a sequence of nodes -----------------------------------------------------------------%%%
 %%% ---------------------------------------------------------------------------------------------%%%
+%% If the first node is a receive node the second node must be passed as a parameter to be called
+%% inside the receive wrapping.
 parse_seq(ReturnAtom, Params, {c_seq, _, A={c_receive,_,_,_,_}, B}) ->
         parse_node(noreturn,
             {next,{ReturnAtom, Params, B}}, A);
@@ -309,40 +311,68 @@ parse_letrec(ReturnAtom, Params, {c_letrec, _, [Func], Apply}) ->
 %%% - Parse a message receive block -------------------------------------------------------------%%%
 %%% ---------------------------------------------------------------------------------------------%%%
 %% TODO: This is still a work in progress, it will not produce viable JS.
-parse_receive(ReturnAtom, Params, {c_receive,_,Clauses,Timeout,Unknown})->
+%% Code to be executed after the receive is passed in the parameters var.
+parse_receive(ReturnAtom, Params, {c_receive,_,Clauses,Timeout,TimeoutConsequent})->
     case Params of
         {next,{A,B,C}} -> Next = 
-            estree:call_expression(
-                estree:member_expression(
-                    estree:identifier(<<"this">>),
-                    estree:identifier(<<"setBehavior">>),
-                    false
-                ),
-                [function_wrap([],parse_node(A,B,C))]
-            );
-        _              -> Next = []
-    end,
-    estree:call_expression(
-        estree:member_expression(
-            estree:identifier(<<"this">>),
-            estree:identifier(<<"setBehavior">>),
-            false
-        ),
-        [
-            function_wrap([],
-                assemble_sequence(
-                    estree:call_expression(
-                        estree:member_expression(
-                            estree:identifier(<<"TODO">>),
-                            estree:identifier(<<"receive_placeholder">>),
-                            false
-                        ),[]
+            [estree:if_statement(
+                estree:identifier(<<"__doNext">>),
+                estree:call_expression(
+                    estree:member_expression(
+                        estree:identifier(<<"this">>),
+                        estree:identifier(<<"setBehavior">>),
+                        false
                     ),
-                    Next
+                    [function_wrap([],parse_node(A,B,C))]
+                ),null
+            )];
+        _ -> Next = []
+    end,
+    [
+        estree:variable_declaration([estree:variable_declarator(
+            estree:identifier(<<"__mIndex">>),estree:literal(0))],
+            <<"let">>
+        ),
+        estree:call_expression(
+            estree:member_expression(
+                estree:identifier(<<"this">>),
+                estree:identifier(<<"setBehavior">>),
+                false
+            ),
+            [
+                function_wrap([],
+                    assemble_sequence(
+                        estree:variable_declaration([
+                            estree:variable_declarator(
+                                estree:identifier(<<"__doNext">>),estree:literal(true)),
+                            estree:variable_declarator(
+                                estree:identifier(<<"__doLoop">>),estree:literal(false))],
+                            <<"let">>
+                        ),
+
+                        assemble_sequence(
+                            estree:do_while_statement(
+                                estree:identifier(<<"__doLoop">>),
+                                [
+                                    estree:expression_statement(
+                                        estree:call_expression(
+                                            estree:member_expression(
+                                                estree:identifier(<<"TODO">>),
+                                                estree:identifier(<<"receive_placeholder">>),
+                                                false
+                                            ),[]
+                                        )
+                                    )
+                                ]
+                            ),
+                            % [],% Swap comment block with this line
+                            Next
+                        )
+                    )
                 )
-            )
-        ]
-    ).
+            ]
+        )
+    ].
 
 
 
