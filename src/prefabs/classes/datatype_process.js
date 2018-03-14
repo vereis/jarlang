@@ -28,6 +28,10 @@ const Process = (() => {
             return this.messages.push(msg);
         }
 
+        getValue() {
+            return this.pid;
+        }
+
         matchMessages(lambda) {
             const unmatchedMessages = [];
             const matchedMessages = this.messages.filter((message) => {

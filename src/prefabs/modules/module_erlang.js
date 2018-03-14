@@ -1,6 +1,21 @@
 const erlang = function () {
     'use_strict';
     const exports = {
+        '!': function () {
+            let args = [...arguments].map(arg => jrts.jsToErlang(arg));
+            switch (arguments.length) {
+                case 2:
+                    if (Process.isProcess(this)) {
+                        return functions['!/2'].bind(this)(...args);
+                    }
+                    else {
+                        return jrts.spawn(function () {
+                            return functions['!/2'].bind(this)(...args);
+                        });
+                    }
+            }
+            throw '** exception error: undefined function' + ('!' + ('/' + arguments.length));
+        },
         '+': function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
             switch (arguments.length) {
@@ -700,10 +715,31 @@ const erlang = function () {
                     }
             }
             throw '** exception error: undefined function' + ('trunc' + ('/' + arguments.length));
+        },
+        'self': function () {
+            let args = [...arguments].map(arg => jrts.jsToErlang(arg));
+            switch (arguments.length) {
+                case 0:
+                    if (Process.isProcess(this)) {
+                        return functions['self/0'].bind(this)(...args);
+                    }
+                    else {
+                        return jrts.spawn(function () {
+                            return functions['self/0'].bind(this)(...args);
+                        });
+                    }
+            }
+            throw '** exception error: undefined function' + ('self' + ('/' + arguments.length));
         }
     };
 
     const functions = {
+        '!/2': function (_cor1, _cor0) {
+            if (Pid.isPid(_cor1)) {
+                return _cor1.sendMessage(_cor0);
+            }
+            throw '** exception error: bad argument in operator !/2 called as ' + _cor1 + ' ! ' + _cor0;
+        },
         '+/2': function (_cor1, _cor0) {
             if ((Int.isInt(_cor1) || Float.isFloat(_cor1)) && (Int.isInt(_cor0) || Float.isFloat(_cor0))) {
                 return _cor1.add(_cor0);
@@ -990,6 +1026,9 @@ const erlang = function () {
         },
         'trunc/1': function (_cor0) {
             return new Int(_cor0.getValue().trunc());
+        },
+        'self/0': function () {
+            return this.getValue();
         }
     };
 

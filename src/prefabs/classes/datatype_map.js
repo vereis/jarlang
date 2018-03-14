@@ -28,7 +28,7 @@ const Map = (() => {
 
             return {
                 next: () => {
-                    if (k = tmp1.shift()) {
+                    if ((k = tmp1.shift())) {
                         return {
                             value: new Tuple(k, tmp2.shift()),
                             done: false
@@ -99,7 +99,7 @@ const Map = (() => {
             tmp1 = [...this.getValue().keys],
             tmp2 = [...this.getValue().values];
 
-            while (k = tmp1.shift()) {
+            while ((k = tmp1.shift())) {
                 pairs.push(`${k}=>${tmp2.shift()}`);
             }
             return `#{${pairs.sort().join(", ")}}`;
