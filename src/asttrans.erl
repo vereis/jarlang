@@ -311,7 +311,14 @@ parse_letrec(ReturnAtom, Params, {c_letrec, _, [Func], Apply}) ->
 %%% ---------------------------------------------------------------------------------------------%%%
 %% TODO: This is still a work in progress, it will not produce viable JS.
 parse_receive(ReturnAtom, Params, {c_receive,_,Clauses,Timeout,Unknown})->
-    parse_case_clauses(ReturnAtom, Params, [{c_var, [], message}], Clauses).
+    estree:call_expression(
+            estree:member_expression(
+                estree:identifier(<<"TODO">>),
+                estree:identifier(<<"matchMessage_Placeholder">>),
+                false
+            ),
+            []
+        ).
 
 
 
