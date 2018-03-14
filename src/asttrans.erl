@@ -12,7 +12,7 @@
 -ifdef(TEST).
     -compile(export_all).
 -else.
-    -export([erast_to_esast/1]).
+    -export([erast_to_esast/2]).
 -endif.
 
 
@@ -24,21 +24,21 @@
 %%% ---------------------------------------------------------------------------------------------%%%
 
 %% Alternative entrypoint to parse_module/1
-erast_to_esast(AST) ->
-    parse_module(AST).
+erast_to_esast(AST, ConcMode) ->
+    parse_module(AST, ConcMode).
 
 %% Begins parses ast expecting a c_module atom to indicate that the ast we're parsing
 %% is indeed a core_erlang ast.
 %% Processes information we need such as ModuleName and continues to parse functions and
 %% module export information.
-parse_module({c_module, _A, {_, _, ModuleName}, Exports, _Attributes, Functions}) ->
-    FormattedFunctions = parse_functions(Functions),
+parse_module({c_module, _A, {_, _, ModuleName}, Exports, _Attributes, Functions}, ConcMode) ->
+    FormattedFunctions = parse_functions(Functions, ConcMode),
     FormattedExports = lists:map(
         fun({N, A}) ->{atom_to_list(N), A} end,
         tuple_list_get_vars_3(Exports)
     ),
     esast:c_module(atom_to_list(ModuleName), FormattedExports, FormattedFunctions);
-parse_module(T) ->
+parse_module(T, _ConcMode) ->
     io:format("Unrecognised Token in module section: ~p", [T]).
 
 
@@ -46,23 +46,22 @@ parse_module(T) ->
 %%% ---------------------------------------------------------------------------------------------%%%
 %%% - Concurrently parse all functions in the module --------------------------------------------%%%
 %%% ---------------------------------------------------------------------------------------------%%%
-%% Spawns new parse_function processes for each function in a given function list.
-% parse_functions(Functions) ->
-%     Self = self(),
-%     Pids = lists:map(
-%         fun(X) ->
-%             spawn_link(fun() -> Self ! {self(), parse_function(X)} end)
-%         end, Functions
-%     ),
-%     [
-%         receive
-%             {Pid, TranspiledFunction} ->
-%                 TranspiledFunction
-%         end
-%         ||
-%         Pid <- Pids
-%     ].
-parse_functions(Functions) ->
+parse_functions(Functions, multi_threaded) ->
+    Self = self(),
+    Pids = lists:map(
+        fun(X) ->
+            spawn_link(fun() -> Self ! {self(), parse_function(X)} end)
+        end, Functions
+    ),
+    [
+        receive
+            {Pid, TranspiledFunction} ->
+                TranspiledFunction
+        end
+        ||
+        Pid <- Pids
+    ];
+parse_functions(Functions, single_threaded) ->
     [parse_function(Function) || Function <- Functions].
 
 
@@ -478,7 +477,7 @@ parse_receive_clauses(ReturnAtom, Params, Vars,
                     [list_check(
                         parse_node(ReturnAtom, Params, Consequent)
                     )]
-                    
+
                 )
             )]
         ),

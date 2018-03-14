@@ -14,7 +14,8 @@
 -else.
     -export([main/1,
             pipeline/1,
-            pipeline/2]).
+            pipeline/2,
+            pipeline/3]).
 -endif.
 
 
@@ -33,7 +34,13 @@
                         | core_ast
                         | all.
 
+-type concurrency_mode() :: single_threaded
+                          | multi_threaded.
 
+%% Export concurrency_mode type since that'll be used in asttrans
+-export_type([
+    concurrency_mode/0
+]).
 
 
 %%% ---------------------------------------------------------------------------------------------%%%
@@ -50,7 +57,10 @@
 
     {["-h", "--help"], o_help, is_set, false, "Displays this help message and exits."},
 
-    {["-v", "--version"], o_vsn, is_set, false, "Displays current build version."}
+    {["-v", "--version"], o_vsn, is_set, false, "Displays current build version."},
+
+    {["--single-thread"], o_one_thread, is_set, false, "Forces transpilation to only use only one thread/process. " ++
+                                                       "Single-threaded error output is also much nicer."}
 ]).
 
 %% Main entrypoint into Jarlang, parses given arguments and decides on what to do.
@@ -66,8 +76,12 @@ main(Args) ->
     OutDir   = pkgargs:get(o_output, ParsedArgs),
     Type     = list_to_atom(pkgargs:get(o_type, ParsedArgs)),
     Files    = perform_wildcard_matches(pkgargs:get(default,  ParsedArgs)),
+    ConcMode = case pkgargs:get(o_one_thread, ParsedArgs) of
+                   true  -> single_threaded;
+                   false -> multi_threaded
+               end,
 
-    try branch(ShowHelp, ShowVsn, OutDir, Type, Files) of
+    try branch(ShowHelp, ShowVsn, OutDir, Type, Files, ConcMode) of
         _ -> ok
     catch
         throw:usage ->
@@ -97,19 +111,20 @@ main(Args) ->
              boolean(),
              file:filename_all(),
              pipeline_stage(),
-             [file:filename_all(), ...]) -> ok | no_return().
-branch(_Help = false, _Vsn = false, Outdir, all, Files) when (length(Files) > 0) ->
-    transpile(Files, Outdir, core),
-    transpile(Files, Outdir, core_ast),
-    transpile(Files, Outdir, js_ast),
-    transpile(Files, Outdir, js);
-branch(_Help = false, _Vsn = false, Outdir, Type, Files) when (length(Files) > 0) ->
-    transpile(Files, Outdir, Type);
-branch(_Help = true, _Vsn = false, _OutDir, _Type, _Files = []) ->
+             [file:filename_all(), ...],
+             concurrency_mode()) -> ok | no_return().
+branch(_Help = false, _Vsn = false, Outdir, all, Files, ConcMode) when (length(Files) > 0) ->
+    transpile(Files, Outdir, core, ConcMode),
+    transpile(Files, Outdir, core_ast, ConcMode),
+    transpile(Files, Outdir, js_ast, ConcMode),
+    transpile(Files, Outdir, js, ConcMode);
+branch(_Help = false, _Vsn = false, Outdir, Type, Files, ConcMode) when (length(Files) > 0) ->
+    transpile(Files, Outdir, Type, ConcMode);
+branch(_Help = true, _Vsn = false, _OutDir, _Type, _Files = [], _ConcMode) ->
     throw(help);
-branch(_Help = false, _Vsn = true, _OutDir, _Type, _Files = []) ->
+branch(_Help = false, _Vsn = true, _OutDir, _Type, _Files = [], _ConcMode) ->
     throw(vsn);
-branch(_Help, _Vsn, _OutDir, _Type, _Files) ->
+branch(_Help, _Vsn, _OutDir, _Type, _Files, _ConcMode) ->
     throw(usage).
 
 
@@ -120,43 +135,61 @@ branch(_Help, _Vsn, _OutDir, _Type, _Files) ->
 %%% - COMPILER PIPELINE -------------------------------------------------------------------------%%%
 %%% ---------------------------------------------------------------------------------------------%%%
 
+
+-spec transpile([file:filename_all()],
+                file:filename_all(),
+                pipeline_stage(),
+                concurrency_mode()) -> ok.
+%% Convinience function for synchronously transpiling erl files in js files.
+%% Also sets up compilation environment by extracting files to a tmp directory. Also cleans this
+%% once transpilation is complete.
+transpile(Files, Outdir, js, single_threaded) ->
+    Codegen = pkgutils:pkg_extract_file("codegen.js"),
+              pkgutils:pkg_extract_dir("node_modules.zip"),
+    ASTs = [pipeline(js_ast, File, single_threaded) || File <- Files],
+    [gen_js(Data, Module, Codegen, Outdir) || {Module, Data} <- ASTs],
+    pkgutils:pkg_clean_tmp_dir(),
+    ok;
+
 %% Convinience function for asynchronously transpiling erl files into js files, and synchronously
 %% returning after all processes finish.
 %% Also sets up compilation environment by extracting files to a tmp directory. Once transpilation
 %% finishes, it then cleans up said directory
--spec transpile([file:filename_all()],
-                file:filename_all(),
-                pipeline_stage()) -> ok.
-transpile(Files, Outdir, js) ->
+transpile(Files, Outdir, js, multi_threaded) ->
     Codegen = pkgutils:pkg_extract_file("codegen.js"),
               pkgutils:pkg_extract_dir("node_modules.zip"),
-    % Pids = [spawn_transpilation_process(File, js_ast, self()) || File <- Files],
+    Pids = [spawn_transpilation_process(File, js_ast, self()) || File <- Files],
 
-    % %% Pass transpilated results into codegen.js to get JavaScript which we can write to a file
-    % [
-    %     receive {Pid, {Module, Ast}} ->
-    %         gen_js(Ast, Module, Codegen, Outdir)
-    %     end
-    %     || Pid <- Pids
-    % ],
-    [gen_js(Data, Module, Codegen, Outdir) || {Module, Data} <- [pipeline(js_ast, File) || File <- Files]],
+    %% Pass transpilated results into codegen.js to get JavaScript which we can write to a file
+    [
+        receive {Pid, {Module, Ast}} ->
+            gen_js(Ast, Module, Codegen, Outdir)
+        end
+        || Pid <- Pids
+    ],
     pkgutils:pkg_clean_tmp_dir(),
+    ok;
+
+%% Convinience function to synchronously transpile erl files into core_ast files
+transpile(Files, Outdir, Type, single_threaded) ->
+    ok = is_valid_type(Type),
+    Processed = [pipeline(Type, File, single_threaded) || File <- Files],
+    [write_other(io_lib:format("~p", [Data]), Module, Type, Outdir) || {Module, Data} <- Processed],
     ok;
 
 %% Convinience function for asynchronously transpiling erl files into core_ast files, and synchronously
 %% returning after all processes finish.
-transpile(Files, Outdir, Type) ->
+transpile(Files, Outdir, Type, multi_threaded) ->
     ok = is_valid_type(Type),
-    % Pids = [spawn_transpilation_process(File, Type, self()) || File <- Files],
+    Pids = [spawn_transpilation_process(File, Type, self()) || File <- Files],
 
-    % % Write results to file
-    % [
-    %     receive {Pid, {Module, Data}} ->
-    %         write_other(io_lib:format("~p", [Data]), Module, Type, Outdir)
-    %     end
-    %     || Pid <- Pids
-    % ],
-    [write_other(io_lib:format("~p", [Data]), Module, Type, Outdir) || {Module, Data} <- [pipeline(Type, File) || File <- Files]],
+    % Write results to file
+    [
+        receive {Pid, {Module, Data}} ->
+            write_other(io_lib:format("~p", [Data]), Module, Type, Outdir)
+        end
+        || Pid <- Pids
+    ],
     ok.
 
 %% Spawns a process which performs transpilation for any given file.
@@ -166,14 +199,21 @@ transpile(Files, Outdir, Type) ->
                                   pid()) -> pid().
 spawn_transpilation_process(File, Type, MainProcess) ->
     spawn_link(fun() ->
-        MainProcess ! {self(), pipeline(Type, File)}
+        MainProcess ! {self(), pipeline(Type, File, multi_threaded)}
     end).
 
-%% Shorthand for calling pipeline/2 where the function called is pipeline going as far as
-%% the pipeline is currently implemented.
+%% Shorthand for calling pipeline/3 where the function called is pipeline going as far as
+%% the pipeline is currently implemented, assuming concurrency mode is 'single_threaded'
 -spec pipeline(file:filename_all()) -> {file:filename_all(), any()}.
 pipeline(Module) ->
-    pipeline(js_ast, Module).
+    pipeline(js_ast, Module, single_threaded).
+
+%% Shorthand for calling pipeline/3 where the function called is pipeline going as far as
+%% the pipeline is currently implemented, with the specified concurrency mode.
+-spec pipeline(file:filename_all(),
+               concurrency_mode()) -> {file:filename_all(), any()}.
+pipeline(Module, ConcMode) ->
+    pipeline(js_ast, Module, ConcMode).
 
 %% Calls different modules, all of which implement different parts of our compiler pipeline,
 %% and returns the result of that stage of the pipeline to the calling function.
@@ -181,16 +221,17 @@ pipeline(Module) ->
 %% to run and produce, such as 'core' or 'core_ast' to generate core_erlang or
 %% a core_erlang_ast respectively.
 -spec pipeline(pipeline_stage(),
-               file:filename_all()) -> {file:filename_all(), any()}.
-pipeline(core, Module) ->
+               file:filename_all(),
+               concurrency_mode()) -> {file:filename_all(), any()}.
+pipeline(core, Module, _ConcMode) ->
     {ok, _ModuleName, BinaryData} = coregen:to_core_erlang(Module, return),
     {Module, BinaryData};
-pipeline(core_ast, Module) ->
+pipeline(core_ast, Module, _ConcMode) ->
     {ok, AST} = coregen:to_core_erlang_ast(Module, return),
     {Module, AST};
-pipeline(js_ast, Module) ->
-    {_Module, AST} = pipeline(core_ast, Module),
-    {Module, estree:to_list(asttrans:erast_to_esast(AST))}.
+pipeline(js_ast, Module, ConcMode) ->
+    {_Module, AST} = pipeline(core_ast, Module, ConcMode),
+    {Module, estree:to_list(asttrans:erast_to_esast(AST, ConcMode))}.
 
 %% Generate javascript by writing out a javascript AST to a file and passing it into codegen.js
 %% Then proceeds to read the output of codegen.js and writes it to a file
