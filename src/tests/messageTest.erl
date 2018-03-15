@@ -5,7 +5,7 @@ send_request(Pid,Req)->
     Pid ! {io_request,self(),Req}.
 
 receive_request()->
-    io:format("A",[]),
+    % io:format("A",[]),
     receive
     {io_request,Pid,Data}->
         io:format("Data: ~p~n",[Data]);
@@ -14,7 +14,7 @@ receive_request()->
     end.
 
 receive_request2()->
-    io:format("A",[]),
+    % io:format("A",[]),
     receive
     {io_request,Pid,Data}->
         io:format("Data: ~p~n",[Data]);
@@ -24,7 +24,7 @@ receive_request2()->
     io:format("End").
 
 receive_request3()->
-    io:format("A",[]),
+    % io:format("A",[]),
     receive
         _->
             io:format("Something",[])
@@ -34,7 +34,7 @@ receive_request3()->
     end.
 
 receive_request4()->
-    io:format("A",[]),
+    % io:format("A",[]),
     receive
         _->
             io:format("Something",[])

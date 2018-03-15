@@ -812,18 +812,20 @@ recurse_var_assignments(ConsCount, {c_var, _, Name}, V, isTail) ->
         )
     ];
 recurse_var_assignments(_, {c_tuple, _, Elements}, V, _) ->
-    lists:foldl(
-        fun(Elem, L) ->
-            A = length(L),
+    {_,L} = lists:foldl(
+        fun(Elem, {I,L}) ->
+            {I+1,
             lists:append(
                 L,
                 recurse_var_assignments(0, Elem,
-                    estree:member_expression(V, estree:literal(A), true),
+                    estree:member_expression(V, estree:literal(I), true),
                     false
                 )
-            )
+            )}
         end,
-        [], Elements);
+        {0,[]}, Elements),
+    L;%Return just the list
+
 % These two detect a list and begin counting the position in the list
 % This one detects that a list constructor ends with a tail binding
 recurse_var_assignments(ConsCount, {c_cons, _, A, B={c_var, _, Name}}, V, _) ->
