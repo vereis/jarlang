@@ -836,13 +836,23 @@ recurse_var_assignments(_, {c_tuple, _, Elements}, V, _) ->
 % This one detects that a list constructor ends with a tail binding
 recurse_var_assignments(ConsCount, {c_cons, _, A, B={c_var, _, Name}}, V, _) ->
     lists:append(
-        recurse_var_assignments(0, A, estree:member_expression(V, estree:literal(ConsCount), true),
+        recurse_var_assignments(0, A, 
+                        estree:call_expression(
+                            estree:member_expression(V,
+                                estree:identifier(<<"nth">>), false),
+                            [estree:literal(ConsCount)]
+                        ),
             false),
         recurse_var_assignments(ConsCount+1, B, V, isTail)
     );
 recurse_var_assignments(ConsCount, {c_cons, _, A, B}, V, _) ->
     lists:append(
-        recurse_var_assignments(0, A, estree:member_expression(V, estree:literal(ConsCount), true),
+        recurse_var_assignments(0, A,
+                        estree:call_expression(
+                            estree:member_expression(V,
+                                estree:identifier(<<"nth">>), false),
+                            [estree:literal(ConsCount)]
+                        ),
             false),
         recurse_var_assignments(ConsCount+1, B, V, false)
     );
