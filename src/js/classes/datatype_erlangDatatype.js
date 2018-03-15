@@ -19,7 +19,7 @@ const ErlangDatatype = (() => {
         }
 
         match(other) {
-            if (ErlangDatatype.isErlangDatatype(other) ? this.getValue() === other.getValue() : this.getValue() === other) {
+            if (other===null || (ErlangDatatype.isErlangDatatype(other) ? this.getValue() === other.getValue() : this.getValue() === other)) {
                 return other;
             }
             else {

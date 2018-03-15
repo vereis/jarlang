@@ -107,7 +107,7 @@ const Map = (() => {
 
         // TODO: actually implement mapping properly
         match(map) {
-            if (Map.isMap(map) && this.equals(map.getValue())) {
+            if (map===null || (Map.isMap(map) && this.equals(map.getValue()))) {
                 return map;
             } else {
                 return undefined;

@@ -78,7 +78,7 @@ const Pid = (() => {
         }
 
         match(x) {
-            if (Pid.isPid(x) && this.getValue().toString() === x.getValue().toString()) {
+            if (x===null || (Pid.isPid(x) && this.getValue().toString() === x.getValue().toString())) {
                 return x;
             }
             else {

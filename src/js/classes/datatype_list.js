@@ -128,15 +128,16 @@ const List = (() => {
         }
 
         match(other) {
+            if(other===null)return other;
             if (List.isList(other) && this.size() === other.size()) {
                 for (let i = 0; i < this.size(); i++) {
-                    if (ErlangDatatype.isErlangDatatype(this.nth(i)) && ErlangDatatype.isErlangDatatype(other.nth(i))) {
+                    if (ErlangDatatype.isErlangDatatype(this.nth(i))) {
                         if (this.nth(i).match(other.nth(i)) === undefined) {
                             return undefined;
                         }
                     }
                     else {
-                        if (this.nth(i) !== other.nth(i)) {
+                        if (this.nth(i) !== other.nth(i) && other.nth(i) !== null) {
                             return undefined;
                         }
                     }

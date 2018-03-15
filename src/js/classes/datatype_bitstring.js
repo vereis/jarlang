@@ -41,7 +41,7 @@ const BitString = (() => {
         }
 
         match(other) {
-            if (BitString.isBitString(other) && this.value === other.value) {
+            if (other===null||(BitString.isBitString(other) && this.value === other.value)) {
                 return other;
             }
             else {

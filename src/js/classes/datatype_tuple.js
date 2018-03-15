@@ -89,5 +89,27 @@ const Tuple = (() => {
         static cloneTuple(tuple) {
             return new Tuple(...tuple);
         }
+
+        match(other) {
+            if(other===null)return other;
+            if (List.isTuple(other) && this.size() === other.size()) {
+                for (let i = 0; i < this.size(); i++) {
+                    if (ErlangDatatype.isErlangDatatype(this.nth(i))) {
+                        if (this.nth(i).match(other.nth(i)) === undefined) {
+                            return undefined;
+                        }
+                    }
+                    else {
+                        if (this.nth(i) !== other.nth(i) && other.nth(i) !== null) {
+                            return undefined;
+                        }
+                    }
+                }
+                return other;
+            }
+            else {
+                return undefined;
+            }
+        }
     };
 })();

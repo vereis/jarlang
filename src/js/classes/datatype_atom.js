@@ -17,7 +17,7 @@ const Atom = (() => {
         }
 
         match(other) {
-            if (Atom.isAtom(other) ? this.getValue() === other.getValue() : this.getValue() === other) {
+            if (other===null||(Atom.isAtom(other) ? this.getValue() === other.getValue() : this.getValue() === other)) {
                 return other;
             }
             else {

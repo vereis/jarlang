@@ -15,7 +15,7 @@ const Float = (() => {
         }
 
         match(other) {
-            if (!isNaN(other) && this.equals(other)) {
+            if (other===null||(!isNaN(other) && this.equals(other))) {
                 return other;
             }
             else {

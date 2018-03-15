@@ -18,7 +18,7 @@ const Reference = (() => {
         }
 
         match(x) {
-            if (Reference.isReference(x) && this.value === x.value) {
+            if (x===null || (Reference.isReference(x) && this.value === x.value)) {
                 return x;
             }
             else {
