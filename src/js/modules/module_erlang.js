@@ -14,7 +14,7 @@ const erlang = function () {
                         });
                     }
             }
-            throw '** exception error: undefined function' + ('!' + ('/' + arguments.length));
+            throw '** exception error: undefined function ' + ('!' + ('/' + arguments.length));
         },
         '+': function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
@@ -29,7 +29,7 @@ const erlang = function () {
                         });
                     }
             }
-            throw '** exception error: undefined function' + ('+' + ('/' + arguments.length));
+            throw '** exception error: undefined function ' + ('+' + ('/' + arguments.length));
         },
         '-': function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
@@ -44,7 +44,7 @@ const erlang = function () {
                         });
                     }
             }
-            throw '** exception error: undefined function' + ('-' + ('/' + arguments.length));
+            throw '** exception error: undefined function ' + ('-' + ('/' + arguments.length));
         },
         '*': function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
@@ -59,7 +59,7 @@ const erlang = function () {
                         });
                     }
             }
-            throw '** exception error: undefined function' + ('*' + ('/' + arguments.length));
+            throw '** exception error: undefined function ' + ('*' + ('/' + arguments.length));
         },
         '/': function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
@@ -74,7 +74,7 @@ const erlang = function () {
                         });
                     }
             }
-            throw '** exception error: undefined function' + ('/' + ('/' + arguments.length));
+            throw '** exception error: undefined function ' + ('/' + ('/' + arguments.length));
         },
         'rem': function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
@@ -89,7 +89,7 @@ const erlang = function () {
                         });
                     }
             }
-            throw '** exception error: undefined function' + ('rem' + ('/' + arguments.length));
+            throw '** exception error: undefined function ' + ('rem' + ('/' + arguments.length));
         },
         'div': function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
@@ -104,7 +104,7 @@ const erlang = function () {
                         });
                     }
             }
-            throw '** exception error: undefined function' + ('div' + ('/' + arguments.length));
+            throw '** exception error: undefined function ' + ('div' + ('/' + arguments.length));
         },
         '==': function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
@@ -119,7 +119,7 @@ const erlang = function () {
                         });
                     }
             }
-            throw '** exception error: undefined function' + ('==' + ('/' + arguments.length));
+            throw '** exception error: undefined function ' + ('==' + ('/' + arguments.length));
         },
         '/=': function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
@@ -134,7 +134,7 @@ const erlang = function () {
                         });
                     }
             }
-            throw '** exception error: undefined function' + ('/=' + ('/' + arguments.length));
+            throw '** exception error: undefined function ' + ('/=' + ('/' + arguments.length));
         },
         '<': function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
@@ -149,7 +149,7 @@ const erlang = function () {
                         });
                     }
             }
-            throw '** exception error: undefined function' + ('<' + ('/' + arguments.length));
+            throw '** exception error: undefined function ' + ('<' + ('/' + arguments.length));
         },
         '=<': function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
@@ -164,7 +164,7 @@ const erlang = function () {
                         });
                     }
             }
-            throw '** exception error: undefined function' + ('=<' + ('/' + arguments.length));
+            throw '** exception error: undefined function ' + ('=<' + ('/' + arguments.length));
         },
         '>': function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
@@ -179,7 +179,7 @@ const erlang = function () {
                         });
                     }
             }
-            throw '** exception error: undefined function' + ('>' + ('/' + arguments.length));
+            throw '** exception error: undefined function ' + ('>' + ('/' + arguments.length));
         },
         '>=': function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
@@ -194,7 +194,7 @@ const erlang = function () {
                         });
                     }
             }
-            throw '** exception error: undefined function' + ('>=' + ('/' + arguments.length));
+            throw '** exception error: undefined function ' + ('>=' + ('/' + arguments.length));
         },
         '=:=': function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
@@ -209,7 +209,7 @@ const erlang = function () {
                         });
                     }
             }
-            throw '** exception error: undefined function' + ('=:=' + ('/' + arguments.length));
+            throw '** exception error: undefined function ' + ('=:=' + ('/' + arguments.length));
         },
         '=/=': function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
@@ -224,7 +224,7 @@ const erlang = function () {
                         });
                     }
             }
-            throw '** exception error: undefined function' + ('=/=' + ('/' + arguments.length));
+            throw '** exception error: undefined function ' + ('=/=' + ('/' + arguments.length));
         },
         'compare': function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
@@ -239,7 +239,7 @@ const erlang = function () {
                         });
                     }
             }
-            throw '** exception error: undefined function' + ('compare' + ('/' + arguments.length));
+            throw '** exception error: undefined function ' + ('compare' + ('/' + arguments.length));
         },
         'match': function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
@@ -254,7 +254,7 @@ const erlang = function () {
                         });
                     }
             }
-            throw '** exception error: undefined function' + ('match' + ('/' + arguments.length));
+            throw '** exception error: undefined function ' + ('match' + ('/' + arguments.length));
         },
         'or': function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
@@ -269,7 +269,7 @@ const erlang = function () {
                         });
                     }
             }
-            throw '** exception error: undefined function' + ('or' + ('/' + arguments.length));
+            throw '** exception error: undefined function ' + ('or' + ('/' + arguments.length));
         },
         'and': function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
@@ -284,7 +284,7 @@ const erlang = function () {
                         });
                     }
             }
-            throw '** exception error: undefined function' + ('and' + ('/' + arguments.length));
+            throw '** exception error: undefined function ' + ('and' + ('/' + arguments.length));
         },
         'not': function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
@@ -299,7 +299,7 @@ const erlang = function () {
                         });
                     }
             }
-            throw '** exception error: undefined function' + ('not' + ('/' + arguments.length));
+            throw '** exception error: undefined function ' + ('not' + ('/' + arguments.length));
         },
         'xor': function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
@@ -314,7 +314,7 @@ const erlang = function () {
                         });
                     }
             }
-            throw '** exception error: undefined function' + ('xor' + ('/' + arguments.length));
+            throw '** exception error: undefined function ' + ('xor' + ('/' + arguments.length));
         },
         'band': function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
@@ -329,7 +329,7 @@ const erlang = function () {
                         });
                     }
             }
-            throw '** exception error: undefined function' + ('band' + ('/' + arguments.length));
+            throw '** exception error: undefined function ' + ('band' + ('/' + arguments.length));
         },
         'bor': function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
@@ -344,7 +344,7 @@ const erlang = function () {
                         });
                     }
             }
-            throw '** exception error: undefined function' + ('bor' + ('/' + arguments.length));
+            throw '** exception error: undefined function ' + ('bor' + ('/' + arguments.length));
         },
         'bxor': function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
@@ -359,7 +359,7 @@ const erlang = function () {
                         });
                     }
             }
-            throw '** exception error: undefined function' + ('bxor' + ('/' + arguments.length));
+            throw '** exception error: undefined function ' + ('bxor' + ('/' + arguments.length));
         },
         'bnot': function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
@@ -374,7 +374,7 @@ const erlang = function () {
                         });
                     }
             }
-            throw '** exception error: undefined function' + ('bnot' + ('/' + arguments.length));
+            throw '** exception error: undefined function ' + ('bnot' + ('/' + arguments.length));
         },
         'module_info': function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
@@ -399,7 +399,7 @@ const erlang = function () {
                         });
                     }
             }
-            throw '** exception error: undefined function' + ('module_info' + ('/' + arguments.length));
+            throw '** exception error: undefined function ' + ('module_info' + ('/' + arguments.length));
         },
         'atom_to_list': function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
@@ -414,7 +414,7 @@ const erlang = function () {
                         });
                     }
             }
-            throw '** exception error: undefined function' + ('atom_to_list' + ('/' + arguments.length));
+            throw '** exception error: undefined function ' + ('atom_to_list' + ('/' + arguments.length));
         },
         'list_to_atom': function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
@@ -429,7 +429,7 @@ const erlang = function () {
                         });
                     }
             }
-            throw '** exception error: undefined function' + ('list_to_atom' + ('/' + arguments.length));
+            throw '** exception error: undefined function ' + ('list_to_atom' + ('/' + arguments.length));
         },
         'list_to_existing_atom': function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
@@ -444,7 +444,7 @@ const erlang = function () {
                         });
                     }
             }
-            throw '** exception error: undefined function' + ('list_to_existing_atom' + ('/' + arguments.length));
+            throw '** exception error: undefined function ' + ('list_to_existing_atom' + ('/' + arguments.length));
         },
         'is_atom': function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
@@ -459,7 +459,7 @@ const erlang = function () {
                         });
                     }
             }
-            throw '** exception error: undefined function' + ('is_atom' + ('/' + arguments.length));
+            throw '** exception error: undefined function ' + ('is_atom' + ('/' + arguments.length));
         },
         'is_binary': function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
@@ -474,7 +474,7 @@ const erlang = function () {
                         });
                     }
             }
-            throw '** exception error: undefined function' + ('is_binary' + ('/' + arguments.length));
+            throw '** exception error: undefined function ' + ('is_binary' + ('/' + arguments.length));
         },
         'is_bitstring': function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
@@ -489,7 +489,7 @@ const erlang = function () {
                         });
                     }
             }
-            throw '** exception error: undefined function' + ('is_bitstring' + ('/' + arguments.length));
+            throw '** exception error: undefined function ' + ('is_bitstring' + ('/' + arguments.length));
         },
         'is_boolean': function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
@@ -504,7 +504,7 @@ const erlang = function () {
                         });
                     }
             }
-            throw '** exception error: undefined function' + ('is_boolean' + ('/' + arguments.length));
+            throw '** exception error: undefined function ' + ('is_boolean' + ('/' + arguments.length));
         },
         'is_float': function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
@@ -519,7 +519,7 @@ const erlang = function () {
                         });
                     }
             }
-            throw '** exception error: undefined function' + ('is_float' + ('/' + arguments.length));
+            throw '** exception error: undefined function ' + ('is_float' + ('/' + arguments.length));
         },
         'is_function': function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
@@ -534,7 +534,7 @@ const erlang = function () {
                         });
                     }
             }
-            throw '** exception error: undefined function' + ('is_function' + ('/' + arguments.length));
+            throw '** exception error: undefined function ' + ('is_function ' + ('/' + arguments.length));
         },
         'is_integer': function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
@@ -549,7 +549,7 @@ const erlang = function () {
                         });
                     }
             }
-            throw '** exception error: undefined function' + ('is_integer' + ('/' + arguments.length));
+            throw '** exception error: undefined function ' + ('is_integer' + ('/' + arguments.length));
         },
         'is_list': function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
@@ -564,7 +564,7 @@ const erlang = function () {
                         });
                     }
             }
-            throw '** exception error: undefined function' + ('is_list' + ('/' + arguments.length));
+            throw '** exception error: undefined function ' + ('is_list' + ('/' + arguments.length));
         },
         'is_map': function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
@@ -579,7 +579,7 @@ const erlang = function () {
                         });
                     }
             }
-            throw '** exception error: undefined function' + ('is_map' + ('/' + arguments.length));
+            throw '** exception error: undefined function ' + ('is_map' + ('/' + arguments.length));
         },
         'is_number': function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
@@ -594,7 +594,7 @@ const erlang = function () {
                         });
                     }
             }
-            throw '** exception error: undefined function' + ('is_number' + ('/' + arguments.length));
+            throw '** exception error: undefined function ' + ('is_number' + ('/' + arguments.length));
         },
         'is_pid': function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
@@ -609,7 +609,7 @@ const erlang = function () {
                         });
                     }
             }
-            throw '** exception error: undefined function' + ('is_pid' + ('/' + arguments.length));
+            throw '** exception error: undefined function ' + ('is_pid' + ('/' + arguments.length));
         },
         'is_port': function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
@@ -624,7 +624,7 @@ const erlang = function () {
                         });
                     }
             }
-            throw '** exception error: undefined function' + ('is_port' + ('/' + arguments.length));
+            throw '** exception error: undefined function ' + ('is_port' + ('/' + arguments.length));
         },
         'is_reference': function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
@@ -639,7 +639,7 @@ const erlang = function () {
                         });
                     }
             }
-            throw '** exception error: undefined function' + ('is_reference' + ('/' + arguments.length));
+            throw '** exception error: undefined function ' + ('is_reference' + ('/' + arguments.length));
         },
         'is_tuple': function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
@@ -654,7 +654,7 @@ const erlang = function () {
                         });
                     }
             }
-            throw '** exception error: undefined function' + ('is_tuple' + ('/' + arguments.length));
+            throw '** exception error: undefined function ' + ('is_tuple' + ('/' + arguments.length));
         },
         'abs': function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
@@ -669,7 +669,7 @@ const erlang = function () {
                         });
                     }
             }
-            throw '** exception error: undefined function' + ('abs' + ('/' + arguments.length));
+            throw '** exception error: undefined function ' + ('abs' + ('/' + arguments.length));
         },
         'ceil': function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
@@ -684,7 +684,7 @@ const erlang = function () {
                         });
                     }
             }
-            throw '** exception error: undefined function' + ('ceil' + ('/' + arguments.length));
+            throw '** exception error: undefined function ' + ('ceil' + ('/' + arguments.length));
         },
         'floor': function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
@@ -699,7 +699,7 @@ const erlang = function () {
                         });
                     }
             }
-            throw '** exception error: undefined function' + ('floor' + ('/' + arguments.length));
+            throw '** exception error: undefined function ' + ('floor' + ('/' + arguments.length));
         },
         'trunc': function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
@@ -714,7 +714,7 @@ const erlang = function () {
                         });
                     }
             }
-            throw '** exception error: undefined function' + ('trunc' + ('/' + arguments.length));
+            throw '** exception error: undefined function ' + ('trunc' + ('/' + arguments.length));
         },
         'self': function () {
             let args = [...arguments].map(arg => jrts.jsToErlang(arg));
@@ -729,7 +729,52 @@ const erlang = function () {
                         });
                     }
             }
-            throw '** exception error: undefined function' + ('self' + ('/' + arguments.length));
+            throw '** exception error: undefined function ' + ('self' + ('/' + arguments.length));
+        },
+        'spawn': function () {
+            let args = [...arguments].map(arg => jrts.jsToErlang(arg));
+            switch (arguments.length) {
+                case 1:
+                    if (Process.isProcess(this)) {
+                        return functions['spawn/1'].bind(this)(...args);
+                    }
+                    else {
+                        return jrts.spawn(function () {
+                            return functions['spawn/1'].bind(this)(...args);
+                        });
+                    }
+                    break;
+                case 2:
+                    if (Process.isProcess(this)) {
+                        return functions['spawn/2'].bind(this)(...args);
+                    }
+                    else {
+                        return jrts.spawn(function () {
+                            return functions['spawn/2'].bind(this)(...args);
+                        });
+                    }
+                    break;
+                case 3:
+                    if (Process.isProcess(this)) {
+                        return functions['spawn/3'].bind(this)(...args);
+                    }
+                    else {
+                        return jrts.spawn(function () {
+                            return functions['spawn/3'].bind(this)(...args);
+                        });
+                    }
+                    break;
+                case 4:
+                    if (Process.isProcess(this)) {
+                        return functions['spawn/4'].bind(this)(...args);
+                    }
+                    else {
+                        return jrts.spawn(function () {
+                            return functions['spawn/4'].bind(this)(...args);
+                        });
+                    }
+            }
+            throw '** exception error: undefined function ' + ('spawn' + ('/' + arguments.length));
         }
     };
 
@@ -1027,8 +1072,42 @@ const erlang = function () {
         'trunc/1': function (_cor0) {
             return new Int(_cor0.getValue().trunc());
         },
+
         'self/0': function () {
             return this.getValue();
+        },
+        'spawn/1': function (_cor0) {
+            return functions["spawn/2"](null, _cor0); 
+        },
+        'spawn/2': function (_cor0, _cor1) {
+            console.warn("Currently Jarlang processes don't store what module they're currently calling from " +
+                         "and thus, we cannot guarentee that automatically coercing the module without explicityly " +
+                         "specifying it will work.\n Please use spawn/3 or spawn/4 if you can for now.");
+            return functions["spawn/4"](_cor0, null, _cor1, new List()); 
+        },
+        'spawn/3': function (_cor0, _cor1, _cor2) {
+            return functions["spawn/4"](null, _cor0, _cor1, _cor2); 
+        },
+        'spawn/4': function (_cor0, _cor1, _cor2, _cor3) {
+            console.warn("Currently Jarlang doesn't support spawning on different nodes " + 
+                         "so this value will be ignored and any new processes will be spawned on the current node.");
+
+            const modulename = _cor1 ? _cor1.toString() : "erlang";
+            /* jshint ignore:start */
+            const module = eval(modulename);
+            /* jshint ignore:end */
+            
+            const fnname = `${_cor2.toString()}${module === this ? "/" + _cor3.size() : ""}`;
+            const fn = module[fnname];
+
+            if (fn !== undefined) {
+                return jrts.spawn(function() {
+                    return fn.bind(this)(..._cor3);
+                });
+            }
+            else {
+                throw '** exception error: undefined function ' + modulename + "['" + fnname + "']";
+            }
         }
     };
 

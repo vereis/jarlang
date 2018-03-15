@@ -26,7 +26,7 @@ const Atom = (() => {
         }
 
         toString() {
-            return `'${this.getValue()}'`;
+            return `${this.getValue()}`;
         }
 
         [registerAtom]() {
