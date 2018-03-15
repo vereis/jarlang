@@ -775,13 +775,31 @@ const erlang = function () {
                     }
             }
             throw '** exception error: undefined function ' + ('spawn' + ('/' + arguments.length));
-        }
+        },
+        'register': function () {
+            let args = [...arguments].map(arg => jrts.jsToErlang(arg));
+            switch (arguments.length) {
+                case 2:
+                    if (Process.isProcess(this)) {
+                        return functions['register/2'].bind(this)(...args);
+                    }
+                    else {
+                        return jrts.spawn(function () {
+                            return functions['register/2'].bind(this)(...args);
+                        });
+                    }
+            }
+            throw '** exception error: undefined function ' + ('register' + ('/' + arguments.length));
+        },
     };
 
     const functions = {
         '!/2': function (_cor1, _cor0) {
             if (Pid.isPid(_cor1)) {
                 return _cor1.sendMessage(_cor0);
+            }
+            else if (Atom.isAtom(_cor1) && Pid.isPid(jrts.atoms[_cor1.getValue()])) {
+                return jrts.atoms[_cor1.getValue()].sendMessage(_cor0);
             }
             throw '** exception error: bad argument in operator !/2 called as ' + _cor1 + ' ! ' + _cor0;
         },
@@ -1106,7 +1124,15 @@ const erlang = function () {
                 });
             }
             else {
-                throw '** exception error: undefined function ' + modulename + "['" + fnname + "']";
+                throw '** exception error: tried to spawn an undefined function ' + modulename + "['" + fnname + "']";
+            }
+        },
+        'register/2': function (_cor0, _cor1) {
+            if (Atom.isAtom(_cor0) && Pid.isPid(_cor1)) {
+                _cor0.registerPid(_cor1);
+            }
+            else {
+                throw `** exception error: register/2 expects types (Atom, Pid) but (${_cor0.constructor.name}, ${_cor1.constructor.name}) was given instead.`;
             }
         }
     };

@@ -6,6 +6,7 @@
 const Atom = (() => {
     // Private registerAtom token
     const registerAtom = Symbol("registerAtom");
+    const registered   = Symbol("registered");
 
     return class Atom extends ErlangDatatype {
         constructor(name) {
@@ -29,9 +30,25 @@ const Atom = (() => {
             return `${this.getValue()}`;
         }
 
+        registerPid(p) {
+            if (Pid.isPid(p)) {
+                if (jrts.atoms[this.value] === registered) {
+                    jrts.atoms[this.value] = p;
+                }
+                else {
+                    throw "** exception error: this atom has already been registered to a different Pid";
+                }
+            }
+            else {
+                throw "** exception error: you can only register a Pid to an Atom with a Pid";
+            }
+        }
+
         [registerAtom]() {
             try {
-                jrts.atoms[name] = this;
+                if (!jrts.atoms[this.value]) {
+                    jrts.atoms[this.value] = registered;
+                }
             }
             catch (e) {
                 console.warn(`Atom '${this.getValue()}' could not be registered to runtime atom table as it doesn't seem to exist`);
