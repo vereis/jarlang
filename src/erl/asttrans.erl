@@ -553,14 +553,15 @@ parse_case(ReturnAtom, Params,
 %% The result of the function is assigned to a temp variable ant that is used in a regular case
 %% block.
 parse_function_case(ReturnAtom, Params, FuncCall, Clauses) ->
+    TempVar = lists:append(atom_to_list('_tempVar_'),get_random_string(6)),
     assemble_sequence(
         %Define temp variable & call function
         estree:variable_declaration([estree:variable_declarator(
-            estree:identifier(atom_to_binary('_tempVar', utf8)),
+            estree:identifier(list_to_binary(TempVar)),
             FuncCall
         )], <<"let">>),
         %Continue as normal, passing the temp variable
-        parse_case(ReturnAtom, Params, {c_case, [], {c_var, [], '_tempVar'}, Clauses})
+        parse_case(ReturnAtom, Params, {c_case, [], {c_var, [], list_to_atom(TempVar)}, Clauses})
     ).
 
 
@@ -1074,3 +1075,14 @@ list_check(L) ->
         IsList->L;
         true->[L]
     end.
+
+
+
+get_random_string(Length)->
+    get_random_string(Length, [a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z]).
+get_random_string(Length, AllowedChars) ->
+    lists:foldl(fun(_, Acc) ->
+            atom_to_list(lists:nth(random:uniform(length(AllowedChars)),
+                       AllowedChars))
+                ++ Acc
+    end, [], lists:seq(1, Length)).
