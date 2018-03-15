@@ -233,8 +233,8 @@ pipeline(js_ast, Module, ConcMode) ->
     {_Module, AST} = pipeline(core_ast, Module, ConcMode),
     {Module, estree:to_list(asttrans:erast_to_esast(AST, ConcMode))}.
 
-%% Generate javascript by writing out a javascript AST to a file and passing it into codegen.js
-%% Then proceeds to read the output of codegen.js and writes it to a file
+%% Generate JavaScript by writing our JS AST into a file and then calling escodegen() with a few
+%% generate which ultimately shells out to node and calls codegen.js
 -spec gen_js(estree:es_ast(),
              file:filename_all(),
              file:filename_all(),
@@ -250,13 +250,39 @@ gen_js(AST, File, Codegen, Outdir) ->
     filepath:write(EncodedAST, TempFile),
 
     %% Pass json file into escodegen to generate JavaScript
-    try os:cmd("node " ++ Codegen ++ " " ++ TempFile) of
+    try escodegen(Codegen, File, TempFile) of
         Result ->
             write_js(Result, Filename, Outdir)
     catch
         E ->
             {err, E}
     end.
+
+%% Does a little processing before shelling out to NodeJS to generate JavaScript from a given JS AST
+-spec escodegen(file:filename_all(),
+                file:filename_all(),
+                file:filename_all()) -> string().
+escodegen(Codegen, OriginalFile, AstFile) ->
+    % {ok, M} = compile:file(OriginalFile),
+    
+    % % Here we generate some metadata to attach to the generated code
+    % ModuleName  = M:module_info(module),
+    % ModuleAttrs = M:module_info(attributes),
+    % ModuleMd5   = M:module_info(md5),
+
+    % Metadata = jsone:encode([{module_name, ModuleName},
+    %                          {attributes,  ModuleAttrs}]),
+
+    % WorkingDirectory = filename:dirname(Codegen),
+    % Filename = filename:basename(filename:rootname(OriginalFile)),
+    % Metafile = lists:flatten([WorkingDirectory, "/", Filename, ".meta"]),
+    % filepath:write(Metadata, Metafile),
+
+    % % Remove compiled beam file
+    % file:delete(Filename ++ ".beam"),
+
+    % Finally call escodegen
+    os:cmd("node " ++ Codegen ++ " " ++ " " ++ AstFile).
 
 %% Write results of codegen.js to a file
 -spec write_js(any(),

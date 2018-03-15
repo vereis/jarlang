@@ -16,7 +16,8 @@ const generate = function(input) {
         return false;
     }
 
-    return console.log(escodegen.generate(data));
+    console.log(escodegen.generate(data));
+    return true;
 }
 
 if (!args.length) {
