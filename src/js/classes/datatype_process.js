@@ -68,8 +68,8 @@ const Process = (() => {
             return Process.getProcess(pid).sendMessage(msg);
         }
 
-        static getProcess(pid) {
-            return jrts.processes[jrts.pids[pid.toString()]];
+        static getProcess(v) {
+            return jrts.processes[(Atom.isAtom(v) ? jrts.pids[jrts.atoms[v.getValue()].toString()] : jrts.pids[v.toString()])];
         }
 
         static spawn(lambda, pidGenerator) {

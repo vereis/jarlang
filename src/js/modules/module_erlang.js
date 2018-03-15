@@ -791,6 +791,21 @@ const erlang = function () {
             }
             throw '** exception error: undefined function ' + ('register' + ('/' + arguments.length));
         },
+        'registered': function () {
+            let args = [...arguments].map(arg => jrts.jsToErlang(arg));
+            switch (arguments.length) {
+                case 0:
+                    if (Process.isProcess(this)) {
+                        return functions['registered/0'].bind(this)(...args);
+                    }
+                    else {
+                        return jrts.spawn(function () {
+                            return functions['registered/0'].bind(this)(...args);
+                        });
+                    }
+            }
+            throw '** exception error: undefined function ' + ('registered' + ('/' + arguments.length));
+        },
     };
 
     const functions = {
@@ -1134,6 +1149,15 @@ const erlang = function () {
             else {
                 throw `** exception error: register/2 expects types (Atom, Pid) but (${_cor0.constructor.name}, ${_cor1.constructor.name}) was given instead.`;
             }
+        },
+        'registered/0': function () {
+            let buffer = [];
+            for (let atom in jrts.atoms) {
+                if (Pid.isPid(jrts.atoms[atom])) {
+                    buffer.push(new Atom(atom));
+                }
+            }
+            return buffer.length ? new List(...buffer) : new List();
         }
     };
 
