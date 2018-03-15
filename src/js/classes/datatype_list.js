@@ -158,11 +158,11 @@ const List = (() => {
 
         static [isLatin1Char](c) {
             if (Number.isInteger(c)) {
-                return (c >= 32 && c <= 126) || (c >= 160 && c <= 255);
+                return (c >= 32 && c <= 126) || (c >= 160 && c <= 255) || (c === 10);
             }
 
             if (Int.isInt(c)) {
-                return (c.greaterThanOrEq(32) && c.lessThanOrEq(126)) || (c.greaterThanOrEq(160) && c.lessThanOrEq(255));
+                return (c.greaterThanOrEq(32) && c.lessThanOrEq(126)) || (c.greaterThanOrEq(160) && c.lessThanOrEq(255)) || (c.equals(10));
             }
             return false;
         }
