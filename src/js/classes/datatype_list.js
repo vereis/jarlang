@@ -50,7 +50,7 @@ const List = (() => {
         }
 
         [last]() {
-            return this[nthNode](this.size() - 1);
+            return this.size() === 0 ? this : this[nthNode](this.size() - 1);
         }
 
         [Symbol.iterator]() {
