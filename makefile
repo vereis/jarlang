@@ -10,12 +10,10 @@ ERLFLAGS = -Werror -v -o
 ERLFLAGS_NONSTRICT = -Wall -v -o
 ERLFLAGS_DEBUG = -Ddebug +debug_info -W0 -o
 ERLFLAGS_TEST = -DTEST -Ddebug +debug_info -W0 -o
-JSMINIFY = cp
-JSMINIFYFLAGS = -f
 
 # Directory Variables
-SRCDIR = src
-LIBDIR = src/lib
+SRCDIR = src/erl
+LIBDIR = src/erl/lib
 OUTDIR = ebin
 DEBUGDIR = edebug
 TESTDIR = etesting
@@ -153,8 +151,8 @@ define compile
 	@ echo "$(NORMAL)    Done"
 
 	@ echo "$(COLOR)==> Bootstrapping NodeJS Environment onto build$(RED)"
-	@ $(JSMINIFY) $(JSMINIFYFLAGS) $(SRCDIR)/*.js $(OUTPUT_DIR) 2>$(DEVNULL) || true
-	@ $(JSMINIFY) $(JSMINIFYFLAGS) $(LIBDIR)/*.js $(OUTPUT_DIR) 2>$(DEVNULL) || true
+	@ cp -f $(SRCDIR)/*.js $(OUTPUT_DIR) 2>$(DEVNULL) || true
+	@ cp -f $(LIBDIR)/*.js $(OUTPUT_DIR) 2>$(DEVNULL) || true
 	@ echo "$(NORMAL)    Done"
 
 	@ $(call escodegen, $(COLOR), $(OUTPUT_DIR))
@@ -211,22 +209,11 @@ define escodegen
 	@ $(eval TARGET_DIR = $(2))
 	@ echo "$(COLOR)==> Building ESCODEGEN node modules for packaging$(NORMAL)"
 	@ mkdir -p $(TARGET_DIR)/node_modules
-	@ echo "$(COLOR)==> Processing ESPRIMA$(NORMAL)"
 	@ cp -r node_modules/esprima $(TARGET_DIR)/node_modules/esprima
-	@ echo "    ok"	
-	@ echo "$(COLOR)==> Processing ESTRAVERSE$(NORMAL)"
 	@ cp -r node_modules/estraverse $(TARGET_DIR)/node_modules/estraverse
-	@ echo "    ok"	
-	@ echo "$(COLOR)==> Processing ESUTILS$(NORMAL)"
 	@ cp -r node_modules/esutils $(TARGET_DIR)/node_modules/esutils
-	@ echo "    ok"	
-	@ echo "$(COLOR)==> Processing OPTIONATOR$(NORMAL)"
 	@ cp -r node_modules/optionator $(TARGET_DIR)/node_modules/optionator
-	@ echo "    ok"	
-	@ echo "$(COLOR)==> Processing SOURCE-MAP$(NORMAL)"
 	@ cp -r node_modules/source-map $(TARGET_DIR)/node_modules/source-map
-	@ echo "    ok"	
-	@ echo "$(COLOR)==> Processing ESCODEGEN$(NORMAL)"
 	@ cp -r node_modules/escodegen $(TARGET_DIR)/node_modules/escodegen
 	@ echo "    ok"	
 endef

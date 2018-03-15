@@ -6,27 +6,27 @@ var gulp   = require("gulp"),
     lint   = require("gulp-jshint");
 
 var js_files = [// Jarlang Runtime
-                "src/prefabs/runtime.js",
+                "src/js/runtime.js",
 
                 // Jarlang Class Definitions
-                "src/prefabs/classes/datatype_erlangDatatype.js",
-                "src/prefabs/classes/datatype_atom.js",
-                "src/prefabs/classes/datatype_bitstring.js",
-                "src/prefabs/classes/datatype_float.js",
-                "src/prefabs/classes/datatype_fun.js",
-                "src/prefabs/classes/datatype_int.js",
-                "src/prefabs/classes/datatype_list.js",
-                "src/prefabs/classes/datatype_map.js",
-                "src/prefabs/classes/datatype_pid.js",
-                "src/prefabs/classes/datatype_port.js",
-                "src/prefabs/classes/datatype_process.js",
-                "src/prefabs/classes/datatype_reference.js",
-                "src/prefabs/classes/datatype_tuple.js",
-                "src/prefabs/classes/datatype_unbound.js",
+                "src/js/classes/datatype_erlangDatatype.js",
+                "src/js/classes/datatype_atom.js",
+                "src/js/classes/datatype_bitstring.js",
+                "src/js/classes/datatype_float.js",
+                "src/js/classes/datatype_fun.js",
+                "src/js/classes/datatype_int.js",
+                "src/js/classes/datatype_list.js",
+                "src/js/classes/datatype_map.js",
+                "src/js/classes/datatype_pid.js",
+                "src/js/classes/datatype_port.js",
+                "src/js/classes/datatype_process.js",
+                "src/js/classes/datatype_reference.js",
+                "src/js/classes/datatype_tuple.js",
+                "src/js/classes/datatype_unbound.js",
 
                 // Jarlang Prefab Modules
-                "src/prefabs/modules/module_erlang.js",
-                "src/prefabs/modules/module_io.js",
+                "src/js/modules/module_erlang.js",
+                "src/js/modules/module_io.js",
             ];
 
 var js_dependencies = [
