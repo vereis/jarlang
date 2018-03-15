@@ -466,10 +466,11 @@ parse_receive_clauses(ReturnAtom, Params, Vars,
             ]);
         _  -> ElseClausesActual = ElseClauses
     end,
+    {DefineL, MatchL, AssignL} = extract_clause_snippets(Params,Vars,Match),
     % Assemble the if statement
     estree:if_statement(
         % The function that serves as pattern patching and guards
-        assemble_case_condition(Params, Vars, Match, Evaluate),
+        assemble_case_condition(Params, {DefineL, MatchL, AssignL}, Evaluate),
         estree:block_statement(
             assemble_sequence(
                 estree:expression_statement(
@@ -489,16 +490,7 @@ parse_receive_clauses(ReturnAtom, Params, Vars,
                 ),
                 assemble_sequence(
                     % Assign the variables that are used in the match
-                    % At this point in development it should be un-nessisary to filter for un-parsed
-                    % variables, but I'll leave it here until I next review the case clauses.
-                    lists:filter(fun(Elem) ->
-                            case Elem of
-                                ok -> false;
-                                _  -> true
-                            end
-                        end,
-                        assign_matched_vars(Params, Vars, Match)
-                    ),
+                    assign_matched_vars(Params, DefineL, AssignL),
                     encapsulate_expressions(
                         list_check(
                             parse_node(ReturnAtom, Params, Consequent)
@@ -587,23 +579,17 @@ parse_case_clauses(ReturnAtom, Params, Vars,
         [] -> ElseClausesActual = null;
         _  -> ElseClausesActual = ElseClauses
     end,
+    {DefineL, MatchL, AssignL} = extract_clause_snippets(Params,Vars,Match),
     % Assemble the if statement
      estree:if_statement(
         % The function that serves as pattern patching and guards
-        assemble_case_condition(Params, Vars, Match, Evaluate),
+        assemble_case_condition(Params, {DefineL, MatchL, AssignL}, Evaluate),
         estree:block_statement(
             assemble_sequence(
                 % Assign the variables that are used in the match
                 % At this point in development it should be un-nessisary to filter for un-parsed
                 % variables, but I'll leave it here until I next review the case clauses.
-                lists:filter(fun(Elem) ->
-                        case Elem of
-                            ok -> false;
-                            _  -> true
-                        end
-                    end,
-                    assign_matched_vars(Params, Vars, Match)
-                ),
+                assign_matched_vars(Params, DefineL, AssignL),
                 encapsulate_expressions(
                     list_check(
                         parse_node(ReturnAtom, Params, Consequent)
@@ -613,37 +599,27 @@ parse_case_clauses(ReturnAtom, Params, Vars,
         ),
         ElseClausesActual %alternate
     ).
-     % }.
 
 
 
 %%% ---------------------------------------------------------------------------------------------%%%
-%%% - Make the clause condition self contained --------------------------------------------------%%%
+%%% - Create code snippets for matching ---------------------------------------------------------%%%
 %%% ---------------------------------------------------------------------------------------------%%%
-%% This allows the involved variables to be correctly scoped, and later defined.
-%% This one shortcuts guard only matching
-assemble_case_condition(Params, _, [], Evaluate) ->
-    estree:call_expression(
-        function_wrap(
-            [],
-            parse_node(return, Params, Evaluate)
-        ),
-    []);
-assemble_case_condition(Params, Vars, Match, Evaluate) ->
-    % This extracts the relevant variables for declaration, matching and assignment
-    {DefL1, MatchL, DefL2} = lists:foldl(
-        fun(Elem, {DefL1, MatchL, DefL2}) ->
+% This extracts the relevant variables for declaration, matching and assignment
+extract_clause_snippets(Params,Vars,Match)->
+    lists:foldl(
+        fun(Elem, {DefineL, MatchL, AssignL}) ->
             case Elem of
                 {{c_var, _, ParamName}, {c_var, A, NewName}}->
-                    {lists:append(DefL1, [
+                    {lists:append(DefineL, [
                         estree:variable_declarator(
                             estree:identifier(atom_to_binary(NewName, utf8)),
                             estree:identifier(atom_to_binary(ParamName, utf8))
                         )
-                    ]), MatchL, DefL2};
+                    ]), MatchL, AssignL};
 
                 {V={c_var, _, ParamName}, M={c_literal, _, Literal}}->
-                    {DefL1,
+                    {DefineL,
                     lists:append(MatchL,[
                         estree:call_expression(
                             estree:member_expression(
@@ -653,10 +629,10 @@ assemble_case_condition(Params, Vars, Match, Evaluate) ->
                             ),
                             [parse_node(noreturn,Params,M)]
                         )
-                    ]),DefL2};
+                    ]),AssignL};
 
                 {V={c_var, _, ParamName}, M={c_cons, _, H, T}}->
-                    {lists:append(DefL1,
+                    {lists:append(DefineL,
                         recurse_var_declaration(M)
                     ),
                     lists:append(MatchL,[
@@ -669,13 +645,13 @@ assemble_case_condition(Params, Vars, Match, Evaluate) ->
                             [parse_node(noreturn,Params,M)]
                         )
                     ]),
-                    lists:append(DefL2,recurse_var_assignments(
+                    lists:append(AssignL,recurse_var_assignments(
                             M,
                             estree:identifier(atom_to_binary(ParamName, utf8))
                     ))};
 
                 {V={c_var, _, ParamName}, M={c_tuple, _, Content}}->
-                    {lists:append(DefL1,
+                    {lists:append(DefineL,
                         recurse_var_declaration(M)
                     ),
                     lists:append(MatchL,[
@@ -688,13 +664,13 @@ assemble_case_condition(Params, Vars, Match, Evaluate) ->
                             [parse_node(noreturn,Params,M)]
                         )
                     ]),
-                    lists:append(DefL2, recurse_var_assignments(
+                    lists:append(AssignL, recurse_var_assignments(
                         M,
                         estree:identifier(atom_to_binary(ParamName, utf8))
                     ))};
 
                 {V={c_var, _, ParamName}, {c_alias, _, {c_var, _, NewName}, M}}->
-                    {lists:append(DefL1,
+                    {lists:append(DefineL,
                         recurse_var_declaration(M)
                     ),
                     lists:append(MatchL,[
@@ -707,7 +683,7 @@ assemble_case_condition(Params, Vars, Match, Evaluate) ->
                             [parse_node(noreturn,Params,M)]
                         )
                     ]),
-                    lists:append(DefL2, lists:append(
+                    lists:append(AssignL, lists:append(
                         recurse_var_assignments(
                             M,
                             estree:identifier(atom_to_binary(ParamName, utf8))
@@ -723,11 +699,28 @@ assemble_case_condition(Params, Vars, Match, Evaluate) ->
             end
         end,
         {[], [], []},
-        lists:zip(Vars, Match)),
+        lists:zip(Vars, Match)).
+
+
+
+%%% ---------------------------------------------------------------------------------------------%%%
+%%% - Make the clause condition self contained --------------------------------------------------%%%
+%%% ---------------------------------------------------------------------------------------------%%%
+%% This allows the involved variables to be correctly scoped, and later defined.
+%% This one shortcuts guard only matching
+assemble_case_condition(Params, {_, [], _}, Evaluate) ->
+    estree:call_expression(
+        function_wrap(
+            [],
+            parse_node(return, Params, Evaluate)
+        ),
+    []);
+assemble_case_condition(Params, {DefineL, MatchL, AssignL}, Evaluate) ->
+    
     % Check if any declarations are actually needed after matching
-    case DefL2 of
+    case AssignL of
         [] -> Declaration2Actual = [];
-        _  -> Declaration2Actual = estree:variable_declaration(list_check(DefL2), <<"let">>)
+        _  -> Declaration2Actual = estree:variable_declaration(list_check(AssignL), <<"let">>)
     end,
     % Create the internal logic of the clause condition function. Including actual match calls and
     % the evaluation of the guard.
@@ -746,10 +739,10 @@ assemble_case_condition(Params, Vars, Match, Evaluate) ->
                     null
                 ),
     % Check that variables actually need to be defined before matching is done
-    case DefL1 of
+    case DefineL of
         [] -> InternalActual = Internal;
         _  -> InternalActual = assemble_sequence(
-                            estree:variable_declaration(list_check(DefL1), <<"let">>),
+                            estree:variable_declaration(list_check(DefineL), <<"let">>),
                             Internal
                         )
     end,
@@ -866,32 +859,56 @@ assemble_match_calls(MatchL) ->
 %%% - Assign variables after matching -----------------------------------------------------------%%%
 %%% ---------------------------------------------------------------------------------------------%%%
 % TODO: Review this when cases are next reviewed.
-assign_matched_vars(Params, [V], [M]) ->
-        assign_matched_vars(Params, V, M);
-assign_matched_vars(Params, [V|Vars], [M|Match]) ->
-    assemble_sequence(
-        assign_matched_vars(Params, [V], [M]),
-        assign_matched_vars(Params, Vars, Match)
-    );
-assign_matched_vars(Params, {c_var, _, Variable}, {c_var, _, Match}) ->
-    [estree:expression_statement(
-        estree:assignment_expression(
-            <<"=">>,
-            estree:identifier(atom_to_binary(Match, utf8)),
-            estree:identifier(atom_to_binary(Variable, utf8))
-        )
-    )];
-assign_matched_vars(Params, {c_var, _, Variable}, {c_alias, _, {c_var, [], Name}, _Value}) ->
-    [estree:expression_statement(
-        estree:assignment_expression(
-            <<"=">>,
-            estree:identifier(atom_to_binary(Name, utf8)),
-            estree:identifier(atom_to_binary(Variable, utf8))
-        )
-    )];
-%assign_matched_vars(Params, A, B) ->
-assign_matched_vars(Params, _, _) ->
-    [ok].
+assign_matched_vars(Params, DefineL, AssignL) ->
+    % Check that variables actually need to be defined before matching is done
+    case DefineL of
+        [] -> DefActual = [];
+        _  -> DefActual = estree:variable_declaration(list_check(DefineL), <<"let">>)
+    end,
+    % Check if any assignments are needed after matching
+    case AssignL of
+        [] -> AssignActual = [];
+        _  -> AssignActual = list_check(AssignL)
+    end,
+    %Output as a list
+    assemble_sequence(DefActual,AssignActual).
+
+
+
+
+
+
+
+
+
+
+
+% assign_matched_vars(Params, [V], [M]) ->
+%         assign_matched_vars(Params, V, M);
+% assign_matched_vars(Params, [V|Vars], [M|Match]) ->
+%     assemble_sequence(
+%         assign_matched_vars(Params, [V], [M]),
+%         assign_matched_vars(Params, Vars, Match)
+%     );
+% assign_matched_vars(Params, {c_var, _, Variable}, {c_var, _, Match}) ->
+%     [estree:expression_statement(
+%         estree:assignment_expression(
+%             <<"=">>,
+%             estree:identifier(atom_to_binary(Match, utf8)),
+%             estree:identifier(atom_to_binary(Variable, utf8))
+%         )
+%     )];
+% assign_matched_vars(Params, {c_var, _, Variable}, {c_alias, _, {c_var, [], Name}, _Value}) ->
+%     [estree:expression_statement(
+%         estree:assignment_expression(
+%             <<"=">>,
+%             estree:identifier(atom_to_binary(Name, utf8)),
+%             estree:identifier(atom_to_binary(Variable, utf8))
+%         )
+%     )];
+% %assign_matched_vars(Params, A, B) ->
+% assign_matched_vars(Params, _, _) ->
+%     [ok].
 
 
 
