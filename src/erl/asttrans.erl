@@ -818,7 +818,13 @@ recurse_var_assignments(_, {c_tuple, _, Elements}, V, _) ->
             lists:append(
                 L,
                 recurse_var_assignments(0, Elem,
-                    estree:member_expression(V, estree:literal(I), true),
+                    estree:expression_statement(
+                        estree:call_expression(
+                            estree:member_expression(V,
+                                estree:identifier(<<"nth">>), false),
+                            [estree:literal(I)]
+                        )
+                    ),
                     false
                 )
             )}
