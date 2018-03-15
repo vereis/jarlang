@@ -208,57 +208,110 @@ const io = function () {
     function formatErlangString(str, data) {
         var isErlList = str instanceof List, fstr = "";
         str = isErlList ? str.toString() : str;
+        data = isErlList ? [...data] : data;
 
         for (var i = 0; i < str.length; i++) {
             var ch = str.charAt(i);
-
+            var d = null;
             if (ch == "~") {
                 i++;
-
-                switch (str.charAt(i)) {
+                let cur = str.charAt(i);
+                switch (cur) {
                     case "~":
                         fstr += "~";
                         break;
+
+
                     case "c":
                         fstr += String.fromCharCode(data.shift());
                         break;
-                    case "f":
-                        break;
-                    case "e":
-                        break;
+
+
                     case "g":
+                    case "f":
+                        d = data.shift();
+                        var isIntOrFloat = (Int.isInt(d) || Float.isFloat(d));
+                        if (isIntOrFloat) {
+                            var dval = d.getValue().toNumber();
+                            var flagTestF  = (cur === "f");
+                            var rangeTestG = (dval >= 0.1 && dval < 10000);
+                            var flagTestG  = (cur === "g" && rangeTestG);
+                            if (flagTestF || flagTestG) {
+                                fstr += dval.toFixed(6);
+                                break;
+                            }
+                            else {
+                                data.unshift(d);
+                                // fall through to case e
+                            }
+                        }
+                        else {
+                            throw `** format error: type ${d.constructor.name} cannot be coerced into type Float ("~f", [${d}])`;
+                            break;
+                        }
+                    case "e":
+                        d = data.shift();
+                        var dval = d.getValue().toNumber();
+                        if (Int.isInt(d) || Float.isFloat(d) || (cur === "g")) {
+                            fstr += dval.toExponential(6);
+                        }
+                        else {
+                            throw `** format error: type ${d.constructor.name} cannot be coerced into type Float ("~f", [${d}])`;
+                        }
                         break;
+
+
                     case "s":
-                        fstr += data.shift();
+                        d = data.shift();
+                        if (List.isList(d) || BitString.isBitString(d)) {
+                            fstr += [...d].map((c) => {
+                                return String.fromCharCode(c.getValue());
+                            }).join("");
+                        }
+                        else if (Atom.isAtom(d)) {
+                            fstr += d.getValue();
+                        }
+                        else {
+                            throw `** format error: type ${d.constructor.name} cannot be coerced into type String ("~s", [${d}])`;
+                        }
                         break;
-                    case "w":
-                        break;
-                    case "p":
-                        break;
+
+
                     case "W":
-                        break;
+                    case "w":
                     case "P":
+                    case "p":
+                        fstr += data.shift().toString();
                         break;
-                    case "B":
-                        break;
-                    case "X":
-                        break;
+
                     case "#":
-                        break;
-                    case "b":
-                        break;
-                    case "x":
-                        break;
                     case "+":
+                    case "b":
+                    case "x":
+                    case "X":
+                    case "B":
+                        d = data.shift();
+                        if (Int.isInt(d) || Float.isFloat(d)) {
+                            var dval = d.getValue().toNumber();
+                            fstr += "#" + Number(dval).toString(16);
+                        }
+                        else {
+                            throw `** format error: type ${d.constructor.name} cannot be coerced into type Base N Number ("~f", [${d}])`;
+                        }
                         break;
+
                     case "n":
                         fstr += "\n";
                         break;
+
+
                     case "i":
                         data.shift();
                         break;
+
+
                     default:
-                        throw "bad argument";
+                        throw "** bad argument: unknown flag ~" + cur;
                 }
             }
             else {
@@ -266,7 +319,8 @@ const io = function () {
             }
         }
 
-        return isErlList ? new List(...fstr.split("")) : fstr;
+        //console.log("raw: ", fstr.split(""));
+        return isErlList ? jrts.jsToErlang(fstr) : fstr;
     }
 
     return exports;
