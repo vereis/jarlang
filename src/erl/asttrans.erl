@@ -515,18 +515,12 @@ parse_case(ReturnAtom, Params, {c_case, _, {c_values, _, Vars}, Clauses}) ->
 
 %% Cases that take a function call as an input are parsed here.
 %% This one parses local functions.
-parse_case(ReturnAtom, Params, {c_case, _, {c_apply, _, {c_var, _, Fun}, Args}, Clauses}) ->
+parse_case(ReturnAtom, Params, {c_case, _, A={c_apply, _, {c_var, _, Fun}, Args}, Clauses}) ->
     case Fun of
         {Name, _} -> Fun_Actual = Name;
         _ -> Fun_Actual = Fun
     end,
-    parse_function_case(ReturnAtom, Params,
-        estree:call_expression(
-            estree:identifier(atom_to_binary(Fun_Actual, utf8)),
-            lists:map(fun(T) -> parse_node(noreturn, Params, T) end, Args)
-        ),
-        Clauses
-    );
+    parse_function_case(ReturnAtom, Params,parse_node(noreturn, Params, A),Clauses);
 %% And this one parses external functions.
 parse_case(ReturnAtom, Params,
     {c_case, _, {c_call, _, {c_literal, _, Module}, {c_literal, _, FunctionName}, Args}, Clauses}
