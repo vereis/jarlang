@@ -836,7 +836,7 @@ const erlang = function () {
             }
             throw '** exception error: an error occurred when evaluating an arithmetic expression in operator */2 called as ' + _cor1 + ' * ' + _cor0;
         },
-        'division/2': function (_cor1, _cor0) {
+        '//2': function (_cor1, _cor0) {
             if ((Int.isInt(_cor1) || Float.isFloat(_cor1)) && (Int.isInt(_cor0) || Float.isFloat(_cor0))) {
                 return _cor1.divide(_cor0);
             }
