@@ -1,7 +1,3 @@
-% $Rev: 293 $:			Revision of last commit
-% $Author: mg483 $:		Author of last commit
-% $Date: 2017-10-09 21:33:33 +0100 (Mon, 09 Oct 2017) $:    Date of last commit
-
 \documentclass[twoside,12pt,titlepage,a4paper]{article}
 \usepackage{url}
 % kentHarvard requires natbib
@@ -9,18 +5,23 @@
 % add line numbers
 \usepackage{lineno}
 \linenumbers 
+
 \usepackage[pass]{geometry}
 \usepackage{graphicx}
 \renewcommand{\baselinestretch}{1.3}
 \usepackage{todonotes}
 
-\title{Latex Template for CO600 and CO620 Project Reports}
-\author{Example Name\\\vspace{10mm}
-       \url{em123@kent.ac.uk} \\ \vspace{5mm}
-       \includegraphics[scale=0.6]{Kent_Comp_294_RGB} \\
-       School of Computing \\
-       University of Kent \\
-       United Kingdom \\ \vspace{10mm} \\ Word Count: 6,100}
+\title{Jarlang Technical Report}
+\author{
+	\begin{tabular}{ c c c }
+		Chris Bailey & Andrew Johnson & Nick Laine \\ 
+		\url{cb661@kent.ac.uk} & \url{apj8@kent.ac.uk} & \url{nl227@kent.ac.uk}  
+	\end{tabular}\\
+	\\ \vspace{10mm}
+   \includegraphics[scale=0.6]{Kent_Comp_294_RGB} \\
+   School of Computing \\
+   University of Kent \\
+   United Kingdom \\ \vspace{10mm} \\ Word Count: 6,100}
 \begin{document}
 
 \newgeometry{hmarginratio=1:1}    %% make layout symmetric
@@ -28,96 +29,18 @@
 \restoregeometry              %% restore the layout
 
 \begin{abstract}
-This paper describes a simple heuristic approach to solving large-scale
-constraint satisfaction and scheduling problems.  In this approach one
-starts with an inconsistent assignment for a set of variables and
-searches through the space of possible repairs. The search can be guided
-by a value-ordering heuristic, the {\em min-conflicts heuristic}, that
-attempts to minimize the number of constraint violations after each
-step.  The heuristic can be used with a variety of different search
-strategies.  We demonstrate empirically that on the $n$-queens problem, 
-a technique
-based on this approach performs orders of magnitude better than
-traditional backtracking techniques.  We also describe a
-scheduling application where the approach has been used successfully.  A
-theoretical analysis is presented both to explain why this method works
-well on certain types of problems and to predict when it is likely to
-be most effective.
+This paper describes the development and operation of an Erlang to JavaScript command-line transpiler, referred to as Jarlang. The aim of this transpiler is to generate human-readable valid JavaScript from any error-free Erlang module source code, in a format that can be included in a web page and integrated into the front end code environment with ease. In this objective the project has succeeded, though the function of the output JavaScript is difficult to test without also transpiling the required standard library modules, which we have not had time to complete.
 \end{abstract}
 
 \section{Introduction}
 \label{Introduction}
-
-  One of the most promising general approaches for solving combinatorial search
-problems is to generate an initial, suboptimal solution and then to apply
-local {\em repair} 
-heuristics.
-Techniques based on
-this approach have met with empirical success on many combinatorial 
-problems, including
-the traveling salesman and graph partitioning problems \cite{papad}.  
-Such techniques also have a long tradition in AI, most notably in
-problem-solving systems that operate by debugging initial
-solutions \cite{simmons-aaai88,hacker}.
-In this paper, we describe how this idea can be extended to
-constraint satisfaction problems (CSPs) in a natural manner.
-\todo[size=\scriptsize]{This box is an example todo note. Numbered lines are useful for marking. To remove line numbers, comment out the \texttt{lineno} package at the top of this latex file.}
-
-Most of the previous work on CSP algorithms has assumed a
-``constructive'' backtracking approach in which a partial assignment
-to the variables is incrementally extended. In contrast, our 
-method \cite{min-aaai} creates a complete, but inconsistent assignment and
-then repairs constraint violations until a consistent assignment is
-achieved.  The method is guided by a simple ordering heuristic for
-repairing constraint violations: identify a variable that is currently
-in conflict and select a new value that minimizes the number of
-outstanding constraint violations.
-
-
-We present empirical evidence showing that on some standard problems
-our approach is considerably more efficient than traditional constructive
-backtracking methods. For example, on the $n$-queens problem, our
-method quickly finds solutions to the one million queens 
-problem.
-We argue that the reason that repair-based methods can outperform
-constructive methods is because a complete assignment can be more
-informative in guiding search than a partial assignment.
-However, the utility of
-the extra information is domain dependent. To help clarify the nature of
-this potential advantage, we present a theoretical analysis that
-describes how various problem characteristics may affect the
-performance of the method. This analysis shows, for example, how the
-``distance'' between the current assignment and solution (in terms of
-the minimum number of repairs that are required) affects the expected
-utility of the heuristic.
-
-The work described in this paper was inspired by a surprisingly
-effective neural network developed by Adorf and 
-Johnston \cite{adorf,johnston}
- for scheduling astronomical observations on the
-Hubble Space Telescope.  Our heuristic CSP method
-was distilled from
-an analysis of the network.
-In the process of carrying out the
-analysis, we discovered that the effectiveness of the network has
-little to do with its connectionist implementation. Furthermore, the
-ideas employed in the network can be implemented very efficiently
-within a symbolic CSP framework. The symbolic implementation is
-extremely simple. It also has the advantage that several different
-search strategies can be employed, although we have found that
-hill-climbing methods are particularly well-suited for the
-applications that we have investigated.
-
-We begin the paper with a brief review of Adorf and Johnston's neural
-network, and then describe our symbolic method for heuristic repair.
-Following this, we describe empirical results with the
-$n$-queens problem, graph-colorability problems and the
-Hubble Space Telescope scheduling application. Finally,
-we consider a theoretical model identifying
-general problem characteristics that 
-influence the performance of the method. We include a second gratuitous
-citation to ourselves to illustrate a short citation \cite{min-aaai}.
-
+	
+	The central aim of this project has been to write an Erlang to ES6 JavaScript transpiler, referred to as Jarlang, enabling solutions to problems in JavaScript to be expressed as Erlang code. Jarlang also enables websites to unify the languages used in their stack, utilising Jarlang-transpiled Erlang on the frontend, and either Erlang or Jarlang-transpiled Erlang (running via Node.js) on the backend.
+	
+	Our transpiler is written in Erlang, the same language as our source language. The motivation behind this is so that in time we can bootstrap the Jarlang transpiler and transpile it to JavaScript, thus enabling us to compile or interpret raw Erlang in a browser environment independent of any Erlang packages installed on a host’s system. Due to time constraints we have had to rely on the Erlang compiler to validate, optimize and parse the Erlang source code, and as the compiler is not written in Erlang this aspect of the project was subsequently deemed too ambitious. We also intended to, and succeeded in, implementing as much of Erlang as possible in JavaScript, including function overloading, modules, tail recursion and ultimately – and more ambitiously – emulating Erlang-style concurrency using JavaScript’s event loop.
+	
+	The bulk of our code is written in Erlang and utilises the Erlang compiler to generate Core Erlang, an intermediate language used in Erlang’s compilation process. We then use built-in functions to get the Core Erlang abstract syntax tree which is then translated into a valid JavaScript abstract syntax tree via a series of transformation steps. Valid JavaScript is then derived from this abstract syntax tree via the employment of existing JavaScript projects such as escodegen.
+	
 \section{Previous Work: The GDS Network}
 \label{network}
 
