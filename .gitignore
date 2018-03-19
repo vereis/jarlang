@@ -17,3 +17,8 @@ etesting/*
 ### END - Erlang Stuff ###
 node_modules
 jsbin/*
+/doc/Technical_Report/Jarlang Technical Report.aux
+/doc/Technical_Report/Jarlang Technical Report.bbl
+/doc/Technical_Report/Jarlang Technical Report.blg
+/doc/Technical_Report/Jarlang Technical Report.log
+/doc/Technical_Report/Jarlang Technical Report.synctex.gz
