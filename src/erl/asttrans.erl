@@ -516,26 +516,12 @@ parse_case(ReturnAtom, Params, {c_case, _, {c_values, _, Vars}, Clauses}) ->
 %% Cases that take a function call as an input are parsed here.
 %% This one parses local functions.
 parse_case(ReturnAtom, Params, {c_case, _, A={c_apply, _, {c_var, _, Fun}, Args}, Clauses}) ->
-    case Fun of
-        {Name, _} -> Fun_Actual = Name;
-        _ -> Fun_Actual = Fun
-    end,
     parse_function_case(ReturnAtom, Params,parse_node(noreturn, Params, A),Clauses);
 %% And this one parses external functions.
 parse_case(ReturnAtom, Params,
-    {c_case, _, {c_call, _, {c_literal, _, Module}, {c_literal, _, FunctionName}, Args}, Clauses}
+    {c_case, _, C={c_call, _, {c_literal, _, Module}, {c_literal, _, FunctionName}, Args}, Clauses}
     ) ->
-    parse_function_case(ReturnAtom, Params,
-        estree:call_expression(
-            estree:member_expression(
-                estree:identifier(atom_to_binary(Module, utf8)),
-                estree:identifier(atom_to_binary(FunctionName, utf8)),
-                false
-            ),
-            lists:map(fun(T) -> parse_node(noreturn, Params, T) end, Args)
-        ),
-        Clauses
-    ).
+    parse_function_case(ReturnAtom, Params,parse_node(noreturn, Params, C),Clauses).
 
 
 
@@ -552,7 +538,10 @@ parse_function_case(ReturnAtom, Params, FuncCall, Clauses) ->
         %Define temp variable & call function
         estree:variable_declaration([estree:variable_declarator(
             estree:identifier(list_to_binary(TempVar)),
-            FuncCall
+                estree:call_expression(estree:member_expression(
+                    estree:identifier(<<"jrts">>),estree:identifier(<<"jsToErlang">>),false),
+                [FuncCall]
+                )
         )], <<"let">>),
         %Continue as normal, passing the temp variable
         parse_case(ReturnAtom, Params, {c_case, [], {c_var, [], list_to_atom(TempVar)}, Clauses})
