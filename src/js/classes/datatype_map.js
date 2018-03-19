@@ -7,13 +7,6 @@ const Map = (() => {
         constructor(keys, values) {
             super();
 
-            if (Array.isArray(keys)) {
-                keys = new List(...keys);
-            }
-            if (Array.isArray(values)) {
-                values = new List(...values);
-            }
-
             this.value = {
                 keys: keys,
                 values: values
@@ -43,9 +36,9 @@ const Map = (() => {
 
         get(key) {
             if (key instanceof ErlangDatatype) {
-                for (let i = 0; i < this.getValue().keys.size(); i++) {
-                    if (key.match(this.getValue().keys.nth(i))) {
-                        return this.getValue().values.nth(i);
+                for (let i = 0; i < this.getValue().keys.length; i++) {
+                    if (key.match(this.getValue().keys[i])) {
+                        return this.getValue().values[i];
                     }
                 }
             }
@@ -53,17 +46,15 @@ const Map = (() => {
         }
 
         put(key, value) {
-            this.value.keys = new List(...this.getValue().keys, key);
-            this.value.values = new List(...this.getValue().values, value);
+            this.value.keys.push(key);
+            this.value.values.push(value);
         }
 
         update(key, value) {
             if (key instanceof ErlangDatatype) {
-                for (let i = 0; i < this.getValue().keys.size(); i++) {
-                    if (key.match(this.getValue().keys.nth(i))) {
-                        let tmp = [...this.getValue().values];
-                        tmp.splice(i, 1, value);
-                        this.value.values = new List(...tmp);
+                for (let i = 0; i < this.getValue().keys.length; i++) {
+                    if (key.match(this.getValue().keys[i])) {
+                        this.value.values.splice(i, 1, value);
                         return;
                     }
                 }
@@ -73,16 +64,10 @@ const Map = (() => {
 
         remove(key) {
             if (key instanceof ErlangDatatype) {
-                for (let i = 0; i < this.getValue().keys.size(); i++) {
-                    if (key.match(this.getValue().keys.nth(i))) {
-                        let tmp1 = [...this.getValue().keys],
-                        tmp2 = [...this.getValue().values];
-
-                        tmp1.splice(i, 1);
-                        tmp2.splice(i, 1);
-
-                        this.value.keys = new List(...tmp1);
-                        this.value.values = new List(...tmp2);
+                for (let i = 0; i < this.getValue().keys.length; i++) {
+                    if (key.match(this.getValue().keys[i])) {
+                        this.value.keys.splice(i, 1);
+                        this.value.values.splice(i, 1);
                         return;
                     }
                 }
@@ -90,7 +75,7 @@ const Map = (() => {
         }
 
         size() {
-            return this.getValue().keys.size();
+            return this.getValue().keys.length;
         }
 
         // todo: Ensure keys are ordered as they are in erlang
