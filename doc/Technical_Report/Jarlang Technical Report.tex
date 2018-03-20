@@ -4,7 +4,7 @@
 \usepackage{natbib}
 % add line numbers
 \usepackage{lineno}
-\linenumbers 
+%\linenumbers 
 
 \usepackage[pass]{geometry}
 \usepackage{graphicx}
@@ -29,19 +29,28 @@
 \restoregeometry              %% restore the layout
 
 \begin{abstract}
-This paper describes the development and operation of an Erlang to JavaScript command-line transpiler, referred to as Jarlang. The aim of this transpiler is to generate human-readable valid JavaScript from any error-free Erlang module source code, in a format that can be included in a web page and integrated into the front end code environment with ease. In this objective the project has succeeded, though the function of the output JavaScript is difficult to test without also transpiling the required standard library modules, which we have not had time to complete.
-\todo{Abstract is a bit short: Aim for 100-200 words, currently aprox:90.}
+	This paper describes the development and operation of an Erlang to JavaScript compiler henceforth referred to as \textit{Jarlang}. 
+	
+	The primary aim of \textit{Jarlang} is to generate valid JavaScript from any error-free Erlang module source code. The result of this JavaScript generation should be easily included on a given web-page and be easily integrated into existing front-end codebase. 
+	
+	Secondary aims for \textit{Jarlang} include the ability to leverage Erlang-style concurrency in what is more often than not a strictly single-threaded environment, as well as being able to \textit{execute correctly} the generated JavaScript --- this presumes the re-implementation of the Erlang standard library and Erlang runtime environment as the equivalent \textit{Jarlang runtime environment}.
+	
+	While fully implementing the \textit{Jarlang runtime environment} is not the primary goal of this project, enough of the \textit{Jarlang runtime environment} will have been implemented so that we can successfully emulate things such as Erlang's datatypes, message passing and concurrency model --- otherwise, enough that basic test-compilations can be successfully run \textit{(common tests such as 'hello, world!', 'fibbonaci' and 'factorial')}.
 \end{abstract}
 
 \section{Introduction}
 \label{Introduction}
-	\todo{Introduction is a slightly modified copy of the abstract assessment text, will need editing \& maybe total re-write.}
-	The central aim of this project has been to write an Erlang to ES6 JavaScript transpiler, referred to as Jarlang, enabling solutions to problems in JavaScript to be expressed as Erlang code. Jarlang also enables websites to unify the languages used in their stack, utilising Jarlang-transpiled Erlang on the frontend, and either Erlang or Jarlang-transpiled Erlang (running via Node.js) on the backend.
+	\textit{Jarlang} is a compiler implemented in Erlang (\textit{and JavaScript}) whose goal is to be able to compile valid Erlang module source code into valid JavaScript source code.
+
+	\textit{Jarlang} thus provides several benefits to potential users such as the ability to execute, or demonstrate, Erlang code on the web which could help the official Erlang documentation but also provides educational benefits. \textit{Jarlang} also allows developers to unify their tech-stack which is a popular trend amongst contemporary web developers. Unifying tech-stacks results in less time spent context switching when switching from front-end programming and back-end programming, as well as making both front-end and back-end programming accessible to any competant Erlang developer.
 	
-	Our transpiler is written in Erlang, the same language as our source language. The motivation behind this is so that in time we can bootstrap the Jarlang transpiler and transpile it to JavaScript, thus enabling us to compile or interpret raw Erlang in a browser environment independent of any Erlang packages installed on a host’s system. Due to time constraints we have had to rely on the Erlang compiler to validate, optimize and parse the Erlang source code, and as the compiler is not written in Erlang this aspect of the project was subsequently deemed too ambitious. We also intended to, and succeeded in, implementing as much of Erlang as possible in JavaScript, including function overloading, modules, tail recursion and ultimately – and more ambitiously – emulating Erlang-style concurrency using JavaScript’s event loop.
+	Most of our codebase is written in Erlang, which is the same language as our compilation source. The main motivation behind this is to eventually bootstrap the \textit{Jarlang compiler} (compiling the compiler). If we were to compile \textit{Jarlang}'s source code into JavaScript, we essentially have an Erlang compiler which can run on its own on the web, only furthering educational benefit as Erlang programmers therefore don't need to install an Erlang compiler themselves. This would also allow Erlang to act moreso as a first class citizen on the Web.
 	
-	The bulk of our code is written in Erlang and utilises the Erlang compiler to generate Core Erlang, an intermediate language used in Erlang’s compilation process. We then use built-in functions to get the Core Erlang abstract syntax tree which is then translated into a valid JavaScript abstract syntax tree via a series of transformation steps. Valid JavaScript is then derived from this abstract syntax tree via the employment of existing JavaScript projects such as escodegen.
+	Due to time constraints however, the currently implementation of the \textit{Jarlang compiler} hooks into the existing Erlang compiler and thus has a hard dependency on it. We utilise the Erlang compiler to parse, lex, validate, and optimise Erlang source code. After these steps, the Erlang compiler allows us to manipulate its intermediate language known as \textit{Core Erlang}, which is where the \textit{Jarlang compiler} performs most of its work.
 	
+	In order to remove our dependency on the Erlang compiler, we will need to write a parser, lexer and validater for Erlang, as well as generate a \textit{Core Erlang} compatible abstract syntax tree for us to work on, which whilst is not impossible, is definitely beyond the scope and time constraints of this project.
+
+	We also intended to, and in many ways, have succeeded in implementing much of Erlang's functionality --- The results of the \textit{Jarlang compiler} successfully emulate Erlang style modules (including private and exported functions), Erlang style variadic functions and function overloading, and more abmitiously, implementing a concurrent actor-model system leveraging JavaScript's event loop.
 \section{Background}
 \label{Background}
 
