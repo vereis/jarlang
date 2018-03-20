@@ -4,12 +4,14 @@
 \usepackage{natbib}
 % add line numbers
 \usepackage{lineno}
-%\linenumbers 
+%\linenumbers %Comment this out to remove line numbers
 
 \usepackage[pass]{geometry}
 \usepackage{graphicx}
 \renewcommand{\baselinestretch}{1.3}
 \usepackage{todonotes}
+%\usepackage{minted}
+\usepackage{subcaption}
 
 \title{CO600 Project: Jarlang\\ Technical Report}
 \author{
@@ -75,12 +77,54 @@ The Jarlang transpiler is capable of successfully transpiling relatively simple 
 
 In addition to this, we have implemented actor-style concurrency in JavaScript. Our success in implementing this has eliminated many of the initial concerns we harboured for this project, however this has raised other concerns such as garbage collection of completed processes. We have decided that this is outside the scope of this project.
 
+\subsection{Jarlang Run-Time System}
 \subsection{Erlang Datatypes}
 \subsection{AST Conversion}
-\subsubsection{Compiler Optimisations}
+	By using the Erlang compiler to produce Core Erlang and it's AST representation we have secured several benefits, some minor conveniences and some critical to achieving a viable program in the time available to us.
+\subsubsection{Compiler Generated Code}
+	In Erlang conditional logic \& function pattern matching, unless explicitly defined in the source code, an error is thrown when the supplied value or parameters do not match any of the required patterns. fortunately we have not been required to create this functionality directly, rather, during compilation to Core Erlang the Erlang compiler adds a catch-all clause to the associated code that will explicitly call the built-in-function that emits errors.
+	
+	For example
+	\begin{figure}[htb]
+		\centering
+		\begin{subfigure}[t]{.5\linewidth}
+			\centering         
+				\begin{verbatim}
+				...
+				error_if_not_apple(apple)->
+				ok.
+				\end{verbatim}
+			\caption{Erlang source}
+		\end{subfigure}%
+		\begin{subfigure}[t]{.5\linewidth}
+			\centering
+				\begin{verbatim}
+				...
+				'error_if_not_apple/1': function (_cor0) {
+				if (function () {
+				if (_cor0.match(new Atom('apple'))) {
+				return new Atom('true');
+				}
+				}.bind(this)()) {
+				return new Atom('ok');
+				} else if (function () {
+				return new Atom('true');
+				}()) {
+				let _cor1 = _cor0;
+				throw '** match_fail: TODO Errors dont parse nicely\\n' + 'Message';
+				}
+				},
+				...
+				\end{verbatim}
+			\caption{Jarlang transpiled equivalent}
+		\end{subfigure}
+		%\caption{Very code. Much geek. Wow!}
+		\caption{Comparison of Erlang source code and Jarlang transpiled equivalent.}
+	\end{figure}
+	
+	
 \subsubsection{Pattern Matching, Conditional Logic \& Message Receiving}
 \subsubsection{Variable Declaration \& Assignment in Matching}
-\subsection{Jarlang Run-Time System}
 \subsection{ErlPKG}
 
 \section{Conclusions}
@@ -95,7 +139,6 @@ In addition to this, we have implemented actor-style concurrency in JavaScript. 
 		\item Simon Thompson - For convincing us that rolling our own type checking system was not a good idea (and introducing to us the amazing \textit{Erlang Dialyzer}), and talking with us about the feasibility in our concurrency approach.
 		\item Gordon Guthrie - For having tackled a similar project --- \textit{LuvvieScript (URL now defunct)} --- and though no useful source-code was shared, his talk about how he tackled hooking into the Erlang compiler and tools he used (\textit{such as ESPrima and ESCodegen}) provided a brilliant starting point for \textit{Jarlang}.
 	\end{enumerate}
-
 \appendix
 \section*{Appendix A. TODO: Do we need an appendix?}
 
