@@ -13,17 +13,21 @@
 %\usepackage{minted}
 \usepackage{subcaption}
 
+% Fix weird page margins?
+\setlength{\oddsidemargin}{1cm}
+\setlength{\evensidemargin}{1cm}
+
 \title{CO600 Project: Jarlang\\ Technical Report}
 \author{
 	\begin{tabular}{ c c c }
-		Chris Bailey & Andrew Johnson & Nick Laine \\ 
-		\url{cb661@kent.ac.uk} & \url{apj8@kent.ac.uk} & \url{nl227@kent.ac.uk}  
+		Chris Bailey & Andrew Johnson & Nick Laine \\
+		\url{cb661@kent.ac.uk} & \url{apj8@kent.ac.uk} & \url{nl227@kent.ac.uk}
 	\end{tabular}\\
 	\\ \vspace{10mm}
-   \includegraphics[scale=0.6]{Kent_Comp_294_RGB} \\
-   School of Computing \\
-   University of Kent \\
-   United Kingdom \\ \vspace{10mm} \\ Word Count: 6,100}
+	 \includegraphics[scale=0.6]{Kent_Comp_294_RGB} \\
+	 School of Computing \\
+	 University of Kent \\
+	 United Kingdom \\ \vspace{10mm} \\ Word Count: 6,100}
 \begin{document}
 
 \newgeometry{hmarginratio=1:1}    %% make layout symmetric
@@ -31,129 +35,136 @@
 \restoregeometry              %% restore the layout
 
 \begin{abstract}
-	This paper describes the development and operation of an Erlang to JavaScript compiler henceforth referred to as \textit{Jarlang}. 
-	
-	The primary aim of \textit{Jarlang} is to generate valid JavaScript from any error-free Erlang module source code. The result of this JavaScript generation should be easily included on a given web-page and be easily integrated into existing front-end codebase. 
-	
-	Secondary aims for \textit{Jarlang} include the ability to leverage Erlang-style concurrency in what is more often than not a strictly single-threaded environment, as well as being able to \textit{execute correctly} the generated JavaScript --- this presumes the re-implementation of the Erlang standard library and Erlang runtime environment as the equivalent \textit{Jarlang runtime environment}.
-	
-	While fully implementing the \textit{Jarlang runtime environment} is not the primary goal of this project, enough of the \textit{Jarlang runtime environment} will have been implemented so that we can successfully emulate things such as Erlang's datatypes, message passing and concurrency model --- otherwise, enough that basic test-compilations can be successfully run \textit{(common tests such as 'hello, world!', 'fibbonaci' and 'factorial')}.
+This paper describes the development and operation of an Erlang to JavaScript compiler henceforth referred to as \textit{Jarlang}.
+
+The primary goal of Jarlang was originally to explore the feasibility of compiling Erlang source code into JavaScript such that people would be able to simply run it and demonstrate it on the open web. This is not only a convinient feature but also has applications for the educational use of Erlang, as well as simply improving existing documentation for Erlang with the use of real-time examples.
+
+Being able to help create a unified stack for web development has also been a goal of the project, as such a concept is rather attractive to contemporary web developers.
+
+Unlike similar projects such as \textit{LuvvieScript}, we aimed not to support a \textit{"subset of Erlang"} or create a new language \textit{"based on Erlang"}, but instead wanted to focus on implementing as much of Erlang, and its standard library, runtime and behaviours as possible on the web.
 \end{abstract}
 
 \section{Introduction}
 \label{Introduction}
-	\textit{Jarlang} is a compiler implemented in Erlang and JavaScript, whose goal is to be able to compile valid Erlang module source code into valid JavaScript source code.
+\textit{Jarlang} is a compiler implemented in Erlang and JavaScript, whose goal is to be able to compile valid Erlang module source code into valid JavaScript source code.
 
-	Jarlang thus provides several benefits to potential users such as the ability to execute, or demonstrate, Erlang code on the web which could help the official Erlang documentation but also provides educational benefits. Jarlang also allows developers to unify their tech-stack which is a popular trend amongst contemporary web developers. Unifying tech-stacks results in less time spent context switching when switching from front-end programming and back-end programming, as well as making both front-end and back-end programming accessible to any competant Erlang developer.
-	
-	Most of our codebase is written in Erlang, which is the same language as our compilation source. The main motivation behind this is to eventually bootstrap the Jarlang compiler (compiling the compiler). If we were to compile Jarlang's source code into JavaScript, we essentially have an Erlang compiler which can run on its own on the web, only furthering educational benefit as Erlang programmers therefore don't need to install an Erlang compiler themselves. This would also allow Erlang to act moreso as a first class citizen on the Web.
-	
-	Due to time constraints however, the currently implementation of the Jarlang compiler hooks into the existing Erlang compiler and thus has a hard dependency on it. We utilise the Erlang compiler to parse, lex, validate, and optimise Erlang source code. After these steps, the Erlang compiler allows us to manipulate its intermediate language known as \textit{Core Erlang}, which is where the Jarlang compiler performs most of its work.
-	
-	In order to remove our dependency on the Erlang compiler, we will need to write a parser, lexer and validater for Erlang, as well as generate a Core Erlang compatible abstract syntax tree for us to work on, which whilst is not impossible, is definitely beyond the scope and time constraints of this project.
+Jarlang thus provides several benefits to potential users such as the ability to execute, or demonstrate, Erlang code on the web which could help the official Erlang documentation but also provides educational benefits. Jarlang also allows developers to unify their tech-stack which is a popular trend amongst contemporary web developers. Unifying tech-stacks results in less time spent context switching when switching from front-end programming and back-end programming, as well as making both front-end and back-end programming accessible to any competant Erlang developer.
 
-	We also intended to, and in many ways, have succeeded in implementing much of Erlang's functionality --- The results of the Jarlang compiler successfully emulate Erlang style modules (including private and exported functions), Erlang style variadic functions and function overloading, and more abmitiously, implementing a concurrent actor-model system leveraging JavaScript's event loop.
+Most of our codebase is written in Erlang, which is the same language as our compilation source. The main motivation behind this is to eventually bootstrap the Jarlang compiler (compiling the compiler). If we were to compile Jarlang's source code into JavaScript, we essentially have an Erlang compiler which can run on its own on the web, only furthering educational benefit as Erlang programmers therefore don't need to install an Erlang compiler themselves. This would also allow Erlang to act moreso as a first class citizen on the Web.
+
+Due to time constraints however, the currently implementation of the Jarlang compiler hooks into the existing Erlang compiler and thus has a hard dependency on it. We utilise the Erlang compiler to parse, lex, validate, and optimise Erlang source code. After these steps, the Erlang compiler allows us to manipulate its intermediate language known as \textit{Core Erlang}, which is where the Jarlang compiler performs most of its work.
+
+In order to remove our dependency on the Erlang compiler, we will need to write a parser, lexer and validater for Erlang, as well as generate a Core Erlang compatible abstract syntax tree for us to work on, which whilst is not impossible, is definitely beyond the scope and time constraints of this project.
+
+We also intended to, and in many ways, have succeeded in implementing much of Erlang's functionality --- The results of the Jarlang compiler successfully emulate Erlang style modules (including private and exported functions), Erlang style variadic functions and function overloading, and more abmitiously, implementing a concurrent actor-model system leveraging JavaScript's event loop.
+
 \section{Background}
 \label{Background}
 
-
 \section{Aims}
 \label{Aims}
+The primary aim of \textit{Jarlang} is to generate valid JavaScript from any error-free Erlang module source code. The result of this JavaScript generation should be easily included on a given web-page and be easily integrated into existing front-end codebase.
 
+Secondary aims for \textit{Jarlang} include the ability to leverage Erlang-style concurrency in what is more often than not a strictly single-threaded environment, as well as being able to \textit{execute correctly} the generated JavaScript --- this presumes the re-implementation of the Erlang standard library and Erlang runtime environment as the equivalent \textit{Jarlang runtime environment}.
+
+While fully implementing the \textit{Jarlang runtime environment} is not the primary goal of this project, enough of the \textit{Jarlang runtime environment} will have been implemented so that we can successfully emulate things such as Erlang's datatypes, message passing and concurrency model --- otherwise, enough that basic test-compilations can be successfully run \textit{(common tests such as a simple 'Hello, World!', 'Fibbonaci' and 'Factorial')}.
 
 \section{Project Results}
 \label{Results}
+As a high level summary, the Jarlang compiler is capable of successfully compiling Erlang source code into JavaScript source code. We make no promises as to whether or not the generated code will function correctly when speaking only about the Jarlang compiler, but much code that does not utilise standard library functions and instead operates mainly on Erlang primitives works as intended.
 
-\todo{Excerpt from guideline doc:	(Several technical content sections)
-	This is where you go into detail about what you have done. You will need to decide the titles for these sections yourself; they will depend on the content of the project. These sections should summarise the technical and scientific achievements of the project.
-	
-	Depending on the nature of your project, these sections may include: a comparison of different approaches that you considered, accounts of experimental work, mathematical analyses, specifications, top-level architectural diagrams, results obtained, problems encountered, workarounds, user evaluations, performance measures, testing regimes and results, comparisons between different approaches adopted, comparisons with existing work on similar problems.
-	
-	In particular, you should give a mixture of general discussion of your work and particular examples. Too much general discussion and the reader cannot easily get a handle on what you are doing; too many specific examples and the document fails to "tell a story".
-}
+Example Erlang modules such as \textit{Fibbonaci}, \textit{Factorial} and simple multi-process communication tests such as a basic \textit{Ping-Pong server} seem to work without issue, and more complex Erlang modules such as Erlang OTP's \textit{List module} compile fine too. The main thing holding us back from getting functional compiled Erlang code is lack of a successfully implemented standard library and runtime.
 
-\todo{This text is a copy of the abstract assessment text, it will need re-writing.}
-The Jarlang transpiler is capable of successfully transpiling relatively simple Erlang source code to JavaScript. One of the main issues Jarlang has is the lack of a standard library, thus more complex code may not run after being transpiled. In time, this issue will be resolved by simply implementing the necessary Erlang language features (of particular importance, Erlang’s data types) in JavaScript, so that we can transpile more of Erlang’s standard library to utilise in transpiled code. We have succeeded in implementing the majority of Erlang’s data types, however they have yet to be integrated into the transpiled code.
+The Jarlang runtime environment, as explained briefly above, is a large hand-written implementation (or re-implementation) of much of the Erlang standard library and Erlang runtime environment in JavaScript. Since all code generated by the Jarlang compiler assumes that the Jarlang runtime environment is working and fully implemented, many things which would trivially be made to work currently do not. This is because of the sheer scope of features found in the Erlang runtime and standard library and whilst progress has been made (much of the core \textit{Erlang module} and \textit{IO module} has been implemented, for instance), much core functionality is still missing.
 
-In addition to this, we have implemented actor-style concurrency in JavaScript. Our success in implementing this has eliminated many of the initial concerns we harboured for this project, however this has raised other concerns such as garbage collection of completed processes. We have decided that this is outside the scope of this project.
+Notable features of the Jarlang runtime environment in its current state, however, are listed below:
+
+\begin{itemize}
+\item Erlang Datatypes - The Jarlang runtime environment successfully reimplements and emulates all of the Erlang datatypes we have deemed to be implementable on the web, and are as follows: \textit{'Atoms', 'BitStrings', 'Floats (BigNum)', 'Integers (BigNum)', 'Lists', 'Maps', 'PIDs', 'Tuples','Unbounds', and 'Processes'}. We will go into more detail about these below.
+\item Erlang's Concurrency Model - The compiled output of the Jarlang compiler intelligently wraps function calls into unique processes when needed. Each process has a mailbox and the ability to defer execution while awaiting messages to process and respond to. Processes can send messages to other processes and therefore trigger asynchronous behaviour via this mechanism. Furthermore, Processes live in a pool of active processes and are run asynchronously in JavaScript's event loop which seems to, at a high level, simulate the concurrency model used by Erlang.
+\item IO and Erlang module - The Erlang IO module allows processes to print to the JavaScript console with a \textit{printf} style syntax. It closely emulates the same interface as the Erlang standard IO module and at a basic level is interoperable. The Erlang module is also implemented to the point where we can spawn processes, register processes in a global \textit{Atom table}, perform type casting and more.
+\end{itemize}
+
+A more detailed discussion of the segments which make up the Jarlang compiler and the Jarlang runtime system is discussed below.
 
 \subsection{Jarlang Run-Time System}
+
 \subsection{Erlang Datatypes}
 \subsection{AST Conversion}
-	By using the Erlang compiler to produce Core Erlang and it's AST representation we have secured several benefits, some minor conveniences and some critical to achieving a viable program in the time available to us.
+By using the Erlang compiler to produce Core Erlang and it's AST representation we have secured several benefits, some minor conveniences and some critical to achieving a viable program in the time available to us.
 \subsubsection{Compiler Generated Code}
-	In Erlang conditional logic \& function pattern matching, unless explicitly defined in the source code, an error is thrown when the supplied value or parameters do not match any of the required patterns. fortunately we have not been required to create this functionality directly, rather, during compilation to Core Erlang the Erlang compiler adds a catch-all clause to the associated code that will explicitly call the built-in-function that emits errors.
-	
-	For example the Erlang function shown in Figure \ref{fig:code_comparison:erl} will throw an error if the input is anything other than the atom 'apple'. In this example there is no code that states what should occur in the event that the input is not the atom 'apple' and as such the compiler generates a second clause (Figure \ref{fig:code_comparison:erl_ast}) to match any value and throw an appropriate error. This conveniently allows us to reproduce the required functionality by parsing the compiler generated function as normal (Figure \ref{fig:code_comparison:js}), rather than concerning ourselves with this specific case.
+In Erlang conditional logic \& function pattern matching, unless explicitly defined in the source code, an error is thrown when the supplied value or parameters do not match any of the required patterns. fortunately we have not been required to create this functionality directly, rather, during compilation to Core Erlang the Erlang compiler adds a catch-all clause to the associated code that will explicitly call the built-in-function that emits errors.
+
+For example the Erlang function shown in Figure \ref{fig:code_comparison:erl} will throw an error if the input is anything other than the atom 'apple'. In this example there is no code that states what should occur in the event that the input is not the atom 'apple' and as such the compiler generates a second clause (Figure \ref{fig:code_comparison:erl_ast}) to match any value and throw an appropriate error. This conveniently allows us to reproduce the required functionality by parsing the compiler generated function as normal (Figure \ref{fig:code_comparison:js}), rather than concerning ourselves with this specific case.
 	%\begin{figure}[htb]
 		%\centering
-		\begin{figure}[t]
-			\centering         
-				\begin{verbatim}
-				...
-				error_if_not_apple(apple)->
-				  ok.
-				\end{verbatim}
-			\caption{Erlang source}
-			\label{fig:code_comparison:erl}
-		\end{figure}
-		\begin{figure}[t]
-			\centering         
-			\begin{verbatim}
-			...
-			[{{c_var,[],{error_if_not_apple,1}},
-			  {c_fun,[],
-			    [{c_var,[],'_cor0'}],
-			    {c_case,[],
-			      {c_var,[],'_cor0'},
-			      [{c_clause,[],
-			         [{c_literal,[],apple}],
-			         {c_literal,[],true},
-			         {c_literal,[],ok}},
-			       {c_clause,
-			         [compiler_generated],
-			         [{c_var,[],'_cor1'}],
-			         {c_literal,[],true},
-			         {c_primop,
-			           [{function_name,{error_if_not_apple,1}}],
-			           {c_literal,[],match_fail},
-			           [{c_tuple,[],
-			             [{c_literal,[],function_clause},
-			                {c_var,[],'_cor1'}]}]}}]}}},
-			...
-			\end{verbatim}
-			\caption{Core Erlang AST of Figure \ref{fig:code_comparison:erl}}
-			\label{fig:code_comparison:erl_ast}
-		\end{figure}
-		\begin{figure}[t]
-			\centering
-				\begin{verbatim}
-				...
-				'error_if_not_apple/1': function (_cor0) {
-				  if (function () {
-				    if (_cor0.match(new Atom('apple'))) {
-				      return new Atom('true');
-				    }
-				  }.bind(this)()) {
-				    return new Atom('ok');
-				  } else if (function () {
-				    return new Atom('true');
-				  }()) {
-				    let _cor1 = _cor0;
-				    throw '** match_fail: TODO Errors dont parse nicely\\n' + 'Message';
-				  }
-				},
-				...
-				\end{verbatim}
-			\caption{Jarlang transpiled equivalent of Figure \ref{fig:code_comparison:erl}}
-			\label{fig:code_comparison:js}
-		\end{figure}
+		% \begin{figure}[t]
+		% 	\centering
+		% 		\begin{verbatim}
+		% 		...
+		% 		error_if_not_apple(apple)->
+		% 		  ok.
+		% 		\end{verbatim}
+		% 	\caption{Erlang source}
+		% 	\label{fig:code_comparison:erl}
+		% \end{figure}
+		% \begin{figure}[t]
+		% 	\centering
+		% 	\begin{verbatim}
+		% 	...
+		% 	[{{c_var,[],{error_if_not_apple,1}},
+		% 	  {c_fun,[],
+		% 	    [{c_var,[],'_cor0'}],
+		% 	    {c_case,[],
+		% 	      {c_var,[],'_cor0'},
+		% 	      [{c_clause,[],
+		% 	         [{c_literal,[],apple}],
+		% 	         {c_literal,[],true},
+		% 	         {c_literal,[],ok}},
+		% 	       {c_clause,
+		% 	         [compiler_generated],
+		% 	         [{c_var,[],'_cor1'}],
+		% 	         {c_literal,[],true},
+		% 	         {c_primop,
+		% 	           [{function_name,{error_if_not_apple,1}}],
+		% 	           {c_literal,[],match_fail},
+		% 	           [{c_tuple,[],
+		% 	             [{c_literal,[],function_clause},
+		% 	                {c_var,[],'_cor1'}]}]}}]}}},
+		% 	...
+		% 	\end{verbatim}
+		% 	\caption{Core Erlang AST of Figure \ref{fig:code_comparison:erl}}
+		% 	\label{fig:code_comparison:erl_ast}
+		% \end{figure}
+		% \begin{figure}[t]
+		% 	\centering
+		% 		\begin{verbatim}
+		% 		...
+		% 		'error_if_not_apple/1': function (_cor0) {
+		% 		  if (function () {
+		% 		    if (_cor0.match(new Atom('apple'))) {
+		% 		      return new Atom('true');
+		% 		    }
+		% 		  }.bind(this)()) {
+		% 		    return new Atom('ok');
+		% 		  } else if (function () {
+		% 		    return new Atom('true');
+		% 		  }()) {
+		% 		    let _cor1 = _cor0;
+		% 		    throw '** match_fail: TODO Errors dont parse nicely\\n' + 'Message';
+		% 		  }
+		% 		},
+		% 		...
+		% 		\end{verbatim}
+		% 	\caption{Jarlang transpiled equivalent of Figure \ref{fig:code_comparison:erl}}
+		% 	\label{fig:code_comparison:js}
+		% \end{figure}
 		%\caption{Very code. Much geek. Wow!}
 		%\caption{Comparison of Erlang source code and Jarlang transpiled equivalent.}
 		%\label{fig:code_comparison}
 	%\end{figure}
-	
-	
+
+
 \subsubsection{Pattern Matching, Conditional Logic \& Message Receiving}
 \subsubsection{Variable Declaration \& Assignment in Matching}
 \subsection{ErlPKG}
@@ -161,15 +172,15 @@ In addition to this, we have implemented actor-style concurrency in JavaScript. 
 \section{Conclusions}
 \label{Conclusions}
 
- [section not done yet]
+[section not done yet]
 
 \section{Acknowledgement}
-	The authors wish to thank and/or acknowledge the following:
-	\begin{enumerate}
-		\item Scott Owens - For supervising our project, and being generally available whenever we needed help or assistance, and talked us through just about all of our technical decisions.
-		\item Simon Thompson - For convincing us that rolling our own type checking system was not a good idea (and introducing to us the amazing \textit{Erlang Dialyzer}), and talking with us about the feasibility in our concurrency approach.
-		\item Gordon Guthrie - For having tackled a similar project --- \textit{LuvvieScript (URL now defunct)} --- and though no useful source-code was shared, his talk about how he tackled hooking into the Erlang compiler and tools he used (\textit{such as ESPrima and ESCodegen}) provided a brilliant starting point for \textit{Jarlang}.
-	\end{enumerate}
+The authors wish to thank and/or acknowledge the following:
+\begin{enumerate}
+\item Scott Owens - For supervising our project, and being generally available whenever we needed help or assistance, and talked us through just about all of our technical decisions.
+\item Simon Thompson - For convincing us that rolling our own type checking system was not a good idea (and introducing to us the amazing \textit{Erlang Dialyzer}), and talking with us about the feasibility in our concurrency approach.
+\item Gordon Guthrie - For his similar project --- \textit{LuvvieScript (URL now defunct)} --- and though no useful source-code was shared, his talk about how he tackled hooking into the Erlang compiler and tools he used (\textit{such as ESPrima and ESCodegen}) provided a brilliant starting point for \textit{Jarlang}.
+\end{enumerate}
 \appendix
 \section*{Appendix A. TODO: Do we need an appendix?}
 
