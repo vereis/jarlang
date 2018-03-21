@@ -16,6 +16,7 @@
 % Fix weird page margins?
 \setlength{\oddsidemargin}{1cm}
 \setlength{\evensidemargin}{1cm}
+\setcounter{secnumdepth}{3}
 
 \title{CO600 Project: Jarlang\\ Technical Report}
 \author{
@@ -87,9 +88,93 @@ Notable features of the Jarlang runtime environment in its current state, howeve
 
 A more detailed discussion of the segments which make up the Jarlang compiler and the Jarlang runtime system is discussed below.
 
-\subsection{Jarlang Run-Time System}
+\subsection{Jarlang Runtime Environment}
+The Jarlang runtime environment is implemented as many seperate JavaScript modules which are processed and bound together by our NodeJS toolchain and tools such as \textit{Gulp}. The runtime is split into three distinct segments.
 
-\subsection{Erlang Datatypes}
+\begin{itemize}
+\item Erlang Datatypes - Each Erlang datatype implemented as an ES6-spec JavaScript class in its own closure to keep track of private and public methods/properties.
+\item Standard Library Modules - Each standard library module is implemented as an ES5-spec JavaScript module which interally also uses a closure in order to keep track of exported/unexported functions.
+\item Runtime Specific Code - This exists enclosed within a single ES5-spec JavaScript module which creates the appropriate environment expected of an Erlang-like environment such as setting up a process pool, global atom table and more.
+\end{itemize}
+
+Whilst the implementation of the standard library modules and the runtime module is interesting as it follows the same pattern we use for implementing Erlang-style modules in JavaScript, details about this will be explore in section \ref{sssec:num1} as it is more relevant there. Otherwise, the composition of the runtime environment isn't particularly interested --- the components however, are.
+
+\subsubsection{Erlang Datatypes}
+Early builds of Jarlang attempted to simply make due with JavaScript's native datatypes as an attempt to generate more idomatic JavaScript. This was quickly scrapped when we hit some slightly more nuanced edge cases in Erlang such as type comparisons.
+
+Values of any given type in Erlang can be compared against one another with the standard arithmatic comparison operators '$>$', '$<$', '$>=$', '$=<$'. Other operators such as '$=$' could also be seen as doing a type-to-type comparison also. Due to this, instead of implementing multiple typechecking checks in each of the function calls for the given arithmatic comparison operators, we opted instead to build custom classes which would let us easily implement such behaviour.
+
+In order to easily and painlessly implement this behaviour, all datatype classes inherit from a custom type we defined called \textit{erlangDatatype} and therefore have several properties initialised by default such as \textit{erlangDatatype.value}, \textit{erlangDatatype.precedence} and auxillary functions intended to be overwritten such as \textit{erlangDatatype.toString()}, and \textit{erlangDatatype.match(N)}.
+
+Following this, each datatype overwrites \textit{erlangDatatype.precedence} in its own class with a number which determines how it gets compared to values of a different type. Atoms in Erlang are less than everything for example, and thus in the Jarlang runtime environment, Atoms have a precedence value of 1 whilst everything else has a precedence value greater than 1.
+
+In more complex cases, precedence is not the only value tested to determine the comparison of two values. Data collections such as Lists, BitStrings and Maps all override their \textit{erlangDatatype.match(N)} functionality so that they can correctly implement comparison matching as well as object equality checking which is then used for pattern matching.
+
+Of course, each datatype then goes on to implement type-specific behaviour in an attempt to mimic type behaviour in Erlang. A high level outline of what each datatype does is given below:
+
+\begin{itemize}
+\item Atoms - Atoms are essentially just constant immutable values which are also singletons. When atoms are created, they register themselves in the runtime system's global atom table which keeps track of every atom which has ever been initialized. The global atom table is also a place where you can store references to processes, and as such atoms in the Jarlang runtime system (just like in Erlang), double as 'global identifiers' to processes.
+
+\item BitStrings - BitStrings are contiguous arrangements of binary data in the Erlang world. We were originally not going to implement the BitString class because it doesn't really feel applicable on the web since you're never really dealing with any binary data, however, strings in Erlang are often represented as Binary strings and as such we needed to implement these to support such a common usecase. BitStrings use JavaScript's \textit{uint8Array} internally.
+
+\item Floats/Ints - Numbers in Erlang have arbitrary precision and are implemented via the inclusion of the \textit{bignumber.js} library. This is the only part of Jarlang runtime which has an external dependency though we do package \textit{bignumber.js} in our runtime to be as simple as possible to use. Whilst the classes Float and Int aren't entirely identical, they share most of their interface. These classes implement typical mathematical functions such as addition, subtraction and multiplication which is what gets used by the Jarlang runtime system whenever it performs mathematical calculations.
+
+\item Lists - Lists are implemented as a recursive datatype such that a List can contain a value and a reference to another List. This allows efficient implementation of the \textit{cons operator}, and is also simply how its done in Erlang too. Proper lists always end in an empty list, but since Erlang allows improper lists, \textit{consing} a list with any non-list item will return an \textit{improper list}. Normal strings are also represented as lists in Erlang and as such, Lists are able to reflect upon their contents and render themselves as JavaScript strings if their makeup is entirely of integers which lie within a certain range of values Erlang denotes as printable ASCII characters.
+
+\item Maps - Maps in the Jarlang runtime environment were originally implemented as wrappers over JavaScript Objects. This was changed when we realised the matching behaviour of Maps performs comparisons on the underlying keys stored within said Map. As such, Maps are currently implemented using two JavaScript arrays --- one for keys (which can be non-serialized objects of any kind), and the other for values such that looking up the \textit{i\textsuperscript{th}} value of the keys array returns the \textit{i\textsuperscript{th}} value of the values array.
+
+\item PID - PIDs are process identifiers and are usually only created when new processes are spawned. PIDs act simply as an identifier and thus they don't have any special functionality outside of being keys to processes in the runtime system's global process table. PIDs are made up of three identifying features: the node where the PID exists (allowing for distributed processing), and two other IDs. Distribution of PIDs isn't implemented or handled by the runtime environment however and thus are left to Jarlang's users to implement themselves --- PIDs do however, because of this, expose an API allowing you to programmatically control what precise PID gets spawned at a given time.
+
+\item Processes - At a high level, these are agents which execute a given behaviour (encapsulating a function call) asynchronously. These are explained in depth in section \ref{sssec:num2}.
+
+\item Tuples - Tuples behave like lists of fixed size. They don't have the ability to \textit{cons} with other tuples but are implemented in a similar way to lists for easier pattern-matching implementation.
+
+\end{itemize}
+
+Because each datatype inherits properties such as \textit{erlangDatatype.value}, these datatypes are often interacted with by querying the value stored in \textit{erlangDatatype.value}. The only gap in our datatype abstraction is the lack of a \textit{fun} datatype as we are compiling Erlang functions into JavaScript functions. 
+
+Any time a user makes a call to compiled Erlang code, they are in fact invoking the Jarlang runtime system. All Erlang related code is processed purely using these datatypes and as such there is an issue of JavaScript-Jarlang Interoperability which we describe and resolve (somewhat) below.
+
+\subsubsection{JavaScript - Jarlang Interoperability}
+There was originally quite an annoying issue of lack of interoperability between the 'outside JavaScript world' and our 'internal Jarlang world'. 
+
+Given an Erlang function which is called with the following: \textit{fibbonaci:fibb(12)}, originally, a user of Jarlang would have had to execute \textit{fibbonaci.fib(new Int(12))} in order to get it to work as they expected. This issue affected us as well while testing; more complex datatypes such as, in Erlang: \textit{[1, 2, {3, 3}]}, would have had to been written, in JavaScript, as \textit{new List(new Int(1), new Int(2), new Tuple(new Int(3), new Int(3)))} which not only was much more verbose, but was simply not friendly to use.
+
+We got around this by implementing functions which try their best to convert JavaScript types into their natural Erlang types where applicable. These functions are automatically wrapped around any potential user input such as around exported functions of any modules, as well as any potential output. This means that for all simple cases, the user can run \textit{fibbonaci.fib(12)} and expect it to work just like the Erlang equivalent. These functions are also exposed in our public API so that users can manually call these type conversions should they need to in their own native JavaScript code.
+
+When converting JavaScript types to Erlang types, there the following types are mapped to eachother:
+
+\begin{itemize}
+\item Number $\Rightarrow$ Int/Float (depending on value of given Number)
+\item String $\Rightarrow$ List
+\item Array $\Rightarrow$ List
+\item Uint8Array $\Rightarrow$ BitString
+\item Object $\Rightarrow$ Map
+\end{itemize}
+
+Any non-mapped datatypes will need to be manually created as before though, so functions which require an Atom will need to call said code with \textit{new Atom(\dots)}.
+
+When converting Erlang types into JavaScript, the converted types are more expressive as they can generate themselves as tagged JavaScript objects. They are mapped as follows:
+
+\begin{itemize}
+\item Atom $\Rightarrow$ String
+\item BitString $\Rightarrow$ Uint8Array
+\item List $\Rightarrow$ String or Array, depending the values within the List
+\item Map $\Rightarrow$ An Object in the form of \textit{\{ keys: [...], values: [...] \}}
+\item Int/Float $\Rightarrow$ Number
+\item Pid $\Rightarrow$ Not converted. Exposed as raw Erlang datatype.
+\item Process $\Rightarrow$ Not converted. Exposed as raw Erlang datatype.
+\item Tuple $\Rightarrow$ Array
+\end{itemize}
+
+The main downside to this automatic type conversion system is when dealing with anonymous functions on both the JavaScript side and the Erlang side. Since we're using JavaScript functions as the datatype representing Erlang functions, we can pass them around and invoke them as normal first class objects but the issue is that it is impossible for the arguments going into these functions and coming out of these functions to be automatically converted. This is an area of active research though I don't believe we'll find an adequate solution in the near future.
+
+Lastly, since Erlang function calls in the form \textit{module:function(\dots)} are simply compiled to \textit{module.function(\dots)}, Erlang code can call native browser APIs, as well as user defined functions by simply making a call to that code. Calling \textit{window:function(\dots)} allows access to any globally accessible functions, though for ease of use, the Jarlang runtime will eventually include its own wrapper around much of the standard JavaScript APIs allowing even better interoperability.
+
+\subsubsection{Sequential Programming (or lack thereof)}
+\subsubsection{Concurrent Programming} \label{sssec:num2}
+\subsubsection{Distributed Programming}
+
 \subsection{AST Conversion}
 By using the Erlang compiler to produce Core Erlang and it's AST representation we have secured several benefits, some minor conveniences and some critical to achieving a viable program in the time available to us.
 \subsubsection{Compiler Generated Code}
@@ -167,6 +252,7 @@ For example the Erlang function shown in Figure \ref{fig:code_comparison:erl} wi
 
 \subsubsection{Pattern Matching, Conditional Logic \& Message Receiving}
 \subsubsection{Variable Declaration \& Assignment in Matching}
+\subsubsection{Erlang Module implementation} \label{sssec:num1}
 \subsection{ErlPKG}
 
 \section{Conclusions}
