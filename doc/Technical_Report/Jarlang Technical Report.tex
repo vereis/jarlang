@@ -17,6 +17,7 @@
 \setlength{\oddsidemargin}{1cm}
 \setlength{\evensidemargin}{1cm}
 \setcounter{secnumdepth}{3}
+\raggedbottom
 
 \title{CO600 Project: Jarlang\\ Technical Report}
 \author{
@@ -167,12 +168,58 @@ When converting Erlang types into JavaScript, the converted types are more expre
 \item Tuple $\Rightarrow$ Array
 \end{itemize}
 
-The main downside to this automatic type conversion system is when dealing with anonymous functions on both the JavaScript side and the Erlang side. Since we're using JavaScript functions as the datatype representing Erlang functions, we can pass them around and invoke them as normal first class objects but the issue is that it is impossible for the arguments going into these functions and coming out of these functions to be automatically converted. This is an area of active research though I don't believe we'll find an adequate solution in the near future.
+The main downside to this automatic type conversion system is when dealing with anonymous functions on both the JavaScript side and the Erlang side. Since we're using JavaScript functions as the datatype representing Erlang functions, we can pass them around and invoke them as normal first class objects but the issue is that it is impossible for the arguments going into these functions and coming out of these functions to be automatically converted. This is an area of active research and thus I don't believe we'll find an adequate solution in the near future.
 
 Lastly, since Erlang function calls in the form \textit{module:function(\dots)} are simply compiled to \textit{module.function(\dots)}, Erlang code can call native browser APIs, as well as user defined functions by simply making a call to that code. Calling \textit{window:function(\dots)} allows access to any globally accessible functions, though for ease of use, the Jarlang runtime will eventually include its own wrapper around much of the standard JavaScript APIs allowing even better interoperability.
 
 \subsubsection{Sequential Programming (or lack thereof)}
+As stated in the section above, the Jarlang runtime environment is the only environment in which compiled Erlang code is run. Because of this, we have a clear entrypoint and exitpoint \textit{(Erlang $\rightarrow$ JavaScript function calls notwithstanding)} where we can perform some logic to improve the interoperability between the Jarlang runtime environment and the external JavaScript environment.
+
+Another thing we do in this layer is instantiate new Processes for any function calls the user makes. Whenever the user calls Erlang functions compiled through the Jarlang compiler, the runtime system intercepts these function calls and insteads wraps those function calls inside the \textit{Process.behaviour} property of a new Process whose PID gets returned.
+
+Because Processes are run asynchronously, interleaved among other units of work during the JavaScript event loop, this neccessitates that the returned PIDs --- essentially the return value of any user-run Erlang code --- share a similar interface and design to native \textit{JavaScript Promises} such that they embody the idea of \textit{"work that needs to be done"} or \textit{"a promise of a return value in the future"}.
+
+This means that any time you need to interface with Erland code in JavaScript, you need to structure your code to listen for return events in the future, or in short, Erlang code compiled by the Jarlang compiler cannot be run synchronously by a user.
+
+Moreover, multiple processes spawned sequentially side by side don't guarentee any order of execution and thus one cannot rely on this mechanism to ensure sequential code.
+
+This was a design decision we made relatively late on since originally the Jarlang compiler and Jarlang runtime environment produced only seqential Erlang code. The tradeoff for allowing sequential Erlang code to be generated was that, at that point in time, the Jarlang compiler and runtime environment didn't support the compilation or running of Erlang processes.
+
+Because all code, even completely sequential Erlang, is executed in an asynchronous manner --- even typing commands in the Erlang shell execute in a Process as evidenced by the result of running the command \textit{self()} --- we wanted to mimic this despite the slight inconvinience of forcing such a paradigm shift on any potential users.
+
+In line with our attempt to mimic Erlang's concurrency model however, we do make the guarentee that any \textit{sequential-only Erlang code} executed within any process is entirely sequential. We go into this in detail in the following section where we discuss how our Processes actually work and how this enables us to utilise concurrent programming paradigms in JavaScript. 
+
 \subsubsection{Concurrent Programming} \label{sssec:num2}
+As we have detailed above, all user calls into compiled Erlang code runs in the context of a Process executing a \textit{behaviour}. Processes are architected such that they resemble \textit{JavaScript Promises} for easier interoperability but also act like traditional actor model agents.
+
+On a high level, the BEAM virtual machine (responsible for running Erlang code) schedules processes based on how long processes have been running. It has the ability to pause and resume processes when and if it sees fit. 
+
+While it wouldn't be impossible for us to do this in JavaScript with the use timing functions sprinkled throughout compiled Erlang code to help the runtime environment schedule process behaviours, it would definitely impact the runtime of such code and the human-readability which whilst is not of paramount importance, definitely helps with the development of Jarlang.
+
+Instead, we opted for an extremely high level simulation of how the actor model is implemented in Erlang. Erlang code is essentially strictly sequential in all but one case --- if a function contains a \textit{receive block}, the function essentially defers execution of the containing process until the \textit{receive block} has passed. This is also where our guarentee of sequential order comes from as long as the compiled code was purely sequential Erlang.
+
+The behaviour property of a given process is a reference to the function that process should perform in the next tick of work allocated to said process. 
+
+Processes also have an internal API which allows them to set the behaviour property to either the currently executing behaviour (repeating the current unit of work again in the next tick) or another function (execute a new behaviour in the next tick) With this simple API, we are able to implement basic actor-model concurrency.
+
+For this to work, all processes also contain a inbox for messages to accumulate in. During \textit{receive blocks}, we pattern match against these messages in order to determine what we will execute in the next tick. As far as concurrency is concerned, this is the only place in Erlang where concurrency can occur, and as such, our implementation of actor-style concurrency is compatible with basic Erlang examples.
+
+One of the places where our implementation makes a notable difference to Erlang's implementation is when a given process never ends from a sequential standpoint. All sequential Erlang code is run sequentially and atomically and thus, an infinite loop would lock up the browser's JavaScript thread indefinitely. In Erlang, this is not the case as the BEAM virtual machine is still free to switch to another process and execute it as it pleases.
+
+As a more detailed example then, of how we are implementing concurrency as far as the Jarlang compiler \& runtime environment is concerned: 
+
+\begin{enumerate}
+\item Compile normal sequential Erlang code into normal sequential JavaScript. If we reach a receieve block, split the function into three pieces such that we have a PRE-RECIEVE function, a POST-RECIEVE function and finally the receieve block itself.
+\item Assemble these function segments as inline anonymous function calls, passing variables from one segment of the function to another by use of a closure --- this allows us to bind variables from one function into another quite naturally.
+\item Modify the recieve blocks such that if no messages are matched, set the process behaviour to the same recieve block allowing us to indefinitely defer processes until a message is matched.
+\item When a function containing non-sequential Erlang is run, the process runs sequentially until the receive block is met (the PRE-RECEIVE block). Once the receive block is met, the process defers itself indefinitely such that the only thing it does each tick of worktime it gets given is check its message inbox.
+\item When a message is matched, it sequentially runs the code coupled with the matched case before deferring again, but this time to the POST-RECIEVE function.
+\end{enumerate}
+
+Via this process, messages can trigger deferred processes awaiting messages to continue execution, and can themselves await messages. With this basic behaviour we can implement basic OTP-like server functionality as well as state-machine like functionality.
+
+One of the things yet to be implement is a mechanism to cancel a receive block after a period of time. This can be implemented via simply counting the time which has passed in between process ticks and exiting the receive block after so long but this hasn't been implemented at the time of writing.
+
 \subsubsection{Distributed Programming}
 
 \subsection{AST Conversion}
