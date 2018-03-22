@@ -222,6 +222,32 @@ One of the things yet to be implement is a mechanism to cancel a receive block a
 
 \subsubsection{Distributed Programming}
 
+Another important facet of Erlang's concurrency model is that it is fairly trivial to expand across multiple different nodes to allow easy distributed programming.
+
+Whilst at this point in time Jarlang doesn't provide any official mechanism to allow for such distributed programming --- and likely never will, due to the following explanation --- it would be trivial to implement a similar system in JavaScript to facilitate distributed programming. 
+
+Because the only facility processes have to trigger asynchronous behaviours is via message passing, and all messages are sent to either known PIDs in the global PID table or known Atoms in the global Atom table, one could easily implement a channel which listens for messages sent to \textit{virtual PIDs/Atoms} belonging to distributed processes. This channel could then simply forward the message via any web mechanism capable of real time communication such as \textit{WebRTC} or more commonly \textit{WebSockets}. 
+
+Following this, a layer would need to be implement to route received distributed messages to their intended target but once this was done, any given process would be able to trivially and arbitrarily send and receive messages from distributed nodes.
+
+The Jarlang runtime environment does however provide a mechanism to customise the PIDs which otherwise get automatically generated in order to facilitate users to be able to tag PIDs as distributed or local. Even without this however, distribution of nodes is simple and nothing is neccessarily even stopping Jarlang process nodes from sending and/or receiving messages from real Erlang process nodes on the backend, assuming the correct layers to translate from Erlang to JavaScript and vice versa are implemented.
+
+\subsubsection{Current Runtime Limitations}
+
+While as a whole, the Jarlang runtime environment works quite successfully in emulating the behaviour of running Erlang code at a high level, there are some drawbacks and limitations to what can be done with Jarlang at this point in time. While some of these can be handled by small or large changes, some are limitations on our architectural approach and likely won't be resolved in the near future if at all.
+
+They are listed as follows.
+
+\begin{itemize}
+\item Currently we provide no mechanism for processes to supervise or react to events of linked processes.
+\item Currently, scope details can be lost if receive blocks are heavily nested
+\item In order for processes to run Erlang code linearly whilst users can only run Erlang code asynchronously, processes must bind a reference to themselves whenever they call a function which on some JavaScript execution engines causing extremely severe performance issues.
+\item Ports as a datatype aren't implemented but could be implement to help facilitate distributed programming.
+\item Automatic type coercion between the JavaScript environment and Jarlang runtime environment is a leaky abstraction which can't be applied to functions. We can maybe fix this by implementing all Erlang functions as wrappers around lambda instead of generating functions directly, but the output of these wrapped lambas still couldn't neccessarily be converted easily or usefully.
+\item The \textit{spawn/N} functions cannot currently spawn functions without relying on JavaScripts \textit{eval} function. This is because we cannot access programmatically the contents of compiled Erlang modules as they are declared as a \textit{const variable} and thus do not bind to the global scope. We chose not to simply use a \textit{var variable} instead but to have Erlang modules register themselves with the runtime environment upon initialisation. This is currently a pending task.
+\item We currently do not and cannot garbage collect proceses. Upon ending execution they defer forever since we can never be sure there are no references to these processes either inside the runtime environment (which is implementable) or outside in the open JavaScript environment (which isn't implementable).
+\end{itemize}
+
 \subsection{AST Conversion}
 By using the Erlang compiler to produce Core Erlang and it's AST representation we have secured several benefits, some minor conveniences and some critical to achieving a viable program in the time available to us.
 \subsubsection{Compiler Generated Code}
