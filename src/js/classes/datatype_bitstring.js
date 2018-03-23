@@ -33,12 +33,27 @@ const BitString = (() => {
         }
 
         toString() {
-            var l = new List(...this.getValue().values);
+            var v = new List(...this.getValue().values);
 
-            if (List.isString(l)) {
-                return `<<"${l}">>`;
+            if (isBinary(this)) {
+                if (List.isString(v)) {
+                    return `<<"${v}">>`;
+                }
+                return `<<${this.getValue().values.join(",")}>>`;
             }
-            return `<<${this.getValue().values.join(",")}>>`;
+
+            var tmp = [];
+
+            for (i = 0; i < v.length; i++) {
+                if (s[i] !== 8) {
+                    tmp.push(`${v[i]}:${s[i]}`);
+                }
+                else {
+                    tmp.push(v[i]);
+                }
+            }
+
+            return `<<${tmp.join(",")}>>`;
         }
 
         match(other) {
@@ -56,7 +71,7 @@ const BitString = (() => {
         
         // TODO
         static isBinary(a) {
-            return a instanceof BitString;
+            return a instanceof BitString && a.getValue().sizes.every((s) => s === 8);
         }
     };
 })();
