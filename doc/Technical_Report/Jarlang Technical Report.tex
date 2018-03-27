@@ -263,10 +263,26 @@ Since the Erlang compiler also has to get to the stage where it is generated cod
 
 We will go into more details about steps the Jarlang compiler takes to generated valid JavaScript output, as well as outline tools used.
 
-\subsubsection{Pre-Jarlang: The Erlang Compiler}
+\subsubsection{Between the Erlang Compiler and the Jarlang Compiler}
 As briefly stated above, before the Jarlang compiler is able to do any work, the Erlang compiler has to more or less successfully compile Erlang source code files into Erlang's intermediate language --- Core Erlang --- which means we don't have to worry about certain classes of errors such as referencing undefined variables or throwing errors for invalid conditional logic or pattern match logic.
 
-For example the Erlang function shown in Figure \ref{fig:code_comparison:erl} will throw an error if the input is anything other than the atom 'apple'. In this example there is no code that states what should occur in the event that the input is not the atom 'apple' and as such the compiler generates a second clause (Figure \ref{fig:code_comparison:erl_ast}) to match any value and throw an appropriate error. This conveniently allows us to reproduce the required functionality by parsing the compiler generated function as normal (Figure \ref{fig:code_comparison:js}), rather than concerning ourselves with this specific case.
+As an example, the Erlang function shown in Figure \ref{fig:code_comparison:erl} will throw an runtime error if the input is anything other than the atom 'apple'. Because we have not manually defined a clause which does so for us, the Erlang compiler automatically generates on as you can see in Figure \ref{fig:code_comparison:erl_ast}. This means that as long as we've programmed the Jarlang compiler to correctly parse and generate an equivalent JavaScript abstract syntax tree from our Core Erlang, everything will work as intended (see the Jarlang compiler output for this error at Figure \ref{fig:code_comparison:js}).
+
+The generated Core Erlang also removes much of the syntactic sugar from Erlang code; pattern-matching appears only in case statements or receive statements, all case statements include catch-all clauses, all function arities and modules are stated for us without the need for inference. This allows for a much more streamlined compilation to JavaScript though the largest issue of Core Erlang is that it is largely undocumented -- as such, a large amount of project time was spent reverse engineering the behaviour of Core Erlang language features.
+
+After this though, we load the generated Core Erlang AST into the Jarlang compiler and begin the compilation process to JavaScript. We do this by recursively descending through each AST node, performing some analyses on the current AST node (and parental/sibling/descendent nodes if needed) and output an equivalent JavaScript AST node.
+
+\subsubsection{The JavaScript AST}
+The JavaScript AST is very well defined and many tools exist to allow us to inspect the JavaScript AST of any given JavaScript program, as well as code generation tools to turn a valid JavaScript AST into JavaScript code and as such we haven't had much of an issue writing an equivalent JavaScript AST for a given CoreErlang AST node.
+
+The main issue with generating the JavaScript AST is that the JavaScript AST is expressed as a deeply nested JSON object which has no built-in representation in Erlang. \cite{luvvieGitHub}'s LuvvieScript approaches this issue by hand-encoding these JSON objects as nested binary strings which we didn't think was too extensible. Because we were not thrilled with the idea of hand-encoding JSON strings whenever we needed to generate a particular JavaScript AST node we wrote two modules: \textit{estree.erl} and \textit{json.erl} to help with JavaScript AST generation.
+
+\subsubsection{estree.erl}
+\textit{estree.erl} is an implementation of the JavaScript AST interface as defined by \cite{EStreeMDN} as well as reverse engineering the AST node structure of newer as of yet not-officially-defined AST nodes.
+
+\textit{estree.erl} went through many changes during the course of the project as our needs grew. It originally simply tried to mimic the format and semantics of JSON by using Maps and Lists in place of JSON objects and arrays. This allowed us to easily implement new nodes into our interface but also meant that standard Erlang tools such as \textit{Dialyzer (static type analysis for Erlang code)} wouldn't work as it doesn't support matching specific entries at certain positions in Lists nor Maps. 
+
+We tried working around this issue by writing our own naive type checker which we quickly realised was not extensible nor a good idea in the long run. We then heavily refactored \textit{estree.erl} to use a custom datatstructure made up of nested tagged tuples. 
 
 \subsubsection{Pattern Matching, Conditional Logic \& Message Receiving}
 \subsubsection{Variable Declaration \& Assignment in Matching}
@@ -292,7 +308,7 @@ The authors wish to thank and/or acknowledge the following:
 	\begin{verbatim}
 	...
 	error_if_not_apple(apple)->
-	ok.
+		ok.
 	\end{verbatim}
 	\caption{Erlang source}
 	\label{fig:code_comparison:erl}
@@ -302,24 +318,24 @@ The authors wish to thank and/or acknowledge the following:
 	\begin{verbatim}
 	...
 	[{{c_var,[],{error_if_not_apple,1}},
-	{c_fun,[],
-	[{c_var,[],'_cor0'}],
-	{c_case,[],
-	{c_var,[],'_cor0'},
-	[{c_clause,[],
-	[{c_literal,[],apple}],
-	{c_literal,[],true},
-	{c_literal,[],ok}},
-	{c_clause,
-	[compiler_generated],
-	[{c_var,[],'_cor1'}],
-	{c_literal,[],true},
-	{c_primop,
-	[{function_name,{error_if_not_apple,1}}],
-	{c_literal,[],match_fail},
-	[{c_tuple,[],
-	[{c_literal,[],function_clause},
-	{c_var,[],'_cor1'}]}]}}]}}},
+	 {c_fun,[],
+	 [{c_var,[],'_cor0'}],
+	 {c_case,[],
+	     {c_var,[],'_cor0'},
+	     [{c_clause,[],
+	         [{c_literal,[],apple}],
+	          {c_literal,[],true},
+	          {c_literal,[],ok}},
+	          {c_clause,
+	              [compiler_generated],
+	              [{c_var,[],'_cor1'}],
+	              {c_literal,[],true},
+	              {c_primop,
+	                  [{function_name,{error_if_not_apple,1}}],
+	                  {c_literal,[],match_fail},
+	                  [{c_tuple,[],
+	                       [{c_literal,[],function_clause},
+	                       {c_var,[],'_cor1'}]}]}}]}}},
 	...
 	\end{verbatim}
 	\caption{Core Erlang AST of Figure \ref{fig:code_comparison:erl}}
@@ -330,23 +346,75 @@ The authors wish to thank and/or acknowledge the following:
 	\begin{verbatim}
 	...
 	'error_if_not_apple/1': function (_cor0) {
-	if (function () {
-	if (_cor0.match(new Atom('apple'))) {
-	return new Atom('true');
-	}
-	}.bind(this)()) {
-	return new Atom('ok');
-	} else if (function () {
-	return new Atom('true');
-	}()) {
-	let _cor1 = _cor0;
-	throw '** match_fail: TODO Errors dont parse nicely\\n' + 'Message';
-	}
+	  if (function () {
+	    if (_cor0.match(new Atom('apple'))) {
+	      return new Atom('true');
+	    }
+	  }.bind(this)()) {
+	    return new Atom('ok');
+	  } else if (function () {
+	    return new Atom('true');
+	  }()) {
+	    let _cor1 = _cor0;
+	    throw '** match_fail: TODO Errors dont parse nicely\\n' + 'Message';
+	  }
 	},
 	...
 	\end{verbatim}
 	\caption{Jarlang transpiled equivalent of Figure \ref{fig:code_comparison:erl}}
 	\label{fig:code_comparison:js}
+\end{figure}
+\begin{figure}[th]
+	\centering
+	\begin{verbatim}
+	%% Generates a ThisExpression node
+	ThisExpression(Callee, Arguments) ->
+	    ?spec([{Callee, expression}, {Arguments, list_of_expression}]),
+	    #{"arguments" => #{"type" => [<<"ThisExpression">>]},
+	      "callee" => #{"type" => <<"ThisExpression">>},
+	      "type" => <<"NewExpression">>}.
+	\end{verbatim}
+	\caption{Early ESTree AST representation plus custom typechecking macro}
+	\label{fig:estree_old:erl}
+\end{figure}
+\begin{figure}[th]
+	\centering
+	\begin{verbatim}
+	%% Generates a node data structure of a given type 
+	%% with no additional parameters
+	-spec node(es_identifier() | atom()) -> es_node().
+	node(T) ->
+		node(T, []).
+	
+	%% Generates a node data structure of a given type 
+	%% while also setting additional parameters
+	-spec node(es_identifier() | atom(),
+				es_node_fields()) -> es_node().
+	node(T, Fs) ->
+		NewNode = {'__estree_node', T, [{"type", 
+		    list_to_binary(atom_to_list(T))}]},
+		update_record(NewNode, Fs);
+
+	%% Updates a given node with the given NodeFields
+	-spec update_record(es_node(),
+	                    es_node_fields()) -> es_node().
+	update_record({_, _, NodeFields}, NewFields) ->
+		UpdatedNodeFields = merge_node_fields(NodeFields, 
+		                                      NewFields),
+		{_, NodeType} = lists:keyfind("type", 
+	                                  1,
+	                                  UpdatedNodeFields),
+		{'__estree_node', list_to_atom(binary_to_list(NodeType)), 
+		                               UpdatedNodeFields}.
+
+
+	%% Generates a ThisExpression node
+	-spec this_expression() -> this_expression_node().
+	this_expression() ->
+		update_record(expression(), [{"type", <<"ThisExpression">>}]).
+	\end{verbatim}
+	\caption{Refactored ESTree AST representation}
+	\label{fig:estree_old:erl}
 \end{figure}
 %\caption{Very code. Much geek. Wow!}
 
