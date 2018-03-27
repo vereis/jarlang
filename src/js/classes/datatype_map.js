@@ -21,7 +21,7 @@ const Map = (() => {
 
             return {
                 next: () => {
-                    if ((k = tmp1.shift())) {
+                    if (k = tmp1.shift()) {
                         return {
                             value: new Tuple(k, tmp2.shift()),
                             done: false
