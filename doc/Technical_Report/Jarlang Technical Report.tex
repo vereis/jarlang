@@ -293,7 +293,6 @@ Tagged tuples are easy to spec via Dialyzer as well, which lets us statically an
 Originally, we wrote a JSON encoder to translate Maps and Lists literally into Objects and Arrays in JSON notation but  was this a huge bottleneck due to lots of heavy recursive text manipulation (which Erlang isn't good at). Instead, we pulled and relied on external Erlang libraries such as \textit{jsone.erl} to do this for us. Thankfully both our implementation of JSON encoding and \textit{jsone.erl}'s both supported the same underlying datastructures so transitioning to \textit{jsone.erl} was extremely simple.
 
 \subsubsection{Variable Declaration \& Assignment in Matching}
-<<<<<<< HEAD
 Integral to the function of Erlang programs is assignment as a result of pattern matching, when the inputs of a function or the values in a received message match those variables are assigned and later used. This process contains several non-obvious complexities:
 \begin{itemize}
 	\item \emph{Variables in a data-structure:} It is possible for a pattern to contain tuples or lists, and for subsequent code to use variables that are defined inside these data-structures (e.g.\texttt{ \{Var1,\_,Var2\}}). In this case Jarlang must recursively process the definition of the data-structure in the AST, identify all variables and generate code to access \& assign the value.
@@ -303,9 +302,6 @@ Integral to the function of Erlang programs is assignment as a result of pattern
 While Erlang has a variety of useful conditional logic (case, if, receive and pattern matching) all of these compile into the same format in Core Erlang. Figure \ref{fig:conditionExample:erl} shows examples of pattern matching, case and if statements and a receive block. Figure \ref{fig:conditionExample:erl_ast} shows the generated Core AST, clearly showing the structure of parent node (either \texttt{c\_case} or \texttt{c\_receive}) and a list of \texttt{c\_clause} nodes.
 
 This simplification in Core Erlang allows us to use common code between pattern matching \& receive blocks, and pay no special attention to case and if blocks.
-\subsubsection{Erlang Module implementation} \label{sssec:num1}
-\subsection{ErlPKG}
-=======
 
 \subsubsection{Erlang Module Implementation} \label{sssec:num1}
 Outside of straight compilation of Erlang code to JavaScript code, the Jarlang compiler also does things that aren't neccessarily straight one-one translation.
@@ -326,7 +322,6 @@ Module attributes are also encoded as object parameters and are ready to be retu
 Once we've completely descended through the Core Erlang AST for a given module and have successfully translated it into an equivalent JavaScript AST, we simple write the JavaScript AST out to a temporary file. We then spawn a new shell process which calls NodeJS which is a pre-requesite for this project, which then runs our wrapper around an open-source NodeJS library --- \textit{escodegen.js} --- to convert a JavaScript AST into code.
 
 In order to make the user experience of Jarlang better and simpler, we also wrote a free and open source package builder for our project called \textit{Erlpkg} which does things such as handler our command line argument parsing needs, as well and compressing all of our compiled Erlang source code modules into one binary file. This is because while there are official build tools for Erlang, we did not write Jarlang in line with the OTP specification which is required for these official build tools, and it was too late into the project to refactor what does work, and works well.
->>>>>>> 31bdb36f07ce95fd4dff47366ae3d1d5e2960fe8
 
 \section{Conclusions}
 \label{Conclusions}
