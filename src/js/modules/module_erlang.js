@@ -1008,7 +1008,7 @@ const erlang = function () {
         },
         'list_to_binary/1': function (_cor0) {
             if (_cor0 instanceof List) {
-                let tmp = ..._cor0, upper = 1 << 8;
+                let tmp = [..._cor0], upper = 1 << 8;
                 if ([tmp.every((v) => Int.isInt(v) && v.greaterThan(0) && v.lessThan(upper))]) {
                     return new BitString(...tmp);
                 }
@@ -1017,7 +1017,7 @@ const erlang = function () {
         },
         'list_to_bitstring/1': function (_cor0) {
             if (_cor0 instanceof List) {
-                let tmp = ..._cor0, upper = 1 << 8;
+                let tmp = [..._cor0], upper = 1 << 8;
                 if ([tmp.every((v) => Int.isInt(v) && v.greaterThan(0) && v.lessThan(upper))]) {
                     return new BitString(...tmp);
                 }
