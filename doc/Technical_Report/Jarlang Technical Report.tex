@@ -29,7 +29,7 @@
 	 \includegraphics[scale=0.6]{Kent_Comp_294_RGB} \\
 	 School of Computing \\
 	 University of Kent \\
-	 United Kingdom \\ \vspace{10mm} \\ Word Count: 6,100}
+	 United Kingdom \\ \vspace{10mm} \\ Word Count: 5,057}
 \begin{document}
 
 \newgeometry{hmarginratio=1:1}    %% make layout symmetric
@@ -255,71 +255,71 @@ In Erlang conditional logic \& function pattern matching, unless explicitly defi
 
 For example the Erlang function shown in Figure \ref{fig:code_comparison:erl} will throw an error if the input is anything other than the atom 'apple'. In this example there is no code that states what should occur in the event that the input is not the atom 'apple' and as such the compiler generates a second clause (Figure \ref{fig:code_comparison:erl_ast}) to match any value and throw an appropriate error. This conveniently allows us to reproduce the required functionality by parsing the compiler generated function as normal (Figure \ref{fig:code_comparison:js}), rather than concerning ourselves with this specific case.
 	%\begin{figure}[htb]
-		%\centering
-		% \begin{figure}[t]
-		% 	\centering
-		% 		\begin{verbatim}
-		% 		...
-		% 		error_if_not_apple(apple)->
-		% 		  ok.
-		% 		\end{verbatim}
-		% 	\caption{Erlang source}
-		% 	\label{fig:code_comparison:erl}
-		% \end{figure}
-		% \begin{figure}[t]
-		% 	\centering
-		% 	\begin{verbatim}
-		% 	...
-		% 	[{{c_var,[],{error_if_not_apple,1}},
-		% 	  {c_fun,[],
-		% 	    [{c_var,[],'_cor0'}],
-		% 	    {c_case,[],
-		% 	      {c_var,[],'_cor0'},
-		% 	      [{c_clause,[],
-		% 	         [{c_literal,[],apple}],
-		% 	         {c_literal,[],true},
-		% 	         {c_literal,[],ok}},
-		% 	       {c_clause,
-		% 	         [compiler_generated],
-		% 	         [{c_var,[],'_cor1'}],
-		% 	         {c_literal,[],true},
-		% 	         {c_primop,
-		% 	           [{function_name,{error_if_not_apple,1}}],
-		% 	           {c_literal,[],match_fail},
-		% 	           [{c_tuple,[],
-		% 	             [{c_literal,[],function_clause},
-		% 	                {c_var,[],'_cor1'}]}]}}]}}},
-		% 	...
-		% 	\end{verbatim}
-		% 	\caption{Core Erlang AST of Figure \ref{fig:code_comparison:erl}}
-		% 	\label{fig:code_comparison:erl_ast}
-		% \end{figure}
-		% \begin{figure}[t]
-		% 	\centering
-		% 		\begin{verbatim}
-		% 		...
-		% 		'error_if_not_apple/1': function (_cor0) {
-		% 		  if (function () {
-		% 		    if (_cor0.match(new Atom('apple'))) {
-		% 		      return new Atom('true');
-		% 		    }
-		% 		  }.bind(this)()) {
-		% 		    return new Atom('ok');
-		% 		  } else if (function () {
-		% 		    return new Atom('true');
-		% 		  }()) {
-		% 		    let _cor1 = _cor0;
-		% 		    throw '** match_fail: TODO Errors dont parse nicely\\n' + 'Message';
-		% 		  }
-		% 		},
-		% 		...
-		% 		\end{verbatim}
-		% 	\caption{Jarlang transpiled equivalent of Figure \ref{fig:code_comparison:erl}}
-		% 	\label{fig:code_comparison:js}
-		% \end{figure}
+	%	\centering
+		 \begin{figure}[t]
+		 	\centering
+		 		\begin{verbatim}
+		 		...
+		 		error_if_not_apple(apple)->
+		 		  ok.
+		 		\end{verbatim}
+		 	\caption{Erlang source}
+		 	\label{fig:code_comparison:erl}
+		 \end{figure}
+		 \begin{figure}[t]
+		 	\centering
+		 	\begin{verbatim}
+		 	...
+		 	[{{c_var,[],{error_if_not_apple,1}},
+		 	  {c_fun,[],
+		 	    [{c_var,[],'_cor0'}],
+		 	    {c_case,[],
+		 	      {c_var,[],'_cor0'},
+		 	      [{c_clause,[],
+		 	         [{c_literal,[],apple}],
+		 	         {c_literal,[],true},
+		 	         {c_literal,[],ok}},
+		 	       {c_clause,
+		 	         [compiler_generated],
+		 	         [{c_var,[],'_cor1'}],
+		 	         {c_literal,[],true},
+		 	         {c_primop,
+		 	           [{function_name,{error_if_not_apple,1}}],
+		 	           {c_literal,[],match_fail},
+		 	           [{c_tuple,[],
+		 	             [{c_literal,[],function_clause},
+		 	                {c_var,[],'_cor1'}]}]}}]}}},
+		 	...
+		 	\end{verbatim}
+		 	\caption{Core Erlang AST of Figure \ref{fig:code_comparison:erl}}
+		 	\label{fig:code_comparison:erl_ast}
+		 \end{figure}
+		 \begin{figure}[t]
+		 	\centering
+		 		\begin{verbatim}
+		 		...
+		 		'error_if_not_apple/1': function (_cor0) {
+		 		  if (function () {
+		 		    if (_cor0.match(new Atom('apple'))) {
+		 		      return new Atom('true');
+		 		    }
+		 		  }.bind(this)()) {
+		 		    return new Atom('ok');
+		 		  } else if (function () {
+		 		    return new Atom('true');
+		 		  }()) {
+		 		    let _cor1 = _cor0;
+		 		    throw '** match_fail: TODO Errors dont parse nicely\\n' + 'Message';
+		 		  }
+		 		},
+		 		...
+		 		\end{verbatim}
+		 	\caption{Jarlang transpiled equivalent of Figure \ref{fig:code_comparison:erl}}
+		 	\label{fig:code_comparison:js}
+		 \end{figure}
 		%\caption{Very code. Much geek. Wow!}
 		%\caption{Comparison of Erlang source code and Jarlang transpiled equivalent.}
-		%\label{fig:code_comparison}
+	%	\label{fig:code_comparison}
 	%\end{figure}
 
 
