@@ -12,6 +12,14 @@
 \usepackage{todonotes}
 %\usepackage{minted}
 \usepackage{subcaption}
+\usepackage{afterpage}
+\usepackage{float}
+
+\newcommand\blankpage{%
+    \null
+    \thispagestyle{empty}%
+    \addtocounter{page}{-1}%
+    \newpage}
 
 % Fix weird page margins?
 \setlength{\oddsidemargin}{1cm}
@@ -29,7 +37,7 @@
 		\includegraphics[scale=0.6]{Kent_Comp_294_RGB} \\
 		School of Computing \\
 		University of Kent \\
-		United Kingdom \\ \vspace{10mm} \\ Word Count: 6,100}
+		United Kingdom \\ \vspace{10mm} \\ Word Count: 6,565 (via texcount)}
 \begin{document}
 
 \newgeometry{hmarginratio=1:1}    %% make layout symmetric
@@ -77,6 +85,8 @@ Secondary aims for \textit{Jarlang} include the ability to leverage Erlang-style
 
 While fully implementing the \textit{Jarlang runtime environment} is not the primary goal of this project, enough of the \textit{Jarlang runtime environment} has been implemented so that we can successfully emulate things such as Erlang's datatypes, message passing and concurrency model --- allowing us to run tests and write example applications as already introduced.
 
+
+\blankpage
 \section{Project Results}
 \label{Results}
 Whilst we lack a fully implemented Jarlang runtime environment, at the time of writing the runtime environment and Jarlang compiler is complete enough to run simple Erlang programs on the web as well as successfully and quite easily integrate into existing JavaScript codebases allowing JavaScript code to leverage the power that Erlang's simple actor-style concurrency brings to the table.
@@ -123,21 +133,106 @@ Of course, each datatype then goes on to implement type-specific behaviour in an
 
 \begin{itemize}
 	\item Atoms - Atoms are essentially just constant immutable values which are also singletons. When atoms are created, they register themselves in the runtime system's global atom table which keeps track of every atom which has ever been initialized. The global atom table is also a place where you can store references to processes, and as such atoms in the Jarlang runtime system (just like in Erlang), double as 'global identifiers' to processes.
+	\begin{figure}[H]
+	\begin{verbatim}
+	        % Example of atoms in Erlang vs compiled output:
+	        atom       : new Atom("atom");
+	        true       : new Atom("true");
+	        'This too' : new Atom("This too");
+	\end{verbatim}
+	\caption{Demonstration of the Atom datatype}
+	\end{figure}
 	      			
-	\item Bitstrings - Bitstrings are contiguous arrangements of binary data in the Erlang world. We were originally not going to implement the Bitstring class because it's not something you'd commonly work with on the web; however, strings in Erlang are often represented as Binary strings and as such we needed to implement these to support such a common usecase. Bitstrings can be pattern matched against like Lists, Maps and Tuples but posess the unique property of being able to match byte patterns into variables allowing for simple implementation of binary format parsers. In the Jarlang runtime system, Bitstrings are implemented as arrays that store integers which are clamped (via modular arithmatic, as in Erlang) to values which can be expressed in eight-bit segments. For values that use a size expression (an integer that specifies the length of a Bitstring segment) that's greater than eight, the value is expressed across as many Bitstring segments as necessary. The size expression for each segment is stored in a separate array.
+	\item Bitstrings - Bitstrings are contiguous arrangements of binary data in the Erlang world. We were originally not going to implement the Bitstring class because it's not something you'd commonly work with on the web; however, strings in Erlang are often represented as Binary strings and as such we needed to implement these to support such a common usecase. Bitstrings can be pattern matched against like Lists, Maps and Tuples but posess the unique property of being able to match byte patterns into variables allowing for simple implementation of binary format parsers. In the Jarlang runtime system, Bitstrings are implemented as arrays that store integers which are clamped (via modular arithmetic, as in Erlang) to values which can be expressed in eight-bit segments. For values that use a size expression (an integer that specifies the length of a Bitstring segment) that's greater than eight, the value is expressed across as many Bitstring segments as necessary. The size expression for each segment is stored in a separate array.
+	\begin{figure}[H]
+	\begin{verbatim}
+	        % Example of Bitstrings in Erlang vs compiled output:
+	        <<"Hello, world!">> : new BitString("Hello, world!");
+	\end{verbatim}
+	\caption{Demonstration of the Bitstring datatype}
+	\end{figure}
 	      			
 	\item Floats/Ints - Numbers in Erlang have arbitrary precision and are implemented via the inclusion of the \textit{bignumber.js} library. This is the only part of Jarlang runtime which has an external dependency. Whilst the classes Float and Int aren't entirely identical, they share most of their interface. These classes implement typical mathematical functions such as addition, subtraction and multiplication which is what gets used by the Jarlang runtime system whenever it performs mathematical calculations. As in Erlang, all operations that involve a float return a float, and all operations that involve only integers (sans division, if an integer is not divisible by another integer) return an integer.
-	      			
+	\begin{figure}[H]
+	\begin{verbatim}
+	        % Example of atoms in Erlang vs compiled output:
+	        12    : new Int("12");
+	        103.4 : new Float("103.4");
+
+	        % Operations in Erlang vs compiled output:
+	        1 + 1         : new Int("1").add(new Int("1"));
+	        isInteger(12) : Int.isInt(new Int("12"));
+	\end{verbatim}
+	\caption{Demonstration of the Floats/Ints datatype}
+	\end{figure}
+
 	\item Lists - Lists are implemented as immutable linked lists to allow us to have an efficient implementation of the \textit{cons operator} which mimics Erlang's very own implementation. Each list contains a value and a \textit{next} value. A list is said have a length of one when it has a value and points to an empty list. Erlang allows lists to be \textit{improper} however, which means that lists can point to any other data-structure/primitive but doesn't promise that common list operations will work on these improper lists. Erlang strings are also denoted as lists --- any list containing only integers that correspond to characters in the Latin-1 character set are considered and printed as strings by Jarlang as well as Erlang.
-	      			
+	\begin{figure}[H]
+	\begin{verbatim}
+	        % Example of Lists in Erlang vs compiled output:
+	        [1, 2, 3]      : new List(1, 2, 3);
+	        [1, 2 | [34]]  : new List(1, 2).cons(new List(34));
+	        [1 | improper] : new List(1).cons(new Atom("improper"));
+	        "hello!"       : new List("hello!")
+	                       | new List(103, 101, 108, 108, 111, 100);
+	\end{verbatim}
+	\caption{Demonstration of the List datatype}
+	\end{figure}
+
 	\item Maps - Maps in the Jarlang runtime environment were originally implemented as wrappers over JavaScript Objects. This was changed when we realised the matching behaviour of Maps performs comparisons on the underlying keys stored within said Map. As such, Maps are currently implemented using two JavaScript arrays --- one for keys (which can be non-serialized objects of any kind), and the other for values such that looking up the \textit{i\textsuperscript{th}} value of the keys array returns the \textit{i\textsuperscript{th}} value of the values array. This was implemented like this because it was the easiest way for us to implement the size comparison functions for Maps internally, however we realise now in retrospect that we ought to refactor this into a more efficient tree data-structure in the future should we revisit this datatype.
-	      			
+	\begin{figure}[H]
+	\begin{verbatim}
+	        % Example of Maps in Erlang vs compiled output:
+	        #{a=>1, b=>2} : new Map([a, b], [1, 2]);
+	\end{verbatim}
+	\caption{Demonstration of the Maps datatype}
+	\end{figure}
+
 	\item PID - PIDs are process identifiers and are usually only created when new processes are spawned. PIDs act simply as an identifier and thus they don't have any special functionality outside of being keys to processes in the runtime system's global process table. PIDs are made up of three identifying features: the node where the PID exists (allowing for distributed processing), and two other IDs.
-	      			
+	\begin{figure}[H]
+	\begin{verbatim}
+	        % Example of atoms in Erlang vs compiled output:
+	        <12.9.12> : new Pid(12, 9, 12);
+	                  | new Pid([12, 9, 12]);
+	        
+	        % Message sending
+	        <0.1.0> ! 'hi' : new Pid(0, 1, 0)["!"](new Atom("hi"));
+	\end{verbatim}
+	\caption{Demonstration of the PID datatype}
+	\end{figure}
+
 	\item Processes - At a high level, these are agents which execute a given behaviour (encapsulating a function call) asynchronously. These are explained in depth in section \ref{sssec:num2}.
-	      			
+	\begin{figure}[H]
+	\begin{verbatim}
+	        // Processes look like this in JavaScript:
+	        {
+	            ...
+	            messages: [],
+	            currentBehaviour: lambda,
+	            stack: []
+	            ...
+	        }
+
+	        // Process live in an array of processes, and we
+	        // run them via:
+	        setInterval(runProcesses, 0);
+	        runProcesses = () => processes.map(process =>
+	            return process.currentBehaviour();
+	        );
+
+	\end{verbatim}
+	\caption{Demonstration of the Process datatype}
+	\end{figure}
+
 	\item Tuples - Tuples behave like lists of fixed size. They don't have the ability to \textit{cons} with other tuples but are implemented in a similar way to lists for easier pattern-matching implementation.
-	      			
+	\begin{figure}[H]
+	\begin{verbatim}
+	        % Example of Tuples in Erlang vs compiled output:
+	        {1, 2, 3}      : new Tuple(1, 2, 3);
+	\end{verbatim}
+	\caption{Demonstration of the Tuple datatype}
+	\end{figure}
+
 \end{itemize}
 
 Because each datatype inherits properties such as \textit{erlangDatatype.value}, these datatypes are often interacted with by querying the value stored in \textit{erlangDatatype.value}. The only gap in our datatype abstraction is the lack of a \textit{fun} datatype as we are compiling Erlang functions into JavaScript functions. 
@@ -314,6 +409,7 @@ Once we've completely descended through the Core Erlang AST for a given module a
 
 In order to make the user experience of Jarlang better and simpler, we also wrote a free and open source package builder for our project called \textit{Erlpkg} which does things such as handler our command line argument parsing needs, as well and compressing all of our compiled Erlang source code modules into one binary file. This is because while there are official build tools for Erlang, we did not write Jarlang in line with the OTP specification which is required for these official build tools, and it was too late into the project to refactor what does work, and works well.
 
+\blankpage
 \section{Conclusions}
 \label{Conclusions}
 We consider the project to be a success, having contributed a valuable open-source resource to the Erlang community and creating the only publicly available Erlang transpiler that prioritises accurate representation of Erlang functionality over project simplicity.
@@ -341,6 +437,7 @@ The authors wish to thank and/or acknowledge the following:
 %\bibliographystyle{plain}
 \bibliography{jarlang_technical_report}
 
+\blankpage
 
 \appendix
 \section*{Appendix A. Sample code figures}
