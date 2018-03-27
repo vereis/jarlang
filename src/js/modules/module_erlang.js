@@ -912,7 +912,10 @@ const erlang = function () {
         },
 
         'atom_to_binary/2': function (_cor1, _cor0) {
-            return;
+            if (Atom.isAtom(_cor1)) {
+                return new BitString(_cor1.getValue());
+            }
+            throw "bad argument";
         },
         'atom_to_list/1': function (_cor0) {
             if (_cor0 instanceof Atom) {
@@ -921,10 +924,18 @@ const erlang = function () {
             throw "bad argument";
         },
         'binary_to_atom/2': function (_cor1, _cor0) {
-            return;
+            let str = new List(..._cor1);
+            if (BitString.isBinary(_cor1) && List.isString(str)) {
+                return new Atom(str);
+            }
+            throw "bad argument";
         },
         'binary_to_existing_atom/2': function (_cor1, _cor0) {
-            return;
+            let str = new List(..._cor1);
+            if (BitString.isBinary(_cor1) && List.isString(str) && Atom.exists(str)) {
+                return new Atom(str);
+            }
+            throw "bad argument";
         },
         'binary_to_float/1': function (_cor0) {
             return;
@@ -936,7 +947,10 @@ const erlang = function () {
             return;
         },
         'binary_to_list/1': function (_cor0) {
-            return;
+            if (BitString.isBinary(_cor0)) {
+                return new List(..._cor0);
+            }
+            throw "bad argument";
         },
         'binary_to_list/3': function (_cor2, _cor1, _cor0) {
             return;
@@ -948,7 +962,10 @@ const erlang = function () {
             return;
         },
         'bitstring_to_list/1': function (_cor0) {
-            return;
+            if (BitString.isBitString(_cor0)) {
+                return new List(..._cor0);
+            }
+            throw "bad argument";
         },
         'float_to_binary/1': function (_cor0) {
             return;
@@ -990,10 +1007,22 @@ const erlang = function () {
             throw "bad argument";
         },
         'list_to_binary/1': function (_cor0) {
-            return;
+            if (_cor0 instanceof List) {
+                let tmp = ..._cor0, upper = 1 << 8;
+                if ([tmp.every((v) => Int.isInt(v) && v.greaterThan(0) && v.lessThan(upper))]) {
+                    return new BitString(...tmp);
+                }
+            }
+            throw "bad argument";
         },
         'list_to_bitstring/1': function (_cor0) {
-            return;
+            if (_cor0 instanceof List) {
+                let tmp = ..._cor0, upper = 1 << 8;
+                if ([tmp.every((v) => Int.isInt(v) && v.greaterThan(0) && v.lessThan(upper))]) {
+                    return new BitString(...tmp);
+                }
+            }
+            throw "bad argument";
         },
         'list_to_existing_atom/1': function (_cor0) {
             if (_cor0 instanceof List && List.isString(_cor0) && Atom.exists(_cor0.toString())) {
