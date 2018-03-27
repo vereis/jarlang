@@ -130,9 +130,9 @@ Of course, each datatype then goes on to implement type-specific behaviour in an
 			
 	\item Floats/Ints - Numbers in Erlang have arbitrary precision and are implemented via the inclusion of the \textit{bignumber.js} library. This is the only part of Jarlang runtime which has an external dependency though we do package \textit{bignumber.js} in our runtime to be as simple as possible to use. Whilst the classes Float and Int aren't entirely identical, they share most of their interface. These classes implement typical mathematical functions such as addition, subtraction and multiplication which is what gets used by the Jarlang runtime system whenever it performs mathematical calculations.
 			
-	\item Lists - Lists are implemented as immutable linked lists to allow us to have an efficient implementation of the \textit{cons operator} which mimics Erlang's very own implementation. Each list contains a value and a \textit{next} value. A list is said have a length of one when it has a value and points to an empty list. Erlang allows lists to be \textit{improper} however, which means that lists can point to any other datastructure/primitive but doesn't promise that common list operations will work on these improper lists. Erlang stringss are also denoted as lists --- any list containing only integers within some printable ASCII range are considered and printed as strings by Jarlang as well as Erlang.
+	\item Lists - Lists are implemented as immutable linked lists to allow us to have an efficient implementation of the \textit{cons operator} which mimics Erlang's very own implementation. Each list contains a value and a \textit{next} value. A list is said have a length of one when it has a value and points to an empty list. Erlang allows lists to be \textit{improper} however, which means that lists can point to any other data-structure/primitive but doesn't promise that common list operations will work on these improper lists. Erlang stringss are also denoted as lists --- any list containing only integers within some printable ASCII range are considered and printed as strings by Jarlang as well as Erlang.
 			
-	\item Maps - Maps in the Jarlang runtime environment were originally implemented as wrappers over JavaScript Objects. This was changed when we realised the matching behaviour of Maps performs comparisons on the underlying keys stored within said Map. As such, Maps are currently implemented using two JavaScript arrays --- one for keys (which can be non-serialized objects of any kind), and the other for values such that looking up the \textit{i\textsuperscript{th}} value of the keys array returns the \textit{i\textsuperscript{th}} value of the values array. This was implemented like this because it was the easiest way for us to implement the size comparison functions for Maps internally, however we realise now in retrospect that we ought to refactor this into a more efficient tree data structure in the future should we revisit this datatype.
+	\item Maps - Maps in the Jarlang runtime environment were originally implemented as wrappers over JavaScript Objects. This was changed when we realised the matching behaviour of Maps performs comparisons on the underlying keys stored within said Map. As such, Maps are currently implemented using two JavaScript arrays --- one for keys (which can be non-serialized objects of any kind), and the other for values such that looking up the \textit{i\textsuperscript{th}} value of the keys array returns the \textit{i\textsuperscript{th}} value of the values array. This was implemented like this because it was the easiest way for us to implement the size comparison functions for Maps internally, however we realise now in retrospect that we ought to refactor this into a more efficient tree data-structure in the future should we revisit this datatype.
 			
 	\item PID - PIDs are process identifiers and are usually only created when new processes are spawned. PIDs act simply as an identifier and thus they don't have any special functionality outside of being keys to processes in the runtime system's global process table. PIDs are made up of three identifying features: the node where the PID exists (allowing for distributed processing), and two other IDs. Distribution of PIDs isn't implemented or handled by the runtime environment however and thus are left to Jarlang's users to implement themselves --- PIDs do however, because of this, expose an API allowing you to programmatically control what precise PID gets spawned at a given time.
 			
@@ -289,11 +289,15 @@ The main issue with generating the JavaScript AST is that the JavaScript AST is 
 We tried working around this issue by writing our own naive type checker which we quickly realised was not extensible nor a good idea in the long run. We then heavily refactored \textit{estree.erl} to use a custom datatstructure made up of nested tagged tuples. 
 
 \subsubsection{Variable Declaration \& Assignment in Matching}
-
+Integral to the function of Erlang programs is assignment as a result of pattern matching, when the inputs of a function or the values in a received message match those variables are assigned and later used. This process contains several non-obvious complexities:
+\begin{itemize}
+	\item \emph{Variables in a data-structure:} It is possible for a pattern to contain tuples or lists, and for subsequent code to use variables that are defined inside these data-structures (e.g.\texttt{ \{Var1,\_,Var2\}}). In this case Jarlang must recursively process the definition of the data-structure in the AST, identify all variables and generate code to access \& assign the value.
+	\item \emph{Guards used matched values:} Guard conditions associated with each clause may use variables given value in the pattern match, so these variables must be assigned within the condition of the JavaScript if statement. Due to language restrictions this requires the condition to be a lambda function.
+\end{itemize}
 \subsubsection{Conditional Logic, Pattern Matching \& Message Receiving}
-	While Erlang has a variety of useful conditional logic (case, if, receive and pattern matching) all of these compile into the same format in Core Erlang. Figure \ref{fig:conditionExample:erl} shows examples of pattern matching, case and if statements and a receive block. Figure \ref{fig:conditionExample:erl_ast} shows the generated Core AST, clearly showing the structure of parent node (either \texttt{c\_case} or \texttt{c\_receive}) and a list of \texttt{c\_clause} nodes.
-	
-	This simplification in Core Erlang allows us to use common code between pattern matching \& receive blocks, and pay no special attention to case and if blocks.
+While Erlang has a variety of useful conditional logic (case, if, receive and pattern matching) all of these compile into the same format in Core Erlang. Figure \ref{fig:conditionExample:erl} shows examples of pattern matching, case and if statements and a receive block. Figure \ref{fig:conditionExample:erl_ast} shows the generated Core AST, clearly showing the structure of parent node (either \texttt{c\_case} or \texttt{c\_receive}) and a list of \texttt{c\_clause} nodes.
+
+This simplification in Core Erlang allows us to use common code between pattern matching \& receive blocks, and pay no special attention to case and if blocks.
 \subsubsection{Erlang Module implementation} \label{sssec:num1}
 \subsection{ErlPKG}
 
@@ -304,11 +308,11 @@ We tried working around this issue by writing our own naive type checker which w
 
 \section{Acknowledgement}
 The authors wish to thank and/or acknowledge the following:
-\begin{enumerate}
+\begin{itemize}
 \item Scott Owens - For supervising our project, and being generally available whenever we needed help or assistance, and talked us through just about all of our technical decisions.
 \item Simon Thompson - For convincing us that rolling our own type checking system was not a good idea (and introducing to us the amazing \textit{Erlang Dialyzer}), and talking with us about the feasibility in our concurrency approach.
 \item Gordon Guthrie - For his similar project --- \textit{LuvvieScript (URL now defunct)} --- and though no useful source-code was shared, his talk about how he tackled hooking into the Erlang compiler and tools he used (\textit{such as ESPrima and ESCodegen}) provided a brilliant starting point for \textit{Jarlang}.
-\end{enumerate}
+\end{itemize}
 \appendix
 \section*{Appendix A. Sample code figures}
 \begin{figure}[th]
