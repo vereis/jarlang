@@ -281,17 +281,23 @@ The JavaScript AST is very well defined and many tools exist to allow us to insp
 
 The main issue with generating the JavaScript AST is that the JavaScript AST is expressed as a deeply nested JSON object which has no built-in representation in Erlang. \cite{luvvieGitHub}'s LuvvieScript approaches this issue by hand-encoding these JSON objects as nested binary strings which we didn't think was too extensible. Because we were not thrilled with the idea of hand-encoding JSON strings whenever we needed to generate a particular JavaScript AST node we wrote two modules: \textit{estree.erl} and \textit{json.erl} to help with JavaScript AST generation.
 
-\subsubsection{estree.erl}
+\subsubsection{estree.erl and json.erl}
 \textit{estree.erl} is an implementation of the JavaScript AST interface as defined by \cite{EStreeMDN} as well as reverse engineering the AST node structure of newer as of yet not-officially-defined AST nodes.
 
 \textit{estree.erl} went through many changes during the course of the project as our needs grew. It originally simply tried to mimic the format and semantics of JSON by using Maps and Lists in place of JSON objects and arrays. This allowed us to easily implement new nodes into our interface but also meant that standard Erlang tools such as \textit{Dialyzer (static type analysis for Erlang code)} wouldn't work as it doesn't support matching specific entries at certain positions in Lists nor Maps. 
 
-We tried working around this issue by writing our own naive type checker which we quickly realised was not extensible nor a good idea in the long run. We then heavily refactored \textit{estree.erl} to use a custom datatstructure made up of nested tagged tuples. 
+We tried working around this issue by writing our own naive type checker which we quickly realised was not extensible nor a good idea in the long run. We then heavily refactored \textit{estree.erl} to use a custom datatstructure made up of nested tagged tuples. You can see an example of both pre-factored \textit{estree.erl} code and post-refactored \textit{estree.erl} in Figures \ref{fig:estree_old:erl} \& \ref{fig:estree_new:erl} respectively.
+
+Tagged tuples are easy to spec via Dialyzer as well, which lets us statically analyse our code to ensure certain data constraints are met; i.e. certain AST nodes only take other AST nodes are arguments in certain fields. 
+
+So while \textit{estree.erl} allows you to generate our implementation of JavaScript AST nodes by simply calling functions such as \textit{estree:this\_expression()}, we also need a way to translate these datastructures into valid JSON for code generation.
+
+Originally, we wrote a JSON encoder to translate Maps and Lists literally into Objects and Arrays in JSON notation but  was this a huge bottleneck due to lots of heavy recursive text manipulation (which Erlang isn't good at). Instead, we pulled and relied on external Erlang libraries such as \textit{jsone.erl} to do this for us. Thankfully both our implementation of JSON encoding and \textit{jsone.erl}'s both supported the same underlying datastructures so transitioning to \textit{jsone.erl} was extremely simple.
 
 \subsubsection{Pattern Matching, Conditional Logic \& Message Receiving}
 \subsubsection{Variable Declaration \& Assignment in Matching}
 \subsubsection{Erlang Module implementation} \label{sssec:num1}
-\subsection{ErlPKG}
+\subsection{Other Tools Used}
 
 \section{Conclusions}
 \label{Conclusions}
@@ -418,7 +424,7 @@ The authors wish to thank and/or acknowledge the following:
 		update_record(expression(), [{"type", <<"ThisExpression">>}]).
 	\end{verbatim}
 	\caption{Refactored ESTree AST representation}
-	\label{fig:estree_old:erl}
+	\label{fig:estree_new:erl}
 \end{figure}
 %\caption{Very code. Much geek. Wow!}
 
