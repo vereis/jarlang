@@ -51,7 +51,7 @@
 		
 	Being able to help create a unified stack for web development has also been a goal of the project, as such a concept is rather attractive to contemporary web developers.
 		
-	Unlike similar projects such as \textit{LuvvieScript} \cite{luvvieGitHub}, we aimed not to support a \textit{"subset of Erlang"} or create a new language \textit{"based on Erlang"}, but instead wanted to focus on implementing as much of Erlang, and its standard library, runtime and behaviours as possible on the web.
+	Unlike similar projects such as \textit{LuvvieScript} \citep{luvvieGitHub}, we aimed not to support a \emph{"subset of Erlang"} or create a new language \emph{"based on Erlang"}, but instead wanted to focus on implementing as much of Erlang, and its standard library, runtime and behaviours as possible on the web.
 \end{abstract}
 
 \section{Introduction}
@@ -367,10 +367,10 @@ After this, we load the generated Core Erlang AST into the Jarlang compiler and 
 \subsubsection{The JavaScript AST}
 The JavaScript AST is very well defined and many tools exist to allow us to inspect the JavaScript AST of any given JavaScript program, as well as code generation tools to turn a valid JavaScript AST into JavaScript code and as such we haven't had much of an issue writing an equivalent JavaScript AST for a given CoreErlang AST node.
 
-The main issue with generating the JavaScript AST is that the JavaScript AST is expressed as a deeply nested JSON object which has no built-in representation in Erlang. \cite{luvvieGitHub}'s LuvvieScript approaches this issue by hand-encoding these JSON objects as nested binary strings which we didn't think was too extensible. Because we were not thrilled with the idea of hand-encoding JSON strings whenever we needed to generate a particular JavaScript AST node we wrote two modules: \textit{estree.erl} and \textit{json.erl} to help with JavaScript AST generation.
+The main issue with generating the JavaScript AST is that the JavaScript AST is expressed as a deeply nested JSON object which has no built-in representation in Erlang. LuvvieScript \citep{luvvieGitHub} approaches this issue by hand-encoding these JSON objects as nested binary strings which we didn't think was too extensible. Because we were not thrilled with the idea of hand-encoding JSON strings whenever we needed to generate a particular JavaScript AST node we wrote two modules: \textit{estree.erl} and \textit{json.erl} to help with JavaScript AST generation.
 
 \subsubsection{estree.erl and json.erl}
-\textit{estree.erl} is an implementation of the JavaScript AST interface as defined by \citeauthor{EStreeMDN} as well as reverse engineering the AST node structure of newer as of yet not-officially-defined AST nodes.
+\textit{estree.erl} is an implementation of the JavaScript AST interface as defined by the Mozilla Foundation (\citeyear{EStreeMDN}) as well as reverse engineering the AST node structure of newer as of yet not-officially-defined AST nodes.
 
 \textit{estree.erl} went through many changes during the course of the project as our needs grew. It originally simply tried to mimic the format and semantics of JSON by using Maps and Lists in place of JSON objects and arrays. This allowed us to easily implement new nodes into our interface but also meant that standard Erlang tools such as \textit{Dialyzer (static type analysis for Erlang code)} wouldn't work as it doesn't support matching specific entries at certain positions in Lists nor Maps. 
 
