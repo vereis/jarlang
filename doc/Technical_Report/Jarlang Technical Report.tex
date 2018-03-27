@@ -281,14 +281,19 @@ The JavaScript AST is very well defined and many tools exist to allow us to insp
 
 The main issue with generating the JavaScript AST is that the JavaScript AST is expressed as a deeply nested JSON object which has no built-in representation in Erlang. \cite{luvvieGitHub}'s LuvvieScript approaches this issue by hand-encoding these JSON objects as nested binary strings which we didn't think was too extensible. Because we were not thrilled with the idea of hand-encoding JSON strings whenever we needed to generate a particular JavaScript AST node we wrote two modules: \textit{estree.erl} and \textit{json.erl} to help with JavaScript AST generation.
 
-\subsubsection{estree.erl}
+\subsubsection{estree.erl and json.erl}
 \textit{estree.erl} is an implementation of the JavaScript AST interface as defined by \cite{EStreeMDN} as well as reverse engineering the AST node structure of newer as of yet not-officially-defined AST nodes.
 
 \textit{estree.erl} went through many changes during the course of the project as our needs grew. It originally simply tried to mimic the format and semantics of JSON by using Maps and Lists in place of JSON objects and arrays. This allowed us to easily implement new nodes into our interface but also meant that standard Erlang tools such as \textit{Dialyzer (static type analysis for Erlang code)} wouldn't work as it doesn't support matching specific entries at certain positions in Lists nor Maps. 
 
-We tried working around this issue by writing our own naive type checker which we quickly realised was not extensible nor a good idea in the long run. We then heavily refactored \textit{estree.erl} to use a custom datatstructure made up of nested tagged tuples. 
+We tried working around this issue by writing our own naive type checker which we quickly realised was not extensible nor a good idea in the long run. We then heavily refactored \textit{estree.erl} to use a custom datatstructure made up of nested tagged tuples. You can see an example of both pre-factored \textit{estree.erl} code and post-refactored \textit{estree.erl} in Figures \ref{fig:estree_old:erl} \& \ref{fig:estree_new:erl} respectively.
+
+Tagged tuples are easy to spec via Dialyzer as well, which lets us statically analyse our code to ensure certain data constraints are met; i.e. certain AST nodes only take other AST nodes are arguments in certain fields.
+
+Originally, we wrote a JSON encoder to translate Maps and Lists literally into Objects and Arrays in JSON notation but  was this a huge bottleneck due to lots of heavy recursive text manipulation (which Erlang isn't good at). Instead, we pulled and relied on external Erlang libraries such as \textit{jsone.erl} to do this for us. Thankfully both our implementation of JSON encoding and \textit{jsone.erl}'s both supported the same underlying datastructures so transitioning to \textit{jsone.erl} was extremely simple.
 
 \subsubsection{Variable Declaration \& Assignment in Matching}
+<<<<<<< HEAD
 Integral to the function of Erlang programs is assignment as a result of pattern matching, when the inputs of a function or the values in a received message match those variables are assigned and later used. This process contains several non-obvious complexities:
 \begin{itemize}
 	\item \emph{Variables in a data-structure:} It is possible for a pattern to contain tuples or lists, and for subsequent code to use variables that are defined inside these data-structures (e.g.\texttt{ \{Var1,\_,Var2\}}). In this case Jarlang must recursively process the definition of the data-structure in the AST, identify all variables and generate code to access \& assign the value.
@@ -300,6 +305,28 @@ While Erlang has a variety of useful conditional logic (case, if, receive and pa
 This simplification in Core Erlang allows us to use common code between pattern matching \& receive blocks, and pay no special attention to case and if blocks.
 \subsubsection{Erlang Module implementation} \label{sssec:num1}
 \subsection{ErlPKG}
+=======
+
+\subsubsection{Erlang Module Implementation} \label{sssec:num1}
+Outside of straight compilation of Erlang code to JavaScript code, the Jarlang compiler also does things that aren't neccessarily straight one-one translation.
+
+JavaScript has no real definition of a module and as such, when compiling Erlang modules into JavaScript, we've had to essentially emulate how Erlang modules act. Erlang modules contain both private and public functions (in Erlang terms, exported and non-exported) as well as macros and module attributes.
+
+The Jarlang compiler does not need to worry about macro expansion because this is done in our Erlang Compiler hook-in step, hence the only things we need to worry about are the module attributes as well as exporting certain functions to be globally accessible.
+
+On a high level, we simulate a module in JavaScript by creating a \textit{const variable declaration} bound to the return value of a closure which contains anonymous functions representing our non-exported functions. Exported functions get put into a JavaScript object keyed by function name, which refer to a non-exported function in the closure body. This means that exported functions are seen to a user of our generated code as an object containing functions which is what we want.
+
+One technicality of Erlang modules is that multiple functions can share the same name. Because Erlang functions are actually named by Module:FunctionName:Arity, this isn't a problem. Encoding this in our JavaScript modules isn't an issue but because we want interoperability with JavaScript, as well as make it easy and intuitive to call into Erlang code from the JavaScript environment, we implement a faux-function overloading.
+
+For example, even if our Erlang module contains the functions \textit{fn/1, fn/2 and fn/3}, in our JavaScript module we only ever export a single \textit{fn} function. This exported \textit{fn} function switches based on the number of arguments provided to multiple cases representing the \textit{fn/1 case, fn/2 case, fn/3 case} and a generic error case. This accurately mimics function arities in Erlang.
+
+Module attributes are also encoded as object parameters and are ready to be returned and used by standard compiler generated debug functions though this is disabled by default as generally these attributes aren't used.
+
+\subsubsection{Outputting JavaScript \& Other Tools}
+Once we've completely descended through the Core Erlang AST for a given module and have successfully translated it into an equivalent JavaScript AST, we simple write the JavaScript AST out to a temporary file. We then spawn a new shell process which calls NodeJS which is a pre-requesite for this project, which then runs our wrapper around an open-source NodeJS library --- \textit{escodegen.js} --- to convert a JavaScript AST into code.
+
+In order to make the user experience of Jarlang better and simpler, we also wrote a free and open source package builder for our project called \textit{Erlpkg} which does things such as handler our command line argument parsing needs, as well and compressing all of our compiled Erlang source code modules into one binary file. This is because while there are official build tools for Erlang, we did not write Jarlang in line with the OTP specification which is required for these official build tools, and it was too late into the project to refactor what does work, and works well.
+>>>>>>> 31bdb36f07ce95fd4dff47366ae3d1d5e2960fe8
 
 \section{Conclusions}
 \label{Conclusions}
@@ -313,6 +340,14 @@ The authors wish to thank and/or acknowledge the following:
 \item Simon Thompson - For convincing us that rolling our own type checking system was not a good idea (and introducing to us the amazing \textit{Erlang Dialyzer}), and talking with us about the feasibility in our concurrency approach.
 \item Gordon Guthrie - For his similar project --- \textit{LuvvieScript (URL now defunct)} --- and though no useful source-code was shared, his talk about how he tackled hooking into the Erlang compiler and tools he used (\textit{such as ESPrima and ESCodegen}) provided a brilliant starting point for \textit{Jarlang}.
 \end{itemize}
+
+
+%\vskip 0.2in
+\bibliographystyle{kentHarvard}
+%\bibliographystyle{plain}
+\bibliography{jarlang_technical_report}
+
+
 \appendix
 \section*{Appendix A. Sample code figures}
 \begin{figure}[th]
@@ -426,7 +461,7 @@ The authors wish to thank and/or acknowledge the following:
 		update_record(expression(), [{"type", <<"ThisExpression">>}]).
 	\end{verbatim}
 	\caption{Refactored ESTree AST representation}
-	\label{fig:estree_old:erl}
+	\label{fig:estree_new:erl}
 \end{figure}
 \begin{figure}[th]
 	\centering
@@ -492,12 +527,5 @@ The authors wish to thank and/or acknowledge the following:
 	\label{fig:conditionExample:erl_ast}
 \end{figure}
 %\caption{Very code. Much geek. Wow!}
-
-
-
-\vskip 0.2in
-%\bibliographystyle{kentHarvard}
-\bibliographystyle{plain}
-\bibliography{jarlang_technical_report}
 
 \end{document}
