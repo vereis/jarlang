@@ -38,11 +38,11 @@
 
 \begin{abstract}
 	This paper describes the development and operation of an Erlang to JavaScript compiler henceforth referred to as \textit{Jarlang}.
-	
+		
 	The primary goal of Jarlang was originally to explore the feasibility of compiling Erlang source code into JavaScript such that people would be able to simply run it and demonstrate it on the open web. This is not only a convinient feature but also has applications for the educational use of Erlang, as well as simply improving existing documentation for Erlang with the use of real-time examples.
-	
+		
 	Being able to help create a unified stack for web development has also been a goal of the project, as such a concept is rather attractive to contemporary web developers.
-	
+		
 	Unlike similar projects such as \textit{LuvvieScript} \cite{luvvieGitHub}, we aimed not to support a \textit{"subset of Erlang"} or create a new language \textit{"based on Erlang"}, but instead wanted to focus on implementing as much of Erlang, and its standard library, runtime and behaviours as possible on the web.
 \end{abstract}
 
@@ -56,20 +56,18 @@ Most of our code is written in Erlang, which is the same language as our compila
 
 Due to time constraints however, the currently implementation of the Jarlang compiler hooks into the existing Erlang compiler and thus has a hard dependency on it. We utilise the Erlang compiler to parse, lex, validate, and optimise Erlang source code. After these steps, the Erlang compiler allows us to manipulate its intermediate language known as \textit{Core Erlang}, which is where the Jarlang compiler performs most of its work.
 
-In order to remove our dependency on the Erlang compiler, we will need to write a parser, lexer and validater for Erlang, as well as generate a Core Erlang compatible abstract syntax tree for us to work on, which whilst is not impossible, is definitely beyond the scope and time constraints of this project.
-
 In order to remove our dependency on the Erlang compiler, we would need to essentially reimplement it (write a parser \& lexer for example, as well as AST generation) or leverage Jarlang to compile the Erlang compiler itself into JavaScript. This requires Jarlang to be more fully implemented than it currently is but in the long term, its definitely not an impossible goal.
 
-We also intended to, and in many ways, have succeeded in implementing much of Erlang's functionality --- The results of the Jarlang compiler successfully emulate Erlang style modules (including private and exported functions), Erlang style variadic functions and function overloading, and more abmitiously, implementing a concurrent actor-model system leveraging JavaScript's event loop.
+We also intended to, and in many ways, have succeeded in implementing much of Erlang's functionality --- The results of the Jarlang compiler successfully emulate Erlang style modules (including private and exported functions), Erlang style variadic functions, and more abmitiously, implementing a concurrent actor-model system leveraging JavaScript's event loop.
 
 At the time of writing, Jarlang can successfully compile and run not just simple test programs such as Factorial or Fibonnaci, but also concurrent-reliant programs such as a Heartbeat protocol client/server, OTP style server/state-machine/event-handlers and interop with JavaScript to the extent where we've succesfully leveraged Jarlang compiled Erlang code to write simple games and instant messaging applications.
 
 \section{Background}
 \label{Background}
 
-Some attempts to link Erlang to JavaScript have been made in the past. LuvvieScript \citep{luvvieGitHub} and Shen \citep{ShenGitHub}, both inactive since 2014, have taken Erlang as input and produced JavaScript, however neither of these can be said to be transpilers in their current state. LuvvieScript operates on a subset of Erlang, taking as input specifically written Erlang files always intended to be processed by LuvvieScript. Shen converts Erlang into JavaScript conceptually rather than functionally, preserving the idea the source code communicates rather than the objective functionality of the program itself.
+Some attempts to link Erlang to JavaScript have been made in the past. LuvvieScript \citep{luvvieGitHub} and Shen \citep{ShenGitHub}, both inactive since 2014, have taken Erlang as input and produced JavaScript, however neither of these can be said to be compilers in their current state. LuvvieScript operates on a subset of Erlang, taking as input specifically written Erlang files always intended to be processed by LuvvieScript. Shen converts Erlang into JavaScript conceptually rather than functionally, preserving the idea the source code communicates rather than the objective functionality of the program itself.
 
-Although neither of these projects are what we tried to do, LuvvieScript did provide insight into the transpilation process that we have adopted. A description of the LuvvieScript toolchain \citep{luvvieWebWayBack} provided the idea of parsing Core Erlang AST into JavaScript AST and using a third-party codegen module to process that into JavaScript.
+Although neither of these projects are what we tried to do, LuvvieScript did provide insight into the compilation process that we have adopted. A description of the LuvvieScript toolchain \citep{luvvieWebWayBack} provided the idea of parsing Core Erlang AST into JavaScript AST and using a third-party codegen module to process that into JavaScript.
 
 \section{Aims}
 \label{Aims}
@@ -125,21 +123,21 @@ Of course, each datatype then goes on to implement type-specific behaviour in an
 
 \begin{itemize}
 	\item Atoms - Atoms are essentially just constant immutable values which are also singletons. When atoms are created, they register themselves in the runtime system's global atom table which keeps track of every atom which has ever been initialized. The global atom table is also a place where you can store references to processes, and as such atoms in the Jarlang runtime system (just like in Erlang), double as 'global identifiers' to processes.
-			
+	      			
 	\item Bitstrings - Bitstrings are contiguous arrangements of binary data in the Erlang world. We were originally not going to implement the Bitstring class because it's not something you'd commonly work with on the web; however, strings in Erlang are often represented as Binary strings and as such we needed to implement these to support such a common usecase. Bitstrings can be pattern matched against like Lists, Maps and Tuples but posess the unique property of being able to match byte patterns into variables allowing for simple implementation of binary format parsers. In the Jarlang runtime system, Bitstrings are implemented as arrays that store integers which are clamped (via modular arithmatic, as in Erlang) to values which can be expressed in eight-bit segments. For values that use a size expression (an integer that specifies the length of a Bitstring segment) that's greater than eight, the value is expressed across as many Bitstring segments as necessary. The size expression for each segment is stored in a separate array.
-			
-	\item Floats/Ints - Numbers in Erlang have arbitrary precision and are implemented via the inclusion of the \textit{bignumber.js} library. This is the only part of Jarlang runtime which has an external dependency though we do package \textit{bignumber.js} in our runtime to be as simple as possible to use. Whilst the classes Float and Int aren't entirely identical, they share most of their interface. These classes implement typical mathematical functions such as addition, subtraction and multiplication which is what gets used by the Jarlang runtime system whenever it performs mathematical calculations. As in Erlang, all operations that involve a float return a float, and all operations that involve only integers (sans division, if an integer is not divisible by another integer) return an integer.
-			
+	      			
+	\item Floats/Ints - Numbers in Erlang have arbitrary precision and are implemented via the inclusion of the \textit{bignumber.js} library. This is the only part of Jarlang runtime which has an external dependency. Whilst the classes Float and Int aren't entirely identical, they share most of their interface. These classes implement typical mathematical functions such as addition, subtraction and multiplication which is what gets used by the Jarlang runtime system whenever it performs mathematical calculations. As in Erlang, all operations that involve a float return a float, and all operations that involve only integers (sans division, if an integer is not divisible by another integer) return an integer.
+	      			
 	\item Lists - Lists are implemented as immutable linked lists to allow us to have an efficient implementation of the \textit{cons operator} which mimics Erlang's very own implementation. Each list contains a value and a \textit{next} value. A list is said have a length of one when it has a value and points to an empty list. Erlang allows lists to be \textit{improper} however, which means that lists can point to any other data-structure/primitive but doesn't promise that common list operations will work on these improper lists. Erlang strings are also denoted as lists --- any list containing only integers that correspond to characters in the Latin-1 character set are considered and printed as strings by Jarlang as well as Erlang.
-			
+	      			
 	\item Maps - Maps in the Jarlang runtime environment were originally implemented as wrappers over JavaScript Objects. This was changed when we realised the matching behaviour of Maps performs comparisons on the underlying keys stored within said Map. As such, Maps are currently implemented using two JavaScript arrays --- one for keys (which can be non-serialized objects of any kind), and the other for values such that looking up the \textit{i\textsuperscript{th}} value of the keys array returns the \textit{i\textsuperscript{th}} value of the values array. This was implemented like this because it was the easiest way for us to implement the size comparison functions for Maps internally, however we realise now in retrospect that we ought to refactor this into a more efficient tree data-structure in the future should we revisit this datatype.
-			
-	\item PID - PIDs are process identifiers and are usually only created when new processes are spawned. PIDs act simply as an identifier and thus they don't have any special functionality outside of being keys to processes in the runtime system's global process table. PIDs are made up of three identifying features: the node where the PID exists (allowing for distributed processing), and two other IDs. Distribution of PIDs isn't implemented or handled by the runtime environment however and thus are left to Jarlang's users to implement themselves --- PIDs do however, because of this, expose an API allowing you to programmatically control what precise PID gets spawned at a given time.
-			
+	      			
+	\item PID - PIDs are process identifiers and are usually only created when new processes are spawned. PIDs act simply as an identifier and thus they don't have any special functionality outside of being keys to processes in the runtime system's global process table. PIDs are made up of three identifying features: the node where the PID exists (allowing for distributed processing), and two other IDs.
+	      			
 	\item Processes - At a high level, these are agents which execute a given behaviour (encapsulating a function call) asynchronously. These are explained in depth in section \ref{sssec:num2}.
-			
+	      			
 	\item Tuples - Tuples behave like lists of fixed size. They don't have the ability to \textit{cons} with other tuples but are implemented in a similar way to lists for easier pattern-matching implementation.
-			
+	      			
 \end{itemize}
 
 Because each datatype inherits properties such as \textit{erlangDatatype.value}, these datatypes are often interacted with by querying the value stored in \textit{erlangDatatype.value}. The only gap in our datatype abstraction is the lack of a \textit{fun} datatype as we are compiling Erlang functions into JavaScript functions. 
@@ -151,7 +149,7 @@ There was originally quite an annoying issue of lack of interoperability between
 
 Given an Erlang function which is called with the following: \textit{fibbonaci:fibb(12)}, originally, a user of Jarlang would have had to execute \textit{fibbonaci.fib(new Int(12))} in order to get it to work as they expected. This issue affected us as well while testing; more complex datatypes such as, in Erlang: \textit{[1, 2, {3, 3}]}, would have had to been written, in JavaScript, as \textit{new List(new Int(1), new Int(2), new Tuple(new Int(3), new Int(3)))} which not only was much more verbose, but was simply not friendly to use.
 
-We got around this by implementing functions which try their best to convert JavaScript types into their natural Erlang types where applicable. These functions are automatically wrapped around any potential user input such as around exported functions of any modules, as well as any potential output. This means that for all simple cases, the user can run \textit{fibbonaci.fib(12)} and expect it to work just like the Erlang equivalent. These functions are also exposed in our public API so that users can manually call these type conversions should they need to in their own native JavaScript code.
+We got around this by implementing functions which try their best to convert JavaScript types into their natural Erlang types where applicable. These functions are automatically wrapped around any potential user input such as around exported functions of any modules, as well as any potential output. This means that for all simple cases, the user can run \textit{fibbonaci.fib(12)} and expect it to work just like the Erlang equivalent.
 
 When converting JavaScript types to Erlang types, there the following types are mapped to eachother:
 
@@ -204,9 +202,9 @@ As we have detailed above, all user calls into compiled Erlang code runs in the 
 
 On a high level, the BEAM virtual machine (responsible for running Erlang code) schedules processes based on how long processes have been running. It has the ability to pause and resume processes when and if it sees fit. 
 
-While it is not impossible for us to do this in JavaScript with the use timing functions sprinkled throughout compiled Erlang code to help the runtime environment schedule process behaviours, it would definitely impact the runtime of such code and the human-readability which whilst is not of paramount importance, definitely helps with the development of Jarlang.
+While it is not impossible for us to implement such a scheduler, it would force us to perform heavy modifications during compilation to add timing code calls throughout Erlang modules which impacts readability and performance more than we were willing to do.
 
-Instead, we opted for an extremely high level simulation of how the actor model is implemented in Erlang. Erlang code is essentially strictly sequential in all but one case --- if a function contains a \textit{receive block}, the function essentially defers execution of the containing process until the \textit{receive block} has passed. This is also where our guarentee of sequential order comes from as long as the compiled code was purely sequential Erlang.
+Instead, we opted for an extremely high level simulation of how the actor model is implemented in Erlang. Erlang code is essentially strictly sequential in all but one case --- if a function contains a \textit{receive block}, the function essentially defers execution of the containing process until the \textit{receive block} has passed. This is also where our guarentee of sequential order comes from as non-sequential Erlang code is compiled to sequential JavaScript.
 
 The behaviour property of a given process is a reference to the function that process should perform in the next tick of work allocated to said process. 
 
@@ -214,7 +212,7 @@ Processes also have an internal API which allows them to set the behaviour prope
 
 For this to work, all processes also contain a inbox for messages to accumulate in. During \textit{receive blocks}, we pattern match against these messages in order to determine what we will execute in the next tick. As far as concurrency is concerned, this is the only place in Erlang where concurrency can occur, and as such, our implementation of actor-style concurrency is compatible with basic Erlang examples.
 
-One of the places where our implementation makes a notable difference to Erlang's implementation is when a given process never ends from a sequential standpoint. All sequential Erlang code is run sequentially and atomically and thus, an infinite loop would lock up the browser's JavaScript thread indefinitely. In Erlang, this is not the case as the BEAM virtual machine is still free to switch to another process and execute it as it pleases.
+One of the places where our implementation makes a notable difference to Erlang's implementation is when a given process never ends from a sequential standpoint. All sequential Erlang code is run sequentially and atomically and thus, an infinite loop would lock up the browser's JavaScript thread indefinitely. In Erlang, this is not the case as the BEAM virtual machine is still free to switch to another process.
 
 As a more detailed example then, of how we are implementing concurrency as far as the Jarlang compiler \& runtime environment is concerned: 
 
@@ -242,18 +240,15 @@ Because the only facility processes have to trigger asynchronous behaviours is v
 
 Following this, a layer would need to be implement to route received distributed messages to their intended target but once this was done, any given process would be able to trivially and arbitrarily send and receive messages from distributed nodes.
 
-The Jarlang runtime environment does however provide a mechanism to customise the PIDs which otherwise get automatically generated in order to facilitate users to be able to tag PIDs as distributed or local. Even without this however, distribution of nodes is simple and nothing is neccessarily even stopping Jarlang process nodes from sending and/or receiving messages from real Erlang process nodes on the backend, assuming the correct layers to translate from Erlang to JavaScript and vice versa are implemented.
-
 \subsubsection{Current Runtime Limitations}
 
 While as a whole, the Jarlang runtime environment works quite successfully in emulating the behaviour of running Erlang code at a high level, there are some drawbacks and limitations to what can be done with Jarlang at this point in time. While some of these can be handled by small or large changes, some are limitations on our architectural approach and likely won't be resolved in the near future if at all.
 
-They are listed as follows.
+They are listed as follows:
 
 \begin{itemize}
 	\item Currently we provide no mechanism for processes to supervise or react to events of linked processes.
-	\item Currently, scope details can be lost if receive blocks are heavily nested
-	\item Automatic type coercion between the JavaScript environment and Jarlang runtime environment is a leaky abstraction which can't be applied to functions. We can maybe fix this by implementing all Erlang functions as wrappers around lambda instead of generating functions directly, but the output of these wrapped lambas still couldn't neccessarily be converted easily or usefully.
+	\item Currently, scope details can be lost if receive blocks are heavily nested which breaks more complex concurrent Erlang behaviour.
 	\item The \textit{spawn/N} functions cannot currently spawn functions without relying on JavaScripts \textit{eval} function. This is because we cannot access programmatically the contents of compiled Erlang modules as they are declared as a \textit{const variable} and thus do not bind to the global scope. We chose not to simply use a \textit{var variable} instead but to have Erlang modules register themselves with the runtime environment upon initialisation. This is currently a pending task.
 	\item We currently do not and cannot garbage collect proceses. Upon ending execution they defer forever since we can never be sure there are no references to these processes either inside the runtime environment (which is implementable) or outside in the open JavaScript environment (which isn't implementable).
 \end{itemize}
@@ -263,18 +258,16 @@ We utilise the Erlang compiler to help us leverage some priliminary optimisation
 
 One huge gain from utilising Core Erlang instead of standard Erlang is the ability to easily parse it and get an Abstract Syntax Tree out of it using standard Erlang tools. This allows us to not have to implement a parser or a lexer for our compiler (though as stated, if we ever want to bootstrap the Jarlang compiler, we will likely need to change how this is handled).
 
-Since the Erlang compiler also has to get to the stage where it is generated code output, we also know that any programs passed into the Jarlang compiler are valid Erlang programs. 
-
-We will go into more details about steps the Jarlang compiler takes to generated valid JavaScript output, as well as outline tools used.
+Since the Erlang compiler also has to get to the stage where it is generated code output, we also know that any programs passed into the Jarlang compiler are valid Erlang programs. More details follow:
 
 \subsubsection{Between the Erlang Compiler and the Jarlang Compiler}
-As briefly stated above, before the Jarlang compiler is able to do any work, the Erlang compiler has to more or less successfully compile Erlang source code files into Erlang's intermediate language --- Core Erlang --- which means we don't have to worry about certain classes of errors such as referencing undefined variables or throwing errors for invalid conditional logic or pattern match logic.
+As mentioned above, before the Jarlang compiler is able to do any work, the Erlang compiler has to more or less successfully compile Erlang source code files into Erlang's intermediate language --- Core Erlang --- which means we don't have to worry about certain classes of errors such as referencing undefined variables or throwing errors for invalid conditional logic or pattern match logic.
 
 As an example, the Erlang function shown in Figure \ref{fig:code_comparison:erl} will throw an runtime error if the input is anything other than the atom 'apple'. Because we have not manually defined a clause which does so for us, the Erlang compiler automatically generates on as you can see in Figure \ref{fig:code_comparison:erl_ast}. This means that as long as we've programmed the Jarlang compiler to correctly parse and generate an equivalent JavaScript abstract syntax tree from our Core Erlang, everything will work as intended (see the Jarlang compiler output for this error at Figure \ref{fig:code_comparison:js}).
 
 The generated Core Erlang also removes much of the syntactic sugar from Erlang code; pattern-matching appears only in case statements or receive statements, all case statements include catch-all clauses, all function arities and modules are stated for us without the need for inference. This allows for a much more streamlined compilation to JavaScript though the largest issue of Core Erlang is that it is largely undocumented -- as such, a large amount of project time was spent reverse engineering the behaviour of Core Erlang language features.
 
-After this though, we load the generated Core Erlang AST into the Jarlang compiler and begin the compilation process to JavaScript. We do this by recursively descending through each AST node, performing some analyses on the current AST node (and parental/sibling/descendent nodes if needed) and output an equivalent JavaScript AST node.
+After this, we load the generated Core Erlang AST into the Jarlang compiler and begin the compilation process to JavaScript. We do this by recursively descending through each AST node, performing some analyses on the current AST node (and parental/sibling/descendent nodes if needed) and output an equivalent JavaScript AST node.
 
 \subsubsection{The JavaScript AST}
 The JavaScript AST is very well defined and many tools exist to allow us to inspect the JavaScript AST of any given JavaScript program, as well as code generation tools to turn a valid JavaScript AST into JavaScript code and as such we haven't had much of an issue writing an equivalent JavaScript AST for a given CoreErlang AST node.
@@ -293,7 +286,7 @@ Tagged tuples are easy to spec via Dialyzer as well, which lets us statically an
 Originally, we wrote a JSON encoder to translate Maps and Lists literally into Objects and Arrays in JSON notation but  was this a huge bottleneck due to lots of heavy recursive text manipulation (which Erlang isn't good at). Instead, we pulled and relied on external Erlang libraries such as \textit{jsone.erl} to do this for us. Thankfully both our implementation of JSON encoding and \textit{jsone.erl}'s both supported the same underlying datastructures so transitioning to \textit{jsone.erl} was extremely simple.
 
 \subsubsection{Variable Declaration \& Assignment in Matching}
-Integral to the function of Erlang programs is assignment as a result of pattern matching, when the inputs of a function or the values in a received message match those variables are assigned and later used. This process contains several non-obvious complexities:
+Integral to the functionality of Erlang programs is variable assignment via pattern matching; when the inputs of a pattern match clause are matched, any unbound variables within these inputs is assigned and bound to their corresponding literal. This process contains several non-obvious complexities:
 \begin{itemize}
 	\item \emph{Variables in a data-structure:} It is possible for a pattern to contain tuples or lists, and for subsequent code to use variables that are defined inside these data-structures (e.g.\texttt{ \{Var1,\_,Var2\}}). In this case Jarlang must recursively process the definition of the data-structure in the AST, identify all variables and generate code to access \& assign the value.
 	\item \emph{Guards used matched values:} Guard conditions associated with each clause may use variables given value in the pattern match, so these variables must be assigned within the condition of the JavaScript if statement. Due to language restrictions this requires the condition to be a lambda function.
@@ -306,9 +299,7 @@ This simplification in Core Erlang allows us to use common code between pattern 
 \subsubsection{Erlang Module Implementation} \label{sssec:num1}
 Outside of straight compilation of Erlang code to JavaScript code, the Jarlang compiler also does things that aren't neccessarily straight one-one translation.
 
-JavaScript has no real definition of a module and as such, when compiling Erlang modules into JavaScript, we've had to essentially emulate how Erlang modules act. Erlang modules contain both private and public functions (in Erlang terms, exported and non-exported) as well as macros and module attributes.
-
-The Jarlang compiler does not need to worry about macro expansion because this is done in our Erlang Compiler hook-in step, hence the only things we need to worry about are the module attributes as well as exporting certain functions to be globally accessible.
+JavaScript has no real definition of a module and as such, when compiling Erlang modules into JavaScript, we've had to essentially emulate how Erlang modules act. Erlang modules contain both private and public functions (in Erlang terms, exported and non-exported) as well as macros and module attributes (though he Jarlang compiler does not need to worry about macro expansion because this is done in our Erlang Compiler hook-in step).
 
 On a high level, we simulate a module in JavaScript by creating a \textit{const variable declaration} bound to the return value of a closure which contains anonymous functions representing our non-exported functions. Exported functions get put into a JavaScript object keyed by function name, which refer to a non-exported function in the closure body. This means that exported functions are seen to a user of our generated code as an object containing functions which is what we want.
 
@@ -339,9 +330,9 @@ In the future we intend to:
 \section{Acknowledgement}
 The authors wish to thank and/or acknowledge the following:
 \begin{itemize}
-\item Scott Owens - For supervising our project, and being generally available whenever we needed help or assistance, and talked us through just about all of our technical decisions.
-\item Simon Thompson - For convincing us that rolling our own type checking system was not a good idea (and introducing to us the amazing \textit{Erlang Dialyzer}), and talking with us about the feasibility in our concurrency approach.
-\item Gordon Guthrie - For his similar project --- \textit{LuvvieScript (URL now defunct)} --- and though no useful source-code was shared, his talk about how he tackled hooking into the Erlang compiler and tools he used (\textit{such as ESPrima and ESCodegen}) provided a brilliant starting point for \textit{Jarlang}.
+	\item Scott Owens - For supervising our project, and being generally available whenever we needed help or assistance, and talked us through just about all of our technical decisions.
+	\item Simon Thompson - For convincing us that rolling our own type checking system was not a good idea (and introducing to us the amazing \textit{Erlang Dialyzer}), and talking with us about the feasibility in our concurrency approach.
+	\item Gordon Guthrie - For his similar project --- \textit{LuvvieScript (URL now defunct)} --- and though no useful source-code was shared, his talk about how he tackled hooking into the Erlang compiler and tools he used (\textit{such as ESPrima and ESCodegen}) provided a brilliant starting point for \textit{Jarlang}.
 \end{itemize}
 
 
