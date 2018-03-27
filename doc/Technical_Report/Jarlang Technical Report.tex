@@ -288,8 +288,12 @@ The main issue with generating the JavaScript AST is that the JavaScript AST is 
 
 We tried working around this issue by writing our own naive type checker which we quickly realised was not extensible nor a good idea in the long run. We then heavily refactored \textit{estree.erl} to use a custom datatstructure made up of nested tagged tuples. 
 
-\subsubsection{Pattern Matching, Conditional Logic \& Message Receiving}
 \subsubsection{Variable Declaration \& Assignment in Matching}
+
+\subsubsection{Conditional Logic, Pattern Matching \& Message Receiving}
+	While Erlang has a variety of useful conditional logic (case, if, receive and pattern matching) all of these compile into the same format in Core Erlang. Figure \ref{fig:conditionExample:erl} shows examples of pattern matching, case and if statements and a receive block. Figure \ref{fig:conditionExample:erl_ast} shows the generated Core AST, clearly showing the structure of parent node (either \texttt{c\_case} or \texttt{c\_receive}) and a list of \texttt{c\_clause} nodes.
+	
+	This simplification in Core Erlang allows us to use common code between pattern matching \& receive blocks, and pay no special attention to case and if blocks.
 \subsubsection{Erlang Module implementation} \label{sssec:num1}
 \subsection{ErlPKG}
 
@@ -419,6 +423,69 @@ The authors wish to thank and/or acknowledge the following:
 	\end{verbatim}
 	\caption{Refactored ESTree AST representation}
 	\label{fig:estree_old:erl}
+\end{figure}
+\begin{figure}[th]
+	\centering
+	\begin{verbatim}
+	...
+	pattern_match(apple)->
+	    ok.
+	f_case(Atom)->
+	    case Atom of
+	        apple -> ok;
+	        _ -> error
+	    end.
+	f_if(Atom)->
+	    if
+	        apple == Atom -> ok;
+	        true -> error
+	    end.
+	f_receive()->
+	    receive
+	        apple -> ok;
+	        _ -> error
+	    end.
+	...
+	\end{verbatim}
+	\caption{Erlang code demonstrating various conditional logic syntax}
+	\label{fig:conditionExample:erl}
+\end{figure}
+\begin{figure}[th]
+	\centering
+	\begin{verbatim}
+	...
+	[{{c_var,[],{pattern_match,1}},
+	 {c_fun,[],[{c_var,[],'_cor0'}],
+	  {c_case,[],{c_var,[],'_cor0'},
+	    [{c_clause,[],[{c_literal,[],apple}],
+	     ...
+	    {c_clause,[compiler_generated],[{c_var,[],'_cor1'}],
+	     ...
+	{{c_var,[],{f_case,1}},
+	 {c_fun,[],[{c_var,[],'_cor0'}],
+	  {c_case,[],{c_var,[],'_cor0'},
+	    [{c_clause,[],[{c_literal,[],apple}],
+	     ...
+	    {c_clause,[],[{c_var,[],'_cor3'}],
+	     ...
+	{{c_var,[],{f_if,1}},
+	 {c_fun,[],[{c_var,[],'_cor0'}],
+	   {c_case,[],{c_values,[],[]},
+	     [{c_clause,[],[],{c_call,[],
+	      ...
+	     {c_clause,[],[],{c_literal,[],true},{c_literal,[],error}}]}}},
+	{{c_var,[],{f_receive,0}},
+	 {c_fun,[],[],
+	   {c_receive,[],
+	    [{c_clause,[],[{c_literal,[],apple}],
+	     ...
+	    {c_clause,[],
+	     ...
+	   ],
+	...
+	\end{verbatim}
+	\caption{Core Erlang AST generated from Figure \ref{fig:conditionExample:erl}}
+	\label{fig:conditionExample:erl_ast}
 \end{figure}
 %\caption{Very code. Much geek. Wow!}
 
