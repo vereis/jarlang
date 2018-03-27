@@ -19,14 +19,14 @@ const BitString = (() => {
             const args = [...arguments];
             var arg;
 
-            while (arg = args.shift()) {
+            while ((arg = args.shift()) !== undefined) {
                 if (typeof arg == "string" || List.isString(arg)) {
                     arg.toString().split("").forEach((c) => {
                         this.value.values.push(c.charCodeAt(0));
                         this.value.sizes.push(defaultSize);
                     });
                 }
-                else {
+                else if (arg[1] !== 0) {
                     if (!Array.isArray(arg)) {
                         arg = [arg];
                     }
@@ -46,7 +46,7 @@ const BitString = (() => {
                             this.value.sizes.push(defaultSize);
                             args.unshift([arg[0], arg[1] - defaultSize]);
                         }
-                        else if (arg[1] > 0) {
+                        else {
                             this.value.values.push(arg[0] % (1 << arg[1]));
                             this.value.sizes.push(arg[1]);
                         }
@@ -55,6 +55,24 @@ const BitString = (() => {
                         this.value.values.push(arg[0] % (1 << defaultSize));
                         this.value.sizes.push(defaultSize);
                     }
+                }
+            }
+        }
+
+        [Symbol.iterator]() {
+            var tmp = [...this.getValue().values], v;
+
+            return {
+                next: () => {
+                    if ((v = tmp.shift()) !== undefined) {
+                        return {
+                            value: v,
+                            done: false
+                        };
+                    }
+                    return {
+                        done: true
+                    };
                 }
             }
         }

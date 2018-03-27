@@ -267,74 +267,6 @@ We will go into more details about steps the Jarlang compiler takes to generated
 As briefly stated above, before the Jarlang compiler is able to do any work, the Erlang compiler has to more or less successfully compile Erlang source code files into Erlang's intermediate language --- Core Erlang --- which means we don't have to worry about certain classes of errors such as referencing undefined variables or throwing errors for invalid conditional logic or pattern match logic.
 
 For example the Erlang function shown in Figure \ref{fig:code_comparison:erl} will throw an error if the input is anything other than the atom 'apple'. In this example there is no code that states what should occur in the event that the input is not the atom 'apple' and as such the compiler generates a second clause (Figure \ref{fig:code_comparison:erl_ast}) to match any value and throw an appropriate error. This conveniently allows us to reproduce the required functionality by parsing the compiler generated function as normal (Figure \ref{fig:code_comparison:js}), rather than concerning ourselves with this specific case.
-%\begin{figure}[htb]
-%\centering
-% \begin{figure}[t]
-% 	\centering
-% 		\begin{verbatim}
-% 		...
-% 		error_if_not_apple(apple)->
-% 		  ok.
-% 		\end{verbatim}
-% 	\caption{Erlang source}
-% 	\label{fig:code_comparison:erl}
-% \end{figure}
-% \begin{figure}[t]
-% 	\centering
-% 	\begin{verbatim}
-% 	...
-% 	[{{c_var,[],{error_if_not_apple,1}},
-% 	  {c_fun,[],
-% 	    [{c_var,[],'_cor0'}],
-% 	    {c_case,[],
-% 	      {c_var,[],'_cor0'},
-% 	      [{c_clause,[],
-% 	         [{c_literal,[],apple}],
-% 	         {c_literal,[],true},
-% 	         {c_literal,[],ok}},
-% 	       {c_clause,
-% 	         [compiler_generated],
-% 	         [{c_var,[],'_cor1'}],
-% 	         {c_literal,[],true},
-% 	         {c_primop,
-% 	           [{function_name,{error_if_not_apple,1}}],
-% 	           {c_literal,[],match_fail},
-% 	           [{c_tuple,[],
-% 	             [{c_literal,[],function_clause},
-% 	                {c_var,[],'_cor1'}]}]}}]}}},
-% 	...
-% 	\end{verbatim}
-% 	\caption{Core Erlang AST of Figure \ref{fig:code_comparison:erl}}
-% 	\label{fig:code_comparison:erl_ast}
-% \end{figure}
-% \begin{figure}[t]
-% 	\centering
-% 		\begin{verbatim}
-% 		...
-% 		'error_if_not_apple/1': function (_cor0) {
-% 		  if (function () {
-% 		    if (_cor0.match(new Atom('apple'))) {
-% 		      return new Atom('true');
-% 		    }
-% 		  }.bind(this)()) {
-% 		    return new Atom('ok');
-% 		  } else if (function () {
-% 		    return new Atom('true');
-% 		  }()) {
-% 		    let _cor1 = _cor0;
-% 		    throw '** match_fail: TODO Errors dont parse nicely\\n' + 'Message';
-% 		  }
-% 		},
-% 		...
-% 		\end{verbatim}
-% 	\caption{Jarlang transpiled equivalent of Figure \ref{fig:code_comparison:erl}}
-% 	\label{fig:code_comparison:js}
-% \end{figure}
-%\caption{Very code. Much geek. Wow!}
-%\caption{Comparison of Erlang source code and Jarlang transpiled equivalent.}
-%\label{fig:code_comparison}
-%\end{figure}
-
 
 \subsubsection{Pattern Matching, Conditional Logic \& Message Receiving}
 \subsubsection{Variable Declaration \& Assignment in Matching}
@@ -349,21 +281,80 @@ For example the Erlang function shown in Figure \ref{fig:code_comparison:erl} wi
 \section{Acknowledgement}
 The authors wish to thank and/or acknowledge the following:
 \begin{enumerate}
-	\item Scott Owens - For supervising our project, and being generally available whenever we needed help or assistance, and talked us through just about all of our technical decisions.
-	\item Simon Thompson - For convincing us that rolling our own type checking system was not a good idea (and introducing to us the amazing \textit{Erlang Dialyzer}), and talking with us about the feasibility in our concurrency approach.
-	\item Gordon Guthrie - For his similar project --- \textit{LuvvieScript (URL now defunct)} --- and though no useful source-code was shared, his talk about how he tackled hooking into the Erlang compiler and tools he used (\textit{such as ESPrima and ESCodegen}) provided a brilliant starting point for \textit{Jarlang}.
+\item Scott Owens - For supervising our project, and being generally available whenever we needed help or assistance, and talked us through just about all of our technical decisions.
+\item Simon Thompson - For convincing us that rolling our own type checking system was not a good idea (and introducing to us the amazing \textit{Erlang Dialyzer}), and talking with us about the feasibility in our concurrency approach.
+\item Gordon Guthrie - For his similar project --- \textit{LuvvieScript (URL now defunct)} --- and though no useful source-code was shared, his talk about how he tackled hooking into the Erlang compiler and tools he used (\textit{such as ESPrima and ESCodegen}) provided a brilliant starting point for \textit{Jarlang}.
 \end{enumerate}
 \appendix
-\section*{Appendix A. TODO: Do we need an appendix?}
-
-
-[section ommitted]
+\section*{Appendix A. Sample code figures}
+\begin{figure}[th]
+	\centering
+	\begin{verbatim}
+	...
+	error_if_not_apple(apple)->
+	ok.
+	\end{verbatim}
+	\caption{Erlang source}
+	\label{fig:code_comparison:erl}
+\end{figure}
+\begin{figure}[th]
+	\centering
+	\begin{verbatim}
+	...
+	[{{c_var,[],{error_if_not_apple,1}},
+	{c_fun,[],
+	[{c_var,[],'_cor0'}],
+	{c_case,[],
+	{c_var,[],'_cor0'},
+	[{c_clause,[],
+	[{c_literal,[],apple}],
+	{c_literal,[],true},
+	{c_literal,[],ok}},
+	{c_clause,
+	[compiler_generated],
+	[{c_var,[],'_cor1'}],
+	{c_literal,[],true},
+	{c_primop,
+	[{function_name,{error_if_not_apple,1}}],
+	{c_literal,[],match_fail},
+	[{c_tuple,[],
+	[{c_literal,[],function_clause},
+	{c_var,[],'_cor1'}]}]}}]}}},
+	...
+	\end{verbatim}
+	\caption{Core Erlang AST of Figure \ref{fig:code_comparison:erl}}
+	\label{fig:code_comparison:erl_ast}
+\end{figure}
+\begin{figure}[th]
+	\centering
+	\begin{verbatim}
+	...
+	'error_if_not_apple/1': function (_cor0) {
+	if (function () {
+	if (_cor0.match(new Atom('apple'))) {
+	return new Atom('true');
+	}
+	}.bind(this)()) {
+	return new Atom('ok');
+	} else if (function () {
+	return new Atom('true');
+	}()) {
+	let _cor1 = _cor0;
+	throw '** match_fail: TODO Errors dont parse nicely\\n' + 'Message';
+	}
+	},
+	...
+	\end{verbatim}
+	\caption{Jarlang transpiled equivalent of Figure \ref{fig:code_comparison:erl}}
+	\label{fig:code_comparison:js}
+\end{figure}
+%\caption{Very code. Much geek. Wow!}
 
 
 
 \vskip 0.2in
-\todo{Bibliography is still the template version, will need replacing.}
+%\bibliographystyle{kentHarvard}
+\bibliographystyle{plain}
 \bibliography{jarlang_technical_report}
-\bibliographystyle{kentHarvard}
 
 \end{document}
