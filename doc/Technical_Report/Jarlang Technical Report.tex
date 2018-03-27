@@ -43,7 +43,7 @@
 	
 	Being able to help create a unified stack for web development has also been a goal of the project, as such a concept is rather attractive to contemporary web developers.
 	
-	Unlike similar projects such as \textit{LuvvieScript}, we aimed not to support a \textit{"subset of Erlang"} or create a new language \textit{"based on Erlang"}, but instead wanted to focus on implementing as much of Erlang, and its standard library, runtime and behaviours as possible on the web.
+	Unlike similar projects such as \textit{LuvvieScript} \cite{luvvieGitHub}, we aimed not to support a \textit{"subset of Erlang"} or create a new language \textit{"based on Erlang"}, but instead wanted to focus on implementing as much of Erlang, and its standard library, runtime and behaviours as possible on the web.
 \end{abstract}
 
 \section{Introduction}
@@ -66,6 +66,10 @@ At the time of writing, Jarlang can successfully compile and run not just simple
 
 \section{Background}
 \label{Background}
+
+Some attempts to link Erlang to JavaScript have been made in the past. LuvvieScript \citep{luvvieGitHub} and Shen \citep{ShenGitHub}, both inactive since \citeyear{ShenGitHub}, have taken Erlang as input and produced JavaScript, however neither of these can be said to be transpilers in their current state. LuvvieScript operates on a subset of Erlang, taking as input specifically written Erlang files always intended to be processed by LuvvieScript. Shen converts Erlang into JavaScript conceptually rather than functionally, preserving the idea the source code communicates rather than the objective functionality of the program itself.
+
+Although neither of these projects are what we tried to do, LuvvieScript did provide insight into the transpilation process that we have adopted. A description of the LuvvieScript toolchain \citep{luvvieWebWayBack} provided the idea of parsing Core Erlang AST into JavaScript AST and using a third-party codegen module to process that into JavaScript.
 
 \section{Aims}
 \label{Aims}
