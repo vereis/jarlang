@@ -67,7 +67,7 @@ At the time of writing, Jarlang can successfully compile and run not just simple
 \section{Background}
 \label{Background}
 
-Some attempts to link Erlang to JavaScript have been made in the past. LuvvieScript \citep{luvvieGitHub} and Shen \citep{ShenGitHub}, both inactive since \citeyear{ShenGitHub}, have taken Erlang as input and produced JavaScript, however neither of these can be said to be transpilers in their current state. LuvvieScript operates on a subset of Erlang, taking as input specifically written Erlang files always intended to be processed by LuvvieScript. Shen converts Erlang into JavaScript conceptually rather than functionally, preserving the idea the source code communicates rather than the objective functionality of the program itself.
+Some attempts to link Erlang to JavaScript have been made in the past. LuvvieScript \citep{luvvieGitHub} and Shen \citep{ShenGitHub}, both inactive since 2014, have taken Erlang as input and produced JavaScript, however neither of these can be said to be transpilers in their current state. LuvvieScript operates on a subset of Erlang, taking as input specifically written Erlang files always intended to be processed by LuvvieScript. Shen converts Erlang into JavaScript conceptually rather than functionally, preserving the idea the source code communicates rather than the objective functionality of the program itself.
 
 Although neither of these projects are what we tried to do, LuvvieScript did provide insight into the transpilation process that we have adopted. A description of the LuvvieScript toolchain \citep{luvvieWebWayBack} provided the idea of parsing Core Erlang AST into JavaScript AST and using a third-party codegen module to process that into JavaScript.
 
@@ -282,7 +282,7 @@ The JavaScript AST is very well defined and many tools exist to allow us to insp
 The main issue with generating the JavaScript AST is that the JavaScript AST is expressed as a deeply nested JSON object which has no built-in representation in Erlang. \cite{luvvieGitHub}'s LuvvieScript approaches this issue by hand-encoding these JSON objects as nested binary strings which we didn't think was too extensible. Because we were not thrilled with the idea of hand-encoding JSON strings whenever we needed to generate a particular JavaScript AST node we wrote two modules: \textit{estree.erl} and \textit{json.erl} to help with JavaScript AST generation.
 
 \subsubsection{estree.erl and json.erl}
-\textit{estree.erl} is an implementation of the JavaScript AST interface as defined by \cite{EStreeMDN} as well as reverse engineering the AST node structure of newer as of yet not-officially-defined AST nodes.
+\textit{estree.erl} is an implementation of the JavaScript AST interface as defined by \citeauthor{EStreeMDN} as well as reverse engineering the AST node structure of newer as of yet not-officially-defined AST nodes.
 
 \textit{estree.erl} went through many changes during the course of the project as our needs grew. It originally simply tried to mimic the format and semantics of JSON by using Maps and Lists in place of JSON objects and arrays. This allowed us to easily implement new nodes into our interface but also meant that standard Erlang tools such as \textit{Dialyzer (static type analysis for Erlang code)} wouldn't work as it doesn't support matching specific entries at certain positions in Lists nor Maps. 
 
@@ -325,8 +325,16 @@ In order to make the user experience of Jarlang better and simpler, we also wrot
 
 \section{Conclusions}
 \label{Conclusions}
+We consider the project to be a success, having contributed a valuable open-source resource to the Erlang community and creating the only publicly available Erlang transpiler that prioritises accurate representation of Erlang functionality over project simplicity.
 
-[section not done yet]
+Jarlang is able to parse most Erlang source code into valid JavaScript while preserving functionality. All implemented data-types function as they would in Erlang and the Runtime environment permits concurrency.
+
+In the future we intend to:
+\begin{itemize}
+	\item Implement the Erlang Standard Library so that transpiled Erlang will run without the user needing to implement the required functions in JavaScript.
+	\item Integrate code optimization and minimising libraries to improve the output code.
+	\item Implement an example distributed system, showing users how to override the default process spawning and message passing to run a program across multiple browsers.
+\end{itemize} 
 
 \section{Acknowledgement}
 The authors wish to thank and/or acknowledge the following:
