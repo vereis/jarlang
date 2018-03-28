@@ -107,7 +107,7 @@ Notable features of the Jarlang runtime environment in its current state are:
 \end{itemize}
 
 \subsection{The Jarlang Runtime Environment}
-The Jarlang runtime environment is implemented in many separate JavaScript modules, which are processed and bound together by our NodeJS toolchain and tools such as \textit{Gulp}. The runtime is split into three distinct segments.
+The Jarlang runtime environment is implemented in many separate JavaScript modules, which are processed and bound together by our NodeJS toolchain and tools such as \textit{Gulp} \citep{gulpGitHub}. The runtime is split into three distinct segments.
 
 \begin{itemize}
 	\item Erlang Datatypes - Each Erlang datatype implemented as an ES6-spec JavaScript class in its own closure to keep track of private and public methods/properties.
@@ -363,7 +363,7 @@ The main issue with generating the JavaScript AST is that the JavaScript AST is 
 \subsubsection{estree.erl and json.erl}
 \textit{estree.erl} is an implementation of the JavaScript AST interface as defined by the Mozilla Foundation (\citeyear{EStreeMDN}) as well as reverse engineering the AST node structure of newer as of yet not-officially-defined AST nodes.
 
-\textit{estree.erl} went through many changes during the course of the project as our needs grew. It originally simply tried to mimic the format and semantics of JSON by using Maps and Lists in place of JSON objects and arrays. This allowed us to easily implement new nodes into our interface but also meant that standard Erlang tools such as \textit{Dialyzer (static type analysis for Erlang code)} wouldn't work as it doesn't support matching specific entries at certain positions in Lists nor Maps. 
+\textit{estree.erl} went through many changes during the course of the project as our needs grew. It originally simply tried to mimic the format and semantics of JSON by using Maps and Lists in place of JSON objects and arrays. This allowed us to easily implement new nodes into our interface but also meant that standard Erlang tools such as \textit{Dialyzer (static type analysis for Erlang code)} \citep{dialyzerPdf} wouldn't work as it doesn't support matching specific entries at certain positions in Lists nor Maps.
 
 We tried working around this issue by writing our own naive type checker which we quickly realised was not extensible nor a good idea in the long run. We then heavily refactored \textit{estree.erl} to use a custom datatstructure made up of nested tagged tuples. You can see an example of both pre-factored \textit{estree.erl} code and post-refactored \textit{estree.erl} in Figures \ref{fig:estree_old:erl} \& \ref{fig:estree_new:erl} respectively in Appendix A.
 
@@ -396,9 +396,9 @@ For example, even if our Erlang module contains the functions \textit{fn/1, fn/2
 Module attributes are also encoded as object parameters and are ready to be returned and used by standard compiler generated debug functions though this is disabled by default as generally these attributes aren't used.
 
 \subsubsection{Outputting JavaScript \& Other Tools}
-Once we've completely descended through the Core Erlang AST for a given module and have successfully translated it into an equivalent JavaScript AST, we simple write the JavaScript AST out to a temporary file. We then spawn a new shell process which calls NodeJS which is a pre-requesite for this project, which then runs our wrapper around an open-source NodeJS library --- \textit{escodegen.js} --- to convert a JavaScript AST into code.
+Once we've completely descended through the Core Erlang AST for a given module and have successfully translated it into an equivalent JavaScript AST, we simple write the JavaScript AST out to a temporary file. We then spawn a new shell process which calls NodeJS which is a pre-requesite for this project, which then runs our wrapper around an open-source NodeJS library --- \textit{escodegen.js} \citep{escodegenGitHub} --- to convert a JavaScript AST into code.
 
-In order to make the user experience of Jarlang better and simpler, we also wrote a free and open source package builder for our project called \textit{Erlpkg} which does things such as handler our command line argument parsing needs, as well and compressing all of our compiled Erlang source code modules into one binary file. This is because while there are official build tools for Erlang, we did not write Jarlang in line with the OTP specification which is required for these official build tools, and it was too late into the project to refactor what does work, and works well.
+In order to make the user experience of Jarlang better and simpler, we also wrote a free and open source package builder for our project called \textit{Erlpkg} \citep{erlpkgGitHub} which does things such as handler our command line argument parsing needs, as well and compressing all of our compiled Erlang source code modules into one binary file. This is because while there are official build tools for Erlang, we did not write Jarlang in line with the OTP specification which is required for these official build tools, and it was too late into the project to refactor what does work, and works well.
 
 \blankpage
 \section{Conclusions}
