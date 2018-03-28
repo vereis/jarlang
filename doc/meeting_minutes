@@ -1,0 +1,84 @@
+29/9
+@ everyone - start looking and playing around with erlang and try to capture its behaviour
+@ everyone - think about datatypes, how should we decide how to model things like floats/lists?
+             string optimisation should keep strings as JS strings?
+@ notes - Integer    -> Custom Integer class
+@ notes - Float      -> Custom Float class
+@ notes - $char      -> String with length of 1
+@ notes - String     -> String where length > 1
+@ notes - Atom       -> Custom Atom class 
+@ notes - base#value -> Custom class wrapping an object such as {base: Number, value: Number} with a toInt() / toFloat() function
+@ notes - Bit Strings, Binary -> Custom class essentially wrapping an Array<Number>
+@ notes - Fun        -> Function
+@ notes - Port Identifier -> None // We don't have any special access to ports from JavaScript
+@ notes - PID        -> Custom class that roughly looks like {pid: Array<Number>} // Where Array is split by "."
+@ notes - Tuple      -> Custom Tuple class
+@ notes - Map        -> Standard Object
+@ notes - List       -> Custom List class
+@ notes - Records    -> Undecided
+@ notes - Boolean    -> Boolean
+@ Chris - look at modelling function overloading and module implementation
+@ Andrew - write some sample erlang programs for testing later on
+@ Nick - look at writing a testing system? shell script?
+
+6/10
+@ Done - example module architecture with function overloading and private/public functions
+@ Done - 99 bottles of beer example
+@ Done - andrew's examples
+@ Remove old lexer, fall back on Erlang compiler to generate Core Erlang
+@ Everyone - continue with previous tasks if not done, otherwise think about architecture implementation
+
+13/10
+@ Done - base modules created which outline compiler pipeline
+@ Done - got core erlang generated into a file from compiler, need to look into getting its AST
+@ Andrew - get core erlang ast outputted
+@ Nick - look at getting line numbers for erlang programs kept in core erlang? Luvviescript makes this sound hard
+@ Chris - Look more on getting this architected nicely - we probably want a makefile?
+
+20/10
+@ Done - makefile, core erlang ast is now parsed and written out to a file
+@ Chris/Andrew - reverse engineer core erlang AST, what does each node mean or do?
+@ Chris - look at how the JavaScript AST works
+@ Nick - keep working on preserving line numbers for now, add Git CI testing
+
+27/10
+@ Done - JavaScript AST fairly well understood, wrote JSON library to write out to JSON.
+         Got a very basic module implementation working using said JSON library thanks to Chris.
+         Much more progress being done on reverse engineering core erlang
+         Line numbers and stuff added to external module - looks like it works
+@ Scrapped - removed CI stuff, requires OTP style project which we don't have and don't want to investigate further for now
+@ Chris - write interface for JavaScript AST
+@ Andrew - work with Chris, when Chris is done, work on writing a module to translate Erlang AST nodes into JavaScript ones
+@ Nick - Work with Chris and Andrew to get line numbers preserved for us to generate source maps 
+
+3/11
+@ Done - thanks to chris and andrew, we can generate modules now!
+         thanks to nick, we now have line numbers preserved though we won't use this just yet.
+         thanks to chris, we have an example of how we might implement lists and tuples in JS
+
+
+10/11
+
+17/11
+
+28/11
+
+8/12
+
+15/12
+
+7/2
+
+15/2
+
+21/2
+
+1/3
+
+9/3
+
+16/3
+
+23/3
+
+28/3
