@@ -42,6 +42,9 @@ const jrts = (function (secondsPerTick) {
             case "string":
                 erlVar = new List(...(variable.split("").map(char => new Int(char.charCodeAt(0)))));
                 break;
+            case "boolean":
+                erlVar = new Atom(variable.toString());
+                break;
             case "object":
                 if (Array.isArray(variable)) {
                     erlVar = new List(...(variable.map(jsToErlang)));
