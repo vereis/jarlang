@@ -303,11 +303,11 @@ One of the places where our implementation makes a notable difference to Erlang'
 As a more detailed example then, of how we are implementing concurrency as far as the Jarlang compiler \& runtime environment is concerned: 
 
 \begin{enumerate}
-	\item Compile normal sequential Erlang code into normal sequential JavaScript. If we reach a receieve block, split the function into three pieces such that we have a PRE-RECIEVE function, a POST-RECIEVE function and finally the receieve block itself.
+	\item Compile normal sequential Erlang code into normal sequential JavaScript. If we reach a receieve block, split the function into three pieces such that we have a PRE-RECEIVE function, a POST-RECEIVE function and finally the receieve block itself.
 	\item Assemble these function segments as inline anonymous function calls, passing variables from one segment of the function to another by use of a closure --- this allows us to bind variables from one function into another quite naturally.
-	\item Modify the recieve blocks such that if no messages are matched, set the process behaviour to the same recieve block allowing us to indefinitely defer processes until a message is matched.
+	\item Modify the receive blocks such that if no messages are matched, set the process behaviour to the same receive block allowing us to indefinitely defer processes until a message is matched.
 	\item When a function containing non-sequential Erlang is run, the process runs sequentially until the receive block is met (the PRE-RECEIVE block). Once the receive block is met, the process defers itself indefinitely such that the only thing it does each tick of worktime it gets given is check its message inbox.
-	\item When a message is matched, it sequentially runs the code coupled with the matched case before deferring again, but this time to the POST-RECIEVE function.
+	\item When a message is matched, it sequentially runs the code coupled with the matched case before deferring again, but this time to the POST-RECEIVE function.
 \end{enumerate}
 
 Via this process, messages can trigger deferred processes awaiting messages to continue execution, and can themselves await messages. With this basic behaviour we can implement basic OTP-like server functionality as well as state-machine like functionality.
