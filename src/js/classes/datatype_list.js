@@ -36,7 +36,7 @@ const List = (() => {
         [nthNode](n) {
             if (n < 0 || n >= this.size()) {
                 throw "index out of bounds error";
-            }    
+            }
         
             let i = 0;
             let walker = this;
@@ -58,7 +58,7 @@ const List = (() => {
                 next: () => {
                     // If the next node of the current iterator isn't another list OR is an empty list, then we know
                     // we have reached the end of the linked list
-                    let isLastNode = this.iterator.next === undefined || List.isEmptyList(this.iterator.next);
+                    let isLastNode = !this.iterator || this.iterator.next === undefined || List.isEmptyList(this.iterator.next);
                     let v = List.isList(this.iterator) ? this.iterator.value : this.iterator;
 
                     if (this.iterator === "done" || List.isEmptyList(this)) {
@@ -81,6 +81,10 @@ const List = (() => {
         nth(n) {
             let nth = this[nthNode](n);
             return List.isList(nth) ? nth.value : nth;
+        }
+
+        nthSeg(n){
+            return this[nthNode](n);
         }
 
         size() {
@@ -128,21 +132,29 @@ const List = (() => {
         }
 
         match(other) {
-            if(other===null)return other;
-            if (List.isList(other) && this.size() === other.size()) {
-                for (let i = 0; i < this.size(); i++) {
-                    if (ErlangDatatype.isErlangDatatype(this.nth(i))) {
-                        if (this.nth(i).match(other.nth(i)) === undefined) {
-                            return undefined;
-                        }
-                    }
-                    else {
-                        if (this.nth(i) !== other.nth(i) && other.nth(i) !== null) {
-                            return undefined;
-                        }
-                    }
+            if(other===null)return this;
+            if (List.isList(other)) {
+
+                if(this.nth(0).match(other.nth(0))){//If the first values match
+                    if(other.next==null)return this;//Improper list (tail match)
+                    let a= this.next().match(other.next());
+                    if(a!=undefined) return this;
                 }
-                return other;
+                return undefined;
+                // for (let i = 0; i < this.size(); i++) {
+                //     if (ErlangDatatype.isErlangDatatype(this.nth(i))) {
+                //         if(other===null)return this;
+                //         if (this.nth(i).match(other.nth(i)) === undefined) {
+                //             return undefined;
+                //         }
+                //     }
+                //     else {
+                //         if (this.nth(i) !== other.nth(i) && other.nth(i) !== null) {
+                //             return undefined;
+                //         }
+                //     }
+                // }
+                // return other;
             }
             else {
                 return undefined;

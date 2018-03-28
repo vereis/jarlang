@@ -92,7 +92,7 @@ const Tuple = (() => {
 
         match(other) {
             if(other===null)return other;
-            if (List.isTuple(other) && this.size() === other.size()) {
+            if (Tuple.isTuple(other) && this.size() === other.size()) {
                 for (let i = 0; i < this.size(); i++) {
                     if (ErlangDatatype.isErlangDatatype(this.nth(i))) {
                         if (this.nth(i).match(other.nth(i)) === undefined) {
