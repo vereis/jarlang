@@ -52,33 +52,78 @@
 @ Nick - Work with Chris and Andrew to get line numbers preserved for us to generate source maps 
 
 3/11
-@ Done - thanks to chris and andrew, we can generate modules now!
-         thanks to nick, we now have line numbers preserved though we won't use this just yet.
+@ Done - thanks to chris and andrew, we can generate empty modules now!
+         thanks to nick, we now have line numbers preserved though we can't use this just yet.
          thanks to chris, we have an example of how we might implement lists and tuples in JS
 
-
 10/11
+@ Chris - JavaScript AST now includes rudimentary type checking
 
 17/11
+@ Done - Thanks to Chris and Andrew, we can now transpile rudimentary modules of very simple Erlang.
+@ Chris - Upgraded the JavaScript AST typechecking
+        - Attempted implementing Rebar3 usage, determined to be unsuitible
+        - Added dialyser tests to make file
+@ Andrew - Implemented return tracking, return statements now added at the end of functions
+         - Basic arithmetic, logic operators and functions with more than 1 operation now transpile
+         - Place holder datatypes & erlang core modules
+@ Nick - Started implementing Erlang numbers using BigNumber
 
 28/11
+@ Done - Factorial now works
+@ Nick - Continued work on ErlNumbers, they now work on browser and node.js
+@ Chris - ParseFunction is now concurrent & assignmentExpression added
+@ Andrew - Added datatype stubs & basic pattern matching works
+         - Case statements sort-of work
+         - let & apply (calls in a call & local funcitons) now work
 
 8/12
+@ Nick - Most of the map datatype is now implemented
 
 15/12
+@ Chris - Has done extensive refactoring & code standards enforcement
 
 7/2
+@ Done - List comprehensions now work. Lists module from the stdlib transpiles
+@ Nick - Strings are now handled like lists of chars
+       - Basic parts of io:format implemented
+@ Chris - Jarlang now builds into a binary executible using ErlPKG
+        - furthur refactoring & code clean-up
+@ Andrew - Try tokens in case statements have no apparent purpose, so are parsed as simple wrappers
+         - Added an output type option to aid in debugging
+         - Evaluate section of case statements encapsulated
+         - Aliases, lists functions as variables & functions in case statements now transpile
 
 15/2
+@ Nick - Implemented BIFs
+       - Corrected bitstring constructor
+@ Andrew - Refactored asttrans.erl, regretting not doing it sooner
+         - Tuples that contain only literals are literals themselves
+@ Chris - Added Jarlang runtime system, including process "concurrency"
+        - Updated build process to output es5,es6 or min files
+        - Variable conversion in & out of transpiled files
 
 21/2
+@ Chris - Automatic process wrapping when functions are called from outside
+        - Changed datatype classes to es6 constructors
+@ Nick - Separated Int & Float types
+@ Andrew - Rebuilt matching completely, now should work properly
 
 1/3
+@ Nick - Maps now use key val stores
+@ Andrew - Refactored function wrapping
 
 9/3
+@ Andrew - Made asttrans.erl neater, with less dead code & more comments
 
 16/3
+@ Chris - Implemented erlang BIFs used for message passing
+@ Andrew - Message receive now works
 
 23/3
+@ Andrew - Started LaTeX files for Technical report, got the format template working
+@ Nick - Improved bitstring some more
+@ everyone - Completed first draft of technical report
 
 28/3
+@ everyone - Second draft of technical report done
