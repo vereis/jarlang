@@ -785,13 +785,8 @@ recurse_var_assignments(ConsCount, {c_var, _, Name}, V, isTail) ->
             <<"=">>,
             estree:identifier(atom_to_binary(Name, utf8)),
             estree:call_expression(
-                estree:member_expression(V, estree:identifier(<<"slice">>), false),
-                [   estree:literal(ConsCount),
-                    estree:call_expression(
-                        estree:member_expression(V, estree:identifier(<<"size">>), false),
-                        []
-                    )
-                ]
+                estree:member_expression(V, estree:identifier(<<"nthSeg">>), false),
+                [estree:literal(ConsCount)]
             )
         )
     ];
@@ -802,13 +797,13 @@ recurse_var_assignments(_, {c_tuple, _, Elements}, V, _) ->
             lists:append(
                 L,
                 recurse_var_assignments(0, Elem,
-                    estree:expression_statement(
+                    %estree:expression_statement(
                         estree:call_expression(
                             estree:member_expression(V,
                                 estree:identifier(<<"nth">>), false),
                             [estree:literal(I)]
                         )
-                    ),
+                    ,%),
                     false
                 )
             )}

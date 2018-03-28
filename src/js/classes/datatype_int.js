@@ -15,8 +15,8 @@ const Int = (() => {
         }
 
         match(other) {
-            if (other===null||(!isNaN(other) && this.equals(other))) {
-                return other;
+            if (other==null||(!isNaN(other) && this.equals(other))) {
+                return this;
             }
             else {
                 return undefined;
