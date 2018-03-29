@@ -6,7 +6,7 @@ stdout_example(String) ->
 
 arith_example() ->
     A = 13 * 5,
-    B = 120 / 12,
+    B = 99.5 / 12,
     C = 3 div 2,
     D = 12 rem 4,
     E = 15 rem 4,
