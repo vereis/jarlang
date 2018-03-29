@@ -1,0 +1,51 @@
+{
+  "name": "jarlang",
+  "version": "1.0.0",
+  "description": "Erlang -> JavaScript transpiler",
+  "main": "null",
+  "directories": {
+    "doc": "doc",
+    "lib": "lib"
+  },
+  "dependencies": {
+    "bignumber.js": "^4.1.0",
+    "escodegen": "^1.9.0"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-env": "^1.6.1",
+    "gulp": "^4.0.0",
+    "gulp-babel": "^7.0.1",
+    "gulp-concat": "^2.6.1",
+    "gulp-jshint": "^2.1.0",
+    "gulp-rename": "^1.2.2",
+    "gulp-uglify": "^3.0.0",
+    "jshint": "^2.9.5"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vereis/jarlang.git"
+  },
+  "presets": [
+    "env"
+  ],
+  "keywords": [
+    "jarlang",
+    "erlang",
+    "javascript",
+    "transpiler",
+    "concurrency",
+    "functional",
+    "modules",
+    "ast"
+  ],
+  "author": "Chris Bailey, Andrew Johnson, Nick Laine",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/vereis/jarlang/issues"
+  },
+  "homepage": "https://github.com/vereis/jarlang#readme"
+}
