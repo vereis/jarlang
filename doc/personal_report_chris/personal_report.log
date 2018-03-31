@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Debian) (preloaded format=pdflatex 2018.3.31)  31 MAR 2018 18:14
+This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Debian) (preloaded format=pdflatex 2018.3.31)  31 MAR 2018 19:05
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -617,18 +617,18 @@ Package pdftex.def Info: Kent_Comp_294_RGB.pdf used on input line 45.
 {/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map} <./Kent_Comp_294_RGB.pdf>] 
 [2
 
-] [3] [4]
+] [3] [4] [5] [6]
 No file personal_report.bbl.
-[4] (./personal_report.aux)
+[6] (./personal_report.aux)
 
 LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
 
  ) 
 Here is how much of TeX's memory you used:
- 14169 strings out of 494953
- 278445 string characters out of 6180977
- 318272 words of memory out of 5000000
- 17197 multiletter control sequences out of 15000+600000
+ 14168 strings out of 494953
+ 278417 string characters out of 6180977
+ 319263 words of memory out of 5000000
+ 17196 multiletter control sequences out of 15000+600000
  6232 words of font info for 23 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
  62i,13n,94p,448b,396s stack positions out of 5000i,500n,10000p,200000b,80000s
@@ -636,10 +636,10 @@ Here is how much of TeX's memory you used:
 r/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/share
 /texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb></usr/share/texliv
 e/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt12.pfb>
-Output written on personal_report.pdf (5 pages, 62152 bytes).
+Output written on personal_report.pdf (7 pages, 67455 bytes).
 PDF statistics:
- 51 PDF objects out of 1000 (max. 8388607)
- 34 compressed objects within 1 object stream
+ 59 PDF objects out of 1000 (max. 8388607)
+ 40 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
  18 words of extra memory for PDF output out of 10000 (max. 10000000)
 
